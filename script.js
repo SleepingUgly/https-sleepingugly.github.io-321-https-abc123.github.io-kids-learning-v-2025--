@@ -38,7 +38,7 @@ const sounds = {
     
 //Ocean_coast_02_092025_0659AM by YevgVerh 
 // -- https://freesound.org/s/827528/ -- License: Creative Commons 0
-bgm: new Audio('game ocean.mp3'),
+bgm: new Audio('game-ocean.mp3'),
    };
 
 sounds.bgm.loop = true;
