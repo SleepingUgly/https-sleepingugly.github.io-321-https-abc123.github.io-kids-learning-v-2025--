@@ -28,7 +28,7 @@ const sounds = {
     jump: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3'),
     
    // 吃東西：現在換成可愛的「動物吃草～嚼嚼嚼」（本地檔案，載入超快！）
-    eat: new Audio('eat.wav'),  // // 吃東西音效：動物吃草聲
+    eat: new Audio('eat.mp3'),  // // 吃東西音效：動物吃草聲
 // "Animals Eat At Grass" by crokomoko 
 // https://freesound.org/s/833500/  Licensed under CC BY 4.0
     
@@ -38,7 +38,7 @@ const sounds = {
     
 //Ocean_coast_02_092025_0659AM by YevgVerh 
 // -- https://freesound.org/s/827528/ -- License: Creative Commons 0
-bgm: new Audio('game ocean.wav'),
+bgm: new Audio('game ocean.mp3'),
    };
 
 sounds.bgm.loop = true;
