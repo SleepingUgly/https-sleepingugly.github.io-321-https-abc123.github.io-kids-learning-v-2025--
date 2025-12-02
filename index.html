@@ -383,15 +383,15 @@
         </div>
         <p id="math-feedback" style="margin-top: 15px;font-weight: bold;min-height: 28px;color: #28a745;"></p>
     </div>
-
-  <div class="module art-module">
-    <h3>看圖練說話</h3>
-    <img src="forestpict.jpg" alt="美景" class="art-image" id="sceneryImage"> 
+<div class="module art-module">
+    <h3>訓練反應小遊戲</h3>
+    <img src="" alt="美景" class="art-image" id="sceneryImage">  <!-- 這裡 src 先留空 -->
 </div>
-    <div class="module message-module">
-        <p class="gemini-message">Aroth 守護心語：</p>
-        <p class="gemini-message-text">我會在這裡守護你，你做得很好，勇敢地學習和適當的休息！！</p>
-    </div>
+
+<div class="module message-module">
+    <p class="gemini-message">AIbot 守護心語 :</p>
+    <p class="gemini-message-text">「孩子們，你們做得很好，勇敢地學習和適當的休息！！</p>
+</div>
 </div>
 
 <script>
@@ -1000,20 +1000,24 @@
 ];
      // ==================== 200篇幼兒園～六年級專用溫暖小故事 ====================
     
-    let currentStoryIndex = 0;
-    function showStory(){document.getElementById('daily-story').textContent = stories[currentStoryIndex];}
-    function nextStory(){currentStoryIndex = (currentStoryIndex + 1) % stories.length; showStory();}
+   let currentImageIndex = 0;
+const sceneryImages = ['forestpict.jpg','pic1.jpg','pic2.jpg','pic3.jpg','pic4.jpg','pic5.jpg','tallbuilding.jpg','tallbuilding2.jpg','fox.jpg','colorful.jpg'];
 
-    // 美景輪播
-    const sceneryImages = ['forestpict.jpg','pic1.jpg','pic2.jpg','pic3.jpg','pic4.jpg','pic5.jpg','tallbuilding.jpg','tallbuilding2.jpg','fox.jpg','colorful.jpg',];
-    let currentImageIndex = 0;
-    function changeScenery(){
-        const img = document.getElementById('sceneryImage');
-        if(!img) return;
-        currentImageIndex = (currentImageIndex + 1) % sceneryImages.length;
-        img.src = sceneryImages[currentImageIndex];
-    }
-    setInterval(changeScenery, 10000);
+function changeScenery(){
+    const img = document.getElementById('sceneryImage');
+    if (!img) return;                    // 找不到圖片才結束（這才是對的！）
+    currentImageIndex = (currentImageIndex + 1) % sceneryImages.length;
+    img.src = sceneryImages[currentImageIndex];
+}
+
+// 網頁載入完成後立刻顯示第一張圖（很重要！）
+window.onload = function() {
+    const img = document.getElementById('sceneryImage');
+    if (img) img.src = sceneryImages[0];  // 強制設定第一張
+};
+
+// 每10秒換一張
+setInterval(changeScenery, 10000);
 
     // 體重轉換
     function convertWeight(){
