@@ -323,8 +323,6 @@
 
 
 
-
-
 <div class="gobang-section">
     <h2>五子棋 AI 對戰 (先手: 玩家 黑棋)</h2>
     <div id="status">遊戲進行中...</div>
@@ -386,7 +384,7 @@
 
      <div class="module art-module">
         <h3>看圖練說話</h3>
-        <img src="fox.jpg" alt="美景" class="art-image" id="sceneryImage">
+        <img src="elephant.jpg" alt="美景" class="art-image" id="sceneryImage">
        
     </div>
     <div class="module message-module">
@@ -1005,7 +1003,7 @@
     function nextStory(){currentStoryIndex = (currentStoryIndex + 1) % stories.length; showStory();}
 
     // 美景輪播
-    const sceneryImages = ['forestpic.jpg','pic1.jpg','pic2.jpg','pic3.jpg','pic4.jpg','pic5.jpg','fox.jpg','colorful.jpg','tallbuilding.jpg','tallbuilding2.jpg','pic.jpg'];
+    const sceneryImages = ['elephant.jpg','tiger.jpg'];
     let currentImageIndex = 0;
     function changeScenery(){
         const img = document.getElementById('sceneryImage');
