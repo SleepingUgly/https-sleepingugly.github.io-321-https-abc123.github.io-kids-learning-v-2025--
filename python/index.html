@@ -1,0 +1,2414 @@
+
+
+<!DOCTYPE html><html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>體重轉換器與五子棋</title>
+    <style>
+        body 
+         
+          {font-family: Arial, sans-serif;margin: 0;padding: 0;background-color: #e1ddc3;}
+        .main-layout {display: flex;justify-content: flex-start;align-items: flex-start;padding: 30px;max-width: 1500px;margin: 0 auto;gap: 20px;min-height: 100vh;}
+        .converter-wrapper {width: 360px;flex-shrink: 0;}
+        .container {width: 300px;margin: 0;background-color: #fff4f4;padding: 25px;border-radius: 8px;box-shadow: 0 4px 8px rgba(0,0,0,0.1);}
+        .container h2 {text-align: center;color: #333;margin-bottom: 25px;border-bottom: 2px solid #eee;padding-bottom: 10px;}
+        .form-group {margin-bottom: 15px;}
+        .form-group label {display: block;margin-bottom: 8px;font-weight: bold;color: #555;}
+        .form-group input[type="number"],.form-group select {width: 100%;padding: 10px;border: 1px solid #ccc;border-radius: 4px;box-sizing: border-box;}
+        .convert-button {width: 100%;padding: 12px;background-color: #007bff;color: white;border: none;border-radius: 4px;font-size: 16px;cursor: pointer;transition: background-color 0.3s;}
+        .convert-button:hover {background-color: #0056b3;}
+        .result-box {margin-top: 25px;padding: 15px;border: 1px solid #d4edda;background-color: #e2f0e4;color: #155724;border-radius: 4px;text-align: center;min-height: 20px;font-weight: bold;}
+        
+
+    .quiz-wrapper {width: 300px;margin-top: 30px;background-color: #f6e5e3;padding: 25px;border-radius: 8px;box-shadow: 0 4px 8px rgba(0,0,0,0.1);}
+    .quiz-wrapper h2 {text-align: center;color: #ff5733;margin-bottom: 30px;border-bottom: 2px solid #ffe5d8;padding-bottom: 0px;font-size: 30px;}
+    .question-item {display: flex;align-items: center;margin-bottom: 15px;padding: 5px 0;font-size: 40px;font-weight: bold;color: #3087f0;}
+    .question-item .error-mark {color: #dc3545;font-size: 28px;margin-left: 20px;width: 35px;text-align: center;}
+    .question-item input[type="number"] {width: 80px;padding: 8px;margin-left: 20px;border: 2px solid #3487e6;border-radius: 30px;text-align: center;transition: border-color 0.2s;font-size: 30px;height: 40px;}
+    .question-item.correct-q {color: #28a745;}
+    .quiz-button {width: 100%;padding: 8px;background-color: #7138db;color: white;border: none;border-radius: 4px;font-size: 20px;cursor: pointer;transition: background-color 0.3s;margin-top: 10px;}
+    .quiz-button:hover {background-color: #6a3ab0;}
+    .quiz-result {margin-top: 15px;padding: 10px;border-radius: 4px;text-align: center;font-weight: bold;min-height: 20px;font-size: 20px;}
+
+
+    .gobang-section {
+    padding: 15px;
+    background-color: #f7e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    max-width: fit-content;
+    flex-shrink: 0;
+    margin-right: 1px;  /* 改1px避免壓縮 */
+}
+
+.gobang-section h2 {
+    text-align: center;
+    font-size: 30px;
+    margin-bottom: 5px;
+}
+
+#status {
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+/* 🔧 修復重點：15x15格 + 粗格線 */
+#gobang-board {
+    display: grid;
+    grid-template-columns: repeat(15, 45px);  /* 15欄 */
+    grid-template-rows: repeat(15, 45px);      /* ✅ 改15行（原14行錯） */
+    border: 8px solid #f0e9dd;                 /* ✅ 外框變細（原23px太厚） */
+    background-color: #333;                    /* ✅ 深灰線條（原#000太黑） */
+    margin: 0 auto;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);     /* 加陰影更立體 */
+    gap: 2px;                                  /* ✅ 格線加粗2px（原1px太細） */
+    padding: 2px;                              /* 加內襯讓線更均勻 */
+}
+
+.cell {
+    width: 45px;
+    height: 45px;
+    border: none;
+    background-color: #e9c88a;                 /* 米黃棋盤底 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-sizing: border-box;                    /* ✅ 確保尺寸準確 */
+    position: relative;                        /* 為棋子定位 */
+}
+
+.stone {
+    width: 41px;
+    height: 41px;
+    border-radius: 50%;
+    position: absolute;                        /* 棋子絕對定位在中間 */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);          /* ✅ 完美置中棋子 */
+    z-index: 2;
+}
+
+.black {
+    background-color: black;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);  /* 加內陰影更立體 */
+}
+
+.white {
+    background-color: white;
+    border: 1px solid #666;                    /* 白子邊框更明顯 */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);    /* 外陰影 */
+}
+
+.restart-button {
+    margin-top: 20px;
+    padding: 20px 30px;
+    background-color: #c5df8a;
+    color: rgb(95, 73, 192);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+ 
+/* ========================================================== */
+/* ========= ⭐ 語文練習區塊 (quiz-area) 專屬樣式 ⭐ ========= */
+/* ========================================================== */
+
+/* ─────── 語文練習區塊 完美收窄可愛版 ─────── */
+.quiz-area {
+    width: 600px !important;           /* 固定一個剛剛好的寬度（可調 420~500） */
+    max-width: 95vw;                   /* 手機也不會太寬 */
+    margin: 40px auto !important;      /* 上下留空 + 自動左右置中 */
+    padding: 32px;
+    background: linear-gradient(135deg, #fff0f5, #ffeef8); /* 夢幻粉色漸層 */
+    border: 7px solid #ff99cc;         /* 粉紅粗邊框 */
+    border-radius: 30px;               /* 大圓角超可愛 */
+    box-shadow: 0 15px 30px rgba(255, 182, 193, 0.5); /* 粉嫩立體陰影 */
+    text-align: center;
+    transition: all 0.4s ease;
+}
+
+/* 滑鼠移上去會微微浮起（小朋友超愛） */
+.quiz-area:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(255, 182, 193, 0.6);
+}
+
+/* 標題保持原樣（你原本的就很好看） */
+.quiz-area h2 {
+    text-align: center;
+    color: #D35400;
+    font-size: 36px;
+    margin-bottom: 25px;
+    font-weight: 800;
+}
+
+/* --- 關卡選擇按鈕 --- */
+.stage-selectors button {
+    padding: 15px 20px;             /* 增加內邊距 */
+    margin: 8px 10px; 
+    font-size: 22px;                /* 階段選擇按鈕字體大小 */
+    cursor: pointer;
+    border-radius: 12px;
+    border: 2px solid #D35400;      /* 增加邊框，使未選中的也更立體 */
+    background-color: #FFECB3;      /* 淺黃色背景 */
+    color: #D35400;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.1s, border-color 0.3s;
+}
+
+/* 選中的關卡按鈕樣式 (重點強調) */
+.stage-selectors .selected-stage {
+    background-color: #FF8C00;      /* 主題色 */
+    color: #FFF;
+    font-weight: bold;
+    border: 2px solid #D35400;      /* 維持邊框 */
+    transform: scale(1.05);         /* 略微放大，更突出 */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* --- 題目顯示區塊 --- */
+.question-container > div {
+    padding: 30px;
+    border: 3px solid #ffccff;      /* 邊框加粗 */
+    border-radius: 15px; 
+    background: #fff0f5;            /* 粉紅背景 */
+    margin-top: 25px;               /* 增加上方間隔 */
+    box-shadow: inset 0 0 8px rgba(255, 105, 180, 0.2); /* 內陰影，增強卡片感 */
+}
+
+.question-container h4 {
+    font-size: 24px;                /* 題目序號 H4 字體大小 */
+    color: #555;
+    margin-top: 0;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+/* 題目文字樣式 (包含空缺) */
+.question-text {
+    font-size: 32px;                /* 讓題目句子更大、更顯眼 */
+    line-height: 2;                 /* 增加行距，更易讀 */
+    text-align: center;
+    font-weight: 600;
+}
+
+/* 讓句子中的空缺底線更明顯 */
+.question-text .fill-in-gap {
+    color: #FF4500;                 /* 亮眼橘紅 */
+    font-weight: 900;
+    text-decoration: underline;     /* 加上底線 */
+    text-decoration-thickness: 3px; /* 底線加粗 */
+    margin: 0 10px;
+}
+
+/* --- 選項按鈕通用樣式 --- */
+#options-area button {
+    font-size: 28px;                /* 調整選項按鈕字體大小 (更適合小手點擊) */
+    width: 80%;                     /* 略微收窄，視覺上更集中 */
+    margin: 10px auto;
+    display: block;
+    padding: 18px 25px;             /* 增加點擊面積 */
+    border: 3px solid #1F618D;      /* 增加邊框，增強點擊感 */
+    border-radius: 10px;
+    background-color: #ADD8E6;      /* 預設顏色 (淺藍) */
+    color: #1F618D;
+    font-weight: 800;               /* 更粗 */
+    box-shadow: 0 3px 0 #1F618D;    /* 模擬 3D 按鈕效果 */
+}
+
+#options-area button:hover:not(:disabled) {
+    background-color: #87CEEB;      /* 滑鼠懸停效果 */
+    transform: translateY(-4px);    /* 懸停時移動更多 */
+    box-shadow: 0 7px 0 #1F618D;    /* 陰影變大 */
+}
+
+#options-area button:active:not(:disabled) {
+    transform: translateY(-1px);    /* 點擊時下壓 */
+    box-shadow: 0 0 0 #1F618D;
+}
+
+/* 答案回饋區域 */
+.feedback-area {
+    text-align: center;
+    margin-top: 30px;
+    padding: 15px;
+    border-top: 1px dashed #D35400;
+}
+
+.feedback-area h3 {
+    font-size: 26px;
+    color: #D35400;
+}
+
+.feedback-area p {
+    font-size: 22px;
+    margin-top: 10px;
+}
+ 
+/* ========================================================== */
+/* ========= ⭐ 語文練習區塊 (quiz-area) 專屬樣式 ⭐ ========= */
+/* ========================================================== */
+
+
+
+
+    /* background-color: #2e611a; 第三號整體面板顏色 */
+    .guardian-hub {width: 350px;padding: 25px;background-color: #479927;border-radius : 12px;box-shadow: 0 4px 12px rgba(0,0,0,0.15);flex-shrink: 0;border: 4px solid #4a90e2;}
+    .hub-title {text-align: center;color: #0d3503;border-bottom: 2px solid #bbab51;padding-bottom: 10px;margin-bottom: 20px;font-size: 24px;}
+    .module {margin-bottom: 25px;padding: 15px;background-color: #eeb677;border-radius: 8px;box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+    .module h3 {color: #333;margin-top: 0;margin-bottom: 10px;font-size: 40px;border-left: 4px solid #dab514;padding-left: 8px;}
+    .large-text {display: block;font-size: 40px;line-height: 1.6;color: #1a1a1a;font-weight: normal;}
+    .art-image {width: 100%;height: auto;border-radius: 6px;display: block;margin-top: 10px;max-height: 400px;object-fit: cover;}
+    .message-module {background-color: #ffe5e5;border: 1px dashed #0f976e;}
+    .gemini-message {font-weight: bold;color: #dc3545;font-size: 30px;margin-bottom: 5px;}
+    .gemini-message-text {font-size: 30px;color: #333;line-height: 1.5;}
+
+
+
+    .math-question-new {display: flex;align-items: center;justify-content: flex-start;flex-wrap: wrap;gap: 15px;padding: 15px 0;}
+    #math-input-new {width: 110px;font-size: 32px;padding: 12px;text-align: center;border: 4px solid #4a90e2;border-radius: 12px;transition: all 0.3s;background: white;}
+    #math-input-new.correct {border-color: #28a745 !important;background-color: #23cc4a;}
+    #math-input-new.wrong {border-color: #dc3545 !important;background-color: #f8d7da;animation: shake 0.4s;}
+    @keyframes shake {0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+    #feedback-icon {font-size: 52px;opacity: 0;transition: all 0.4s;}
+
+    /* 100篇小故事專用樣式 */
+    .story-container {padding: 20px 15px;background: linear-gradient(120deg,#f7dd95 0%,#f7dd95 100%);border-radius: 12px;min-height: 180px;}
+    .story-text {font-size: 30px;line-height: 2;color: #2c3e50;margin: 0;}
+    .next-story-btn {display: block;margin: 18px auto 0;padding: 12px 32px;background: #dd963a;color: rgb(54, 8, 8);border: none;border-radius: 50px;font-size: 15px;cursor: pointer;box-shadow: 0 4px 15px rgba(74,144,226,0.4);transition: all 0.3s;}
+    .next-story-btn:hover {background: #357abd;transform: translateY(-2px);box-shadow: 0 6px 20px rgba(74,144,226,0.5);}
+
+
+/* 1. 連結容器的樣式 遊戲連結區 遊戲連結區調整*/
+
+        .link-to-python-page {
+            margin-top: 20px; 
+            margin-bottom: 20px;
+            text-align: center; 
+        }
+
+        /* 2. 連結按鈕本身的樣式 */
+        .python-link-button {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #f7931e; /* 按鈕背景色 */
+            color: white; /* 文字顏色 */
+            text-decoration: none; /* 移除底線 */
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 30px; 
+            box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2); 
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        /* 3. 滑鼠懸停（Hover）效果 */
+        .python-link-button:hover {
+            background-color: #d87e14;
+            transform: translateY(-2px); 
+            cursor: pointer;
+        }
+
+        /* 讓食物圖案清單與上方的連結互相推開 */
+.emoji-list {
+    margin-top: 50px; /* 向上推開 15 像素的距離 */
+    margin-bottom: 50px; /* 讓它與下方的音樂標題 (聽平靜的音樂) 也推開一點 */
+    text-align: center; /* 讓圖案保持置中 */
+}
+
+
+/* =================================== */
+/* 記憶遊戲區塊的外觀 */
+/* =================================== */
+.new-section {
+    margin-top: 30px; 
+    padding: 50px;
+    background-color: #e8f9fd; /* 淺藍色背景 */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.new-section h2 {
+    text-align: center;
+    color: #3684dd;
+    font-size: 50px;
+    font-weight: bold;
+    margin: 0 auto 40px;
+    
+    /* 讓整行變成 inline-block，底線只包內容 */
+    display: inline-block;
+    width: fit-content;
+    padding: 0 50px 15px;         /* 左右留大一點，讓星星有空間 */
+    border-bottom: 2px solid #b7e4f7;
+}
+
+/* =================================== */
+/* 記憶遊戲卡片樣式 (只針對 .card 類別) */
+/* =================================== */
+
+#memory-game > .card {
+    /* 確保卡片有固定大小，配合 HTML 中的 grid-template-columns */
+    width: 120px; 
+    height: 150px;
+    
+    background-color: #ffba92; /* 卡片背面顏色 */
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* ❗ 關鍵：初始字體為 0，隱藏圖案 ❗ */
+    font-size: 0; 
+    color: white;
+    font-weight: bold;
+    user-select: none;
+    transition: all 0.2s ease-in-out; /* 增加過渡效果 */
+}
+
+/* 翻開卡片的樣式 */
+#memory-game > .card.flipped {
+    background-color: #ecf0f1; /* 翻開後的背景色 */
+    /* ❗ 關鍵：翻轉後顯示圖案 ❗ */
+    font-size: 40px; 
+    color: #48b0f5; 
+}
+
+/* 記憶遊戲專用 CSS - 直接貼進去就行 */
+#memory-game {
+    perspective: 1200px; /* 3D 立體感 */
+}
+
+.memory-card {
+    width: 150px;
+    height: 150px;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.2s;
+}
+
+.memory-card:hover {
+    transform: scale(1.05); /* 放大一點好玩 */
+}
+
+
+
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.memory-card.flipped .card-inner {
+    transform: rotateY(180deg);
+}
+
+.card-back, .card-front {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 48px; /* 圖案大小 */
+}
+
+.card-back {
+    background: linear-gradient(135deg, #ff6b9d, #f7931e); /* 粉橘漸層背面 */
+    color: white;
+    font-size: 60px;
+}
+
+.card-front {
+    background: linear-gradient(135deg, #2582ec, #2582ec); /* 藍色漸層正面 */
+    color: #2582ec;
+    transform: rotateY(180deg);
+    font-size: 52px;
+}
+
+/* ----------------------------------------------------
+   [音樂播放器] 專屬樣式 (基於 Grok 設計的 HTML 結構)
+   ---------------------------------------------------- */
+
+.music-player {
+    /* 讓內容區塊本身水平置中 (如果父容器是 flex) */
+    margin: 20px auto 0; 
+    max-width: 90%; /* 限制最大寬度，避免在寬螢幕上拉太長 */
+    padding: 10px;
+    text-align: center; /* 讓內部的文字和控制項置中 */
+}
+
+/* 揚聲器 (speaker) 區塊 (如果不需要可移除，僅供視覺設計參考) */
+.speaker {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.speaker-grill {
+    width: 3px;
+    height: 15px;
+    background-color: #D35400;
+    border-radius: 2px;
+}
+
+/* 播放標題區域 */
+.display {
+    padding: 10px 0;
+    font-size: 18px; /* 稍微放大 */
+    font-weight: 500;
+    color: #666; 
+}
+
+/* 針對歌曲標題文字 */
+#song-title {
+    margin-top: 5px;
+    font-size: 16px;
+    color: #888;
+}
+
+/* 控制按鈕區塊 */
+.controls {
+    margin-top: 15px;
+}
+
+.controls button {
+    /* 讓按鈕之間有間距 */
+    margin: 0 5px; 
+    padding: 8px 15px;
+    
+    font-size: 16px;
+    font-weight: bold;
+    color: #FFF; /* 白色文字 */
+    
+    /* 深橘紅色背景，與其他區塊的顏色呼應 */
+    background-color: #D35400; 
+    border: none;
+    border-radius: 6px; 
+    cursor: pointer; /* 讓滑鼠變成手型 */
+    
+    /* 點擊動畫 */
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.controls button:hover {
+    background-color: #E67E22; /* 滑鼠移上去變亮 */
+}
+
+.controls button:active {
+    transform: scale(0.98); /* 點擊時輕微縮小 */
+}
+
+/* 音量滑桿標籤 */
+.music-player > div:last-child {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #555;
+}
+
+/* 音量滑桿 (input[type=range]) 的基本樣式 */
+input[type=range] {
+    width: 70%; /* 讓滑桿不要佔滿整個區塊 */
+    margin: 0 10px;
+    vertical-align: middle; /* 讓它和文字對齊 */
+}
+/* 迷宮導航按鈕美化 (取代原 stage-btn) */
+.nav-btn, .clear-btn {
+    padding: 20px 18px;
+    margin: 15px;
+    /* 修正 font-size:10x 的潛在筆誤 */
+    font-size: 16px; 
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+/* 上一張 / 下一張 按鈕 (橘色) */
+/* 迷宮導航按鈕美化 (取代原 stage-btn) */
+/* 尺寸調整：padding 從 10px 縮小到 8px，font-size 從 16px 縮小到 14px */
+.nav-btn, .clear-btn {
+    padding: 8px 15px; /* <--- 這裡縮小了垂直和水平邊距 */
+    margin: 1px;
+    font-size: 14px;    /* <--- 這裡縮小了字體大小 */
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+/* 以下是您提供的顏色和 hover 樣式，保持不變 */
+.nav-btn {
+    background: #ff8c00;
+}
+.nav-btn:hover:not(:disabled) {
+    background: #e67e22;
+    transform: scale(1.05);
+}
+.nav-btn:disabled {
+    background: #ccc; /* 禁用時的顏色 */
+    cursor: not-allowed;
+}
+
+/* 清除畫線按鈕 (紅色) */
+.clear-btn {
+    margin-left: 15px; /* 與導航按鈕分隔 */
+    background: #dc3545;
+}
+.clear-btn:hover {
+    background: #c82333;
+    transform: scale(1.05);
+}
+
+/* 橘色畫筆游標：綁定到整個迷宮容器 */
+#maze-container:hover {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="12" fill="%23FF8C00" opacity="0.9"/><circle cx="14" cy="14" r="6" fill="%23FFF"/></svg>') 14 14, auto;
+}
+
+
+/* 新增 h1 標題樣式 */
+#maze-app h1 {
+    color: #FF6B00; /* 深橘色，與畫線顏色相似 */
+    margin-top: 20;
+    margin-bottom: 5px;
+    font-size: 2em;
+}
+
+/* 新增 p 說明文字樣式 */
+#maze-app p {
+    color: #DC3545; /* 深灰色 */
+    font-size: 1.6em;
+    margin-top: 0;
+    margin-bottom: 5px; /* 縮小行距 */
+}
+
+/* 特別針對「滑鼠拖曳就能畫出線條」這句，讓它顏色更亮一點 */
+#maze-app p:last-of-type {
+    color: #DC3545; /* 使用清除按鈕的紅色，吸引注意 */
+    font-weight: bold;
+}
+
+
+/* 針對「小遊戲連結」區域的連結樣式進行調整 */
+/* 這裡假設這個連結是位於 h2 後方的第一個 a 標籤 */
+/* 也可以使用 .link-to-python-page a */
+h2 + div a, 
+.link-to-python-page a {
+    font-size: 1.5em; /* <--- 設定字體大小，比上次建議的 1.2em 更大 */
+    color: #007bff; /* 鮮豔的藍色 */
+    text-decoration: none; 
+    font-weight: bold;
+    display: block; 
+    margin-top: 20px; /* 增加與上方 h2 的間距 */
+}
+
+h2 + div a:hover,
+.link-to-python-page a:hover {
+    color: #e67e22; /* 滑鼠經過時變成按鈕的橘色 */
+    text-decoration: underline; 
+}
+
+</style></head>
+
+
+<body>
+
+<div class="main-layout">
+
+<div class="converter-wrapper">
+    <div class="container">
+        <h2>體重單位轉換</h2>
+        <div class="form-group">
+            <label for="weight">輸入體重</label>
+            <input type="number" step="0.01" id="weight" placeholder="例如: 60.5" required>
+        </div>
+        <div class="form-group">
+            <label for="unit">選擇單位轉換</label>
+            <select id="unit">
+                <option value="kg_to_lbs">公斤 (kg) 轉 磅 (lbs)</option>
+                <option value="lbs_to_kg">磅 (lbs) 轉 公斤 (kg)</option>
+                <option value="kg_to_g">公斤 (kg) 轉 克 (g)</option>
+            </select>
+        </div>
+        <button type="button" class="convert-button" onclick="convertWeight()">轉換</button>
+        <div class="result-box" id="result-display">請輸入體重並點擊轉換</div>
+    </div>
+
+     
+
+    <div class="quiz-wrapper">
+        <h2>九九乘法表隨機考試</h2>
+        <div id="quiz-questions"></div>
+        <button class="quiz-button" onclick="checkAnswers()">送出答案</button>
+        <div id="quiz-result" class="quiz-result">點擊「送出答案」查看結果</div>
+    </div>
+
+
+
+<div class="quiz-wrapper">
+    <h2>日常生活會話應答</h2>
+    
+    <img src="nikolatesla2.jpg" alt="一位穿西裝的卡通男士與孩子們" style="max-width: 100%; height: auto; display: block; margin-bottom: 15px;">
+    
+    <audio controls>
+        <source src="askq1.mp3" type="audio/mpeg">
+        您的瀏覽器不支援 audio 元素。
+    </audio>
+    
+</div>
+    
+
+<div id="maze-app" style="text-align:center;">
+    <h1>❄️❄️❄️迷宮區❄️❄️❄️</h1>
+    <p>請鍵盤按ctrl+z把迷宮區變大</p>
+    <p>滑鼠拖曳就能畫出線條</p>
+
+    <div style="margin-bottom:10px;margin-top:15px ;">
+        <button onclick="prevMaze()" class="nav-btn" id="prev-btn">上一張</button>
+        <span id="maze-status" style="margin:0 15px; font-size:1.2em; font-weight:bold; color:#ff8c00;">關卡 1/100</span>
+        <button onclick="nextMaze()" class="nav-btn" id="next-btn">下一張</button>
+
+        <button onclick="clearPath()" class="clear-btn">清除畫線</button>
+    </div>
+
+    <div id="maze-container" style="position:relative;display:inline-block;box-shadow:0 0 15px rgba(238, 125, 125, 0.856);border-radius:12px;overflow:hidden;">
+        <img id="maze-img" src="maze1.jpg" style="display:block;max-width:100%;height:auto;">
+        <canvas id="draw-canvas"></canvas>
+    </div>
+</div>
+
+
+
+
+
+    <div class="quiz-wrapper">
+    <h2>小遊戲連結</h2>
+    
+    <div class="link-to-python-page">
+    <a href="game.html">⭐️ 前往反應能力小遊戲 ⭐️</a>
+</div>
+    <div id="quiz-questions"></div>
+
+    <div class="link-to-python-page">
+    <a href="https://www.khanacademy.org/">⭐️美國免費學習資源⭐️<br>⭐️有中文頁面 ⭐️</a>
+</div>
+    <div id="quiz-questions"></div>
+    
+  
+
+<!-- Ocean_coast_02_092025_0659AM by YevgVerh -->
+<!-- https://freesound.org/s/827528/ - License: Creative Commons -->
+
+</audio><audio id="myAudioPlayer" src="gameocean.mp3" loop></audio>
+
+<div class="link-to-python-page">
+    <h2></h2> 
+</div>
+
+<div class="music-player">
+    <div class="speaker">
+        <div class="speaker-grill"></div>
+        <div class="speaker-grill"></div>
+        <div class="speaker-grill"></div>
+    </div>
+
+    <div class="display">
+        <div id="song-title">點播放開始聽音樂～</div>
+    </div>
+
+    <div class="controls">
+        <button id="prev-btn">上一首</button>
+        <button id="play-btn">播放</button>
+        <button id="next-btn">下一首</button>
+    </div>
+</div>
+
+
+    <div class="volume-control">
+        <span>音量</span>
+        <input type="range" id="volume-slider" min="0" max="100" value="70">
+    </div>
+</div>
+
+<audio id="audio" preload="auto"></audio>
+
+
+</div>
+
+
+
+
+
+<div class="gobang-section">
+    <h2>五子棋 AI 對戰 (先手: 玩家 黑棋)</h2>
+    <div id="status">遊戲進行中...</div>
+    <div id="gobang-board"></div>
+    <button class="restart-button" onclick="initBoard()">重新開始</button>
+
+
+
+
+ <div class="new-section">
+    <h2>🧠記憶配對遊戲</h2>
+  
+    
+    <div id="memory-game" 
+     style="display:grid;
+            grid-template-columns:repeat(3,1fr);
+            gap:40px;
+            justify-content:center;
+            margin:20px auto 60px;   /* 關鍵！下方留出大空間 */
+            max-width: 400px;">      <!-- 可選：讓整體不要太寬 -->
+    <!-- JS 生成的卡片 -->
+</div>
+    <div style="text-align:center;">
+       <p id="score-display" style="font-size:28px;font-weight:bold;color:#ff6b9d;margin:10px 0 40px;">
+    點擊開始遊戲！
+</p>
+        <button onclick="startGame()" style="padding:15px 40px;font-size:22px;background:#ff6b9d;color:white;border:none;border-radius:50px;cursor:pointer;">🆕 新遊戲</button>
+    </div>
+</div>
+
+
+
+
+<div class="new-section quiz-area">
+    <h2> ⭐語文練習基礎🌈</h2>
+    
+    <div id="quiz-stage-selectors" class="stage-selectors">
+        </div>
+    
+    <div id="language-game" class="question-container">
+    </div>
+    
+    <div id="quiz-feedback-area" class="feedback-area">
+    </div>
+
+</div><div>
+</div>
+
+ 
+</div>
+  <div class="guardian-hub">
+    <h2 class="hub-title">乙太通訊中心</h2>
+    <!-- 100篇小故事 -->
+    <div class="module reading-module">
+        <h3>閱讀小故事</h3>
+        <div class="story-container">
+            <p class="story-text" id="daily-story">正在為你準備溫暖的故事……</p>
+        </div>
+        <button class="next-story-btn" onclick="nextStory()">下一則</button>
+    </div>
+
+    
+
+    <!-- 數學時間 -->
+    <div class="module math-module">
+        <h3>數學時間</h3>
+        <div class="math-question-new">
+            <span id="math-problem" class="large-text">載入中...</span>
+            <input type="number" id="math-input-new" placeholder="?" autofocus>
+            <span id="feedback-icon"></span>
+        </div>
+        <p id="math-feedback" style="margin-top: 15px;font-weight: bold;min-height: 28px;color: #28a745;"></p>
+    </div>
+
+
+
+     <div class="module art-module">
+        <h3>看圖練說話🌈</h3>
+        <img src="elephant.jpg" alt="美景" class="art-image" id="sceneryImage">
+       
+    </div>
+    <div class="module message-module">
+        <p class="gemini-message">Aroth 守護心語：</p>
+        <p class="gemini-message-text"> 過馬路一定要看紅綠燈，並且走斑馬線，遇到 大卡車 大貨車 時，要離它們遠一點，要不然會被捲進去喔 !</p> 
+    </div>
+
+<div class="module message-module">
+        <p class="gemini-message">準備區：</p>
+        <p class="gemini-message-text"> </p> 
+    </div>
+ </div>
+    
+    
+
+
+</div>
+
+<script>
+
+  
+    // ==================== 100篇原創溫暖小故事 ====================
+   //=================== 200篇幼兒園～六年級專用溫暖小故事 ====================
+    const stories = [
+   
+     // G1: 聲音
+    "聲音是空氣在跳舞喔！靜下來就能聽到風、葉子與你的心跳正在唱歌呢。",
+    
+   // G2: 太陽
+    "太陽每天準時起床，把溫暖的光和熱送給我們。我們也要早睡早起最健康！",
+    
+    // T3: 交流電 (原本已改成「尼古拉·特斯拉發明了交流電...」)
+    "尼古拉·特斯拉發明了交流電，才能讓電力傳輸到很遠很遠的地方去使用。",
+    
+    // G3: 水龍頭
+    "水從高處流到低處，就像從山頂滑下來的溜滑梯一樣。記得把水龍頭關緊喔！",
+    
+    // G4: 彩虹
+    "彩虹是陽光被雨滴折射成七種美麗顏色。下次看到彩虹，記得要數數看！",
+
+    // G8: 樹
+    "樹用根像吸管一樣喝水，再吐新鮮空氣給我們。樹木是地球偉大的肺葉。",
+
+       // G5: 月亮
+    "月亮晚上在天上值班，白天牠其實是去睡覺。但牠一直都在天上守護我們喔。",
+
+    "我們的身體像一座小型的化學工廠，不斷將食物轉變成能量，讓生活運行。",
+
+
+    "我們的身體像一座小型的化學工廠，不斷將食物轉變成能量，讓生活運行。",
+
+    "彩虹是陽光透過水滴折射形成的自然現象，學習它讓生活充滿國小科學的美麗。",
+
+    "月亮每天看起來會變化形狀，這是因為它繞地球公轉時，被陽光照射的角度不同。",
+
+    "生活中常見的摩擦力，是一種讓物體減速、防止我們跌倒的國小自然科學原理。",
+
+    "植物的根部會吸收土壤中的水分和養分，這對植物生存和我們的生活非常重要。",
+
+    "聲音是物體振動產生的波，學習音量和音高能幫助國小生理解，生活中的溝通。",
+
+    "水的三態變化，從冰到水蒸氣，是國小科學中，影響我們生活最明顯的現象。",
+
+    "地球自轉造成了白天和黑夜，是影響我們日常生活作息的國小自然科學基礎。",
+
+    "潮汐是海水受到月球引力影響，在生活中是漁業和海岸活動重要的國小知識。",
+
+    // T6: 無線電 (已改成「他發明無線電技術...」)
+    "尼古拉.特斯斯是發明無線電關鍵技術的人，但很多人不知道這個偉大事實。",
+    
+    // G6: 恐龍
+    "恐龍真的活過喔！牠們比我們的阿公阿嬤還要老了好幾百萬歲呢，很古老。",
+    
+    "地球自轉造成了白天和黑夜，是影響我們日常生活作息的國小自然科學基礎。",
+"潮汐是海水受到月球引力影響，在生活中是漁業和海岸活動重要的國小知識。",
+"磁鐵可以吸引鐵質物品，生活中許多電器和玩具，都應用了這個國小科學原理。",
+"光合作用是植物將陽光、水和空氣變成養分的自然科學魔法，維持著我們的生活。",
+"昆蟲有六隻腳和三個身體部分，牠們在自然界和生活中，扮演著重要的國小角色。",
+"我們每天丟棄的垃圾需要分類，這是保護環境，讓生活永續發展的國小責任。",
+"地球表面的板塊不斷移動，是造成地震和火山爆發等生活現象的國小自然科學力量。",
+"生活中使用的電池，是將化學能轉化為電能，讓我們的電子產品得以運作的裝置。",
+"空氣具有質量，雖然我們看不見，但它在國小科學中佔有重量與壓力等重要地位。",
+"食物中的蛋白質、脂肪和碳水化合物，都是維持生命健康的重要國小生活養分。",
+"風向和風速的變化，是生活中預測天氣的重要國小科學指標，關係到出門穿衣。",
+"電流是電子流動形成的，安全用電是國小生活中，必須學習的自然科學重要知識。",
+"所有的物質都是由更小的原子組成，這是國小科學對世界組成最基礎的認知。",
+"魚用鰓呼吸水中的氧氣，這是國小生物學中，動物適應生活環境的重要例子。",
+"熱氣會上升，冷氣會下降，這是空氣對流的原理，也是生活中冷氣機運作的科學。",
+"我們日常生活中常見的影子的長短變化，都是地球自轉造成的光影自然科學現象。",
+    
+    
+    
+    
+    
+    // T7: 背書 (已改成「尼古拉·特斯拉能背下...」)
+    "尼古拉·特斯拉能背下整本書，一字都不會錯，就像用腦袋裡的相機拍下來一樣。",
+    
+    // G7: 洗手
+    "洗手七步驟：濕、搓、沖、搓、沖、擦乾、舉高高！這樣細菌就會全部跑光光。",
+    
+    // T8: 無線輸電 (已改成「他設計過...」)
+    "尼古拉.特斯拉設計過能無線傳輸電力的巨塔，想讓全世界的人都能免費使用電力呢。",
+    
+    // G9: 紅綠燈
+    "紅燈停、綠燈行，黃燈亮了要耐心等一等。這是全世界小朋友的安全魔法規則。",
+    
+    "節約用水是生活中保護水資源的重要行為，因為地球上的淡水是有限的國小資源。",
+"動物的骨骼和肌肉共同作用，幫助牠們做出各種動作，這是國小生物學的基礎。",
+"酸和鹼是兩種基本的化學性質，在國小生活中，我們常在清潔劑和食物中接觸到。",
+"重力是將所有物體拉向地球的力量，是國小科學中解釋為什麼東西會往下掉的知識。",
+"植物透過蒸散作用將水分釋放到空氣中，這對調節生活環境的濕度非常重要。",
+"所有的光都是直線傳播，所以當光線被擋住時，生活中就會形成陰影和黑夜。",
+"地心引力讓地球上的物體都有重量，這是在國小科學中學習質量和引力差別的基礎。",
+"生物的多樣性對生態系統的穩定非常重要，這是國小生活中必須認識的自然科學。",
+"大氣層保護我們免受太陽有害射線的傷害，對地球上的所有生活都至關重要。",
+"日常生活中，我們利用槓桿原理來移動重物，例如剪刀和鉗子都是國小科學應用。",
+"濕度和溫度會影響汗水蒸發的速度，這是國小生體驗身體調節體溫的自然科學。",
+"化石是古代生物遺留在岩石中的證據，是國小科學中學習地球歷史的重要線索。",
+"動物的冬眠是牠們適應環境溫度變化，以節省能量度過寒冷生活的自然科學行為。",
+"燃燒是一種快速的氧化反應，在生活中提供熱量和光，安全用火是國小必學。",
+"地球上的水循環，包括蒸發、凝結和降水，對維持生命與生活有著重要意義。",
+"電路需要形成一個閉合迴路，電才能流動，這是國小科學理解串聯和並聯的基礎。",
+"空氣的壓力無所不在，國小科學中的吸管或注射器，都是利用氣壓的原理運作。",
+"種子需要水、溫度和空氣才能發芽，這是國小生在家中也能觀察到的自然科學。",
+"雲是由空氣中微小的水滴或冰晶組成，是生活中預測天氣變化的國小科學依據。",
+      // T9: 腦袋溝通 (已改成「尼古拉·特斯拉說過...」)
+"尼古拉·特斯拉說過：未來的人們可以用腦袋直接溝通想像，科技真是太厲害了！",
+    
+    // G10: 地球
+    "地球是圓的，就像一個大藍色彈珠。地心引力抱著我們，大家才不會掉下去。",
+    
+    // G11: 種子
+    "小種子睡在土裡，喝水曬太陽後就會慢慢長大。慢慢來，每個寶寶成長都不同。",
+    
+    // G12: 埃及
+    "埃及人四千年前會蓋金字塔，還會做木乃伊，像讓人安靜睡了好久好久。",
+    
+    // T10: 閃電大師 (已改成「他小時候被閃電...」)
+    "他小時候被閃電嚇到，但長大後卻成為研究閃電與電力的大科學家。",
+    
+    // G13: 影子
+    "影子早上長長、中午最短、晚上又長，這是因為太陽在天空更換位置的關係。",
+    
+    // G14: 吃飯
+    "吃飯要細嚼慢嚥，食物就會很高興地把全部的營養都送給你喔，讓身體健康。",
+    
+    // G15: 星星
+    "星星其實是超巨大的火球，只是離我們太遠，看起來才會像一個小小的燈泡。",
+
+    "空氣的壓力無所不在，國小科學中的吸管或注射器，都是利用氣壓的原理運作。",
+"種子需要水、溫度和空氣才能發芽，這是國小生在家中也能觀察到的自然科學。",
+"雲是由空氣中微小的水滴或冰晶組成，是生活中預測天氣變化的國小科學依據。",
+"密度是物質的質量與體積的比值，國小科學中可解釋為什麼有些東西會浮起來。",
+"動物的遷徙是為了尋找食物或更好的繁殖地，這是國小生物學中適應生活的行為。",
+"微生物雖然肉眼看不見，但在發酵食物和分解廢棄物等生活中扮演重要國小角色。",
+"太陽系的行星都繞著太陽公轉，這是國小科學中，我們認識宇宙的基本天文知識。",
+"液體具有表面張力，讓水滴呈現圓形，是國小生在生活中就能觀察到的科學現象。",
+"能量不能被創造或消滅，只能從一種形式轉化為另一種，這是國小科學的基礎法則。",
+"地球由核心、地幔和地殼組成，國小科學中認識我們的家園是了解生活的開始。",
+"保護野生動物是生活中維持生態平衡的重要行為，是國小生愛護環境的自然科學表現。",
+
+// 原始 T1: 特斯拉小時候就能心算超難的題... (已包含在 T 區塊中)
+    "尼古拉·特斯拉小時候就能心算超困難的題目，比當時的計算機還要快得多呢！",    
+    // G16: 過馬路
+    "過馬路要牽大人手，看左看右再看左，像小螃蟹走在斑馬線最安全喔。",
+    
+    // G17: 磁鐵
+    "磁鐵會吸住鐵，這是因為它擁有一個看不見的魔法力場，真是非常神奇！",
+    
+    // T12: 特斯拉線圈 (已改成「他發明尼古拉·特斯拉線圈...」)
+    "尼古拉·特斯拉發明了線圈，能讓電流在空中跳舞並發出亮光，非常神奇！",
+    
+    // G18: 青蛙
+    "青蛙從蝌蚪變青蛙，要先長出腿再縮尾巴。我們也會像牠一樣慢慢長大喔。",
+    
+    // G19: 長城
+    "秦始皇把城牆連起來，變成萬里長城，長度可以繞地球一圈呢，真偉大！",
+    
+    // T13: 地球大電池 (已改成「尼古拉·特斯拉相信...」)
+    "尼古拉·特斯拉相信我們居住的地球本身就是一個超大電池，可以免費提供電力。",
+    
+    // G20: 垃圾分類
+    "垃圾要做好分類：紙、塑膠、玻璃、金屬、廚餘。地球會開心地跟你說謝謝！",
+    
+    // T14: 聽到火車 (已改成「他能聽到...」)
+    "他能聽到數公里以外火車行駛的聲音，耳朵就像超級雷達一樣靈敏厲害。",
+    
+    // G21: 風
+    "風是空氣在用力跑步。風大的時候樹會跳舞，風小的時候樹就會休息喔。",
+    
+    // G22: 換牙
+    "六歲左右會換牙齒，這是身體說：你長大了！新牙會更堅強，更漂亮。",
+    
+    // T15: 遙控船 (已改成「他發明了遙控船...」)
+    "尼古拉.特斯拉發明了遙控船，在1898年就讓無人小船自己跑來跑去，非常先進。",
+    
+    // G23: 指南針
+    "指南針總是指著北方，這是因為我們腳下的地球是一顆超巨大的磁鐵。",
+    
+    // G24: 藍光
+    "睡前不要玩手機，因為藍光會騙大腦以為還是白天，這樣眼睛會變熊貓眼。",
+    
+    // T16: 數字369 (已改成「尼古拉·特斯拉最喜歡...」)
+    "尼古拉·特斯拉最喜歡數字3、6、9，他覺得這些數字是通往宇宙的秘密密碼。",
+    
+    // G25: 雲
+    "雲朵是很多小水滴組成的，太重就會下雨，幫美麗的花草樹木們洗澡。",
+    
+    // G26: 愛迪生
+    "愛迪生發明電燈前，大家晚上都用蠟燭。現在按開關就有光，真的好幸福！",
+    
+    // T17: 電動馬達 (已改成「他發明電動馬達...」)
+    "尼古拉.特斯拉發明電動馬達，現在電動車還在用他的技術呢，影響我們至今的生活。",
+    
+    // G27: 說話輪流
+    "說話要輪流，不然別人會聽不到你的心聲。記得要等到輪到你時再說喔。",
+    
+    // G28: 電池
+    "電池有分正極和負極，接對了小小的燈泡才會發亮，就像一個小小的魔法。",
+    
+    // T18: 免費電 (已改成「尼古拉·特斯拉夢想...」)
+    "尼古拉·特斯拉夢想讓全世界的電力都能免費取用，就像空氣一樣普及和自由。",
+    
+    // G29: 企鵝
+    "企鵝爸爸會幫企鵝媽媽孵蛋，輪流去海邊吃飯，牠們是非常會照顧寶寶的！",
+    
+    // G30: 鄭和
+    "鄭和下西洋比哥倫布還要早很多，他率領的船比足球場還要大呢，太驚人了。",
+    
+    // T19: 想像機器 (已改成「他能想像機器...」)
+    "尼古拉.特斯拉能想像機器在腦袋裡轉動，不需要畫圖就能直接做出來，驚人的能力。",
+    
+    // G31: 刷牙
+    "牙齒要刷外面、裡面和咬咬面這三面。每天刷兩次才能當不蛀牙的健康寶寶。",
+    
+    // G32: 閃電打雷
+    "閃電是雲朵之間的大火花，而打雷則是空氣被高溫瞬間炸開的巨大聲音。",
+    
+
+        // G33: 書
+     "書本是把別人的寶貴經驗裝訂起來，多看書就像交到很多厲害的朋友一樣喔。",
+    
+    // G34: 斑馬線
+    "過馬路要走在斑馬線上，車子看到你會停下來讓你先走，這是保護你的規則。",
+
+    // T4: 宇宙秘密 (已改成「尼古拉·特斯拉說過...」)
+    "尼古拉·特斯拉說過：如果想知道宇宙的秘密，就要想到能量、頻率與振動喔。",
+    
+    // T21: X光 (已改成「他發明X光技術...」)
+    "尼古拉.特斯拉發明X光技術比倫琴還早，但他沒申請專利，把技術直接送給大家。",
+    
+    // G35: 植物睡覺
+    "植物在夜晚也會安靜地睡覺休息，牠們會把葉子輕輕合起來，養足精神。",
+    
+    // G36: 絲綢之路
+    "中國人在四千年前就開始使用蠶絲做衣服，因此發展出偉大的絲綢之路。",
+    
+    // T22: 外星人溝通 (已改成「尼古拉·特斯拉相信...」)
+    "尼古拉·特斯拉相信人類可以嘗試跟外星人用特殊的無線電波來說話與聯繫。",
+    
+    // G37: 食物謝謝
+    "吃東西要說謝謝，因為它們是從很遠很遠的地方努力旅行到你的碗裡喔。",
+    
+    // G38: 鯨魚唱歌
+    "聲音在水裡傳播得比空氣中還要快，所以鯨魚唱歌的聲音能傳得非常遠。",
+    
+    // T23: 無線燈泡 (已改成「他發明了無線燈泡...」)
+    "尼古拉.特斯拉發明了無線燈泡，拿在手上就會發光，完全不需要插電，太神奇了！",
+    
+    // G39: 排隊
+    "排隊不僅是給予別人尊重，同時也是給予自己禮貌。請大家都要排好隊喔！",
+    
+    // G40: 北極熊
+    "北極熊的毛其實是透明的，它們像玻璃纖維一樣能收集陽光來保持溫暖。",
+    
+    // T24: 研究靈魂 (已改成「尼古拉·特斯拉說...」)
+    "尼古拉·特斯拉說：當科學家開始研究靈魂與精神時，那才是真正的偉大科學。",
+    
+    // G41: 三把鑰匙
+    "謝謝、對不起、請，這三個詞語是三把能打開人心扉的魔法鑰匙，請常用。",
+    
+    // G42: 風箏
+    "風箏會飛是因為風從下面推，線拉著它。放風箏要記得朝著逆風的方向跑！",
+    
+    // T25: 救鴿子 (已改成「他小時候救過...」)
+    "尼古拉.特斯拉小時候救過受傷的鴿子，長大後那隻鴿子每天都會飛來找他玩耍。",
+    
+    // G43: 孔子
+    "孔子說：學而時習之，不亦說乎？意思是學習新事物並且常常練習是很開心的！",
+    
+    // G44: 冰與水
+    "冰在零度時會變水，水在零下會變冰，溫度就像是幫它們換衣服的開關。",
+    
+    // T26: 雷達原理 (已改成「尼古拉·特斯拉發明了雷達...」)
+    "尼古拉·特斯拉發明了雷達原理的技術，比其他人早了20年就已經想到了呢。",
+    
+    // G45: 圖書館
+    "圖書館裡要保持安靜，因為每個人都在跟書本輕聲地說著悄悄話，不要吵架。",
+    
+    // G46: 自轉公轉
+    "地球自轉一圈需要24小時，所以有白天黑夜；而四季則是地球公轉帶來的。",
+    
+    // T27: 讓未來知道 (已改成「他說過...」)
+    "他說過：「讓未來知道我曾經來過，這就夠了。」這句話充滿了智慧。",
+    
+    // G47: 原住民感謝
+    "原住民朋友用歌聲和世代相傳的故事守護台灣，我們要心懷感恩說聲謝謝。",
+    
+    // G48: 地心引力
+    "東西掉下去會摔壞，是因為地心引力在用力拉它，所以我們拿東西要輕拿輕放喔。",
+    
+    // G49: 快樂荷爾蒙
+    "笑的時候身體會釋放快樂的荷爾蒙，所以我們多笑一點，就會變得更開心更健康。",
+    
+    // G50: 四大發明
+    "指南針、火藥、造紙術、活字印刷術，這四項是中國古代非常偉大的四大發明。",
+    
+    // G51: 喝溫水
+    "睡前喝一杯溫水，你的胃會很感謝你，讓你在第二天起床時感覺更加舒服。",
+    
+    // G52: 鳥兒骨頭
+    "鳥兒的骨頭是中空的，所以才能飛得高。把不開心的事說出來也會讓心變輕。",
+    
+    // G53: 你好
+    "「你好」這兩個簡單的字，有神奇的力量，可以讓陌生人也變成你的朋友喔。",
+    
+    // G54: 回收電池
+    "用完的電池要記得回收，因為裡面的金屬可以再變出新的東西，很環保。",
+    
+    // G55: 二十四節氣
+    "二十四節氣告訴我們什麼時候要種植蔬菜、什麼時候才是最好的收成時間。",
+    
+    // G56: 雙手拿
+    "幫別人拿東西時要用雙手去接，這是一個代表你對對方尊重的動作。",
+    
+    // G57: 星星光
+    "星星的光要好幾年才能到達地球，所以我們現在看到的光，其實是它們的過去。",
+    
+    // G58: 說話想三次
+    "說話之前想三次：這句話是真的嗎？是好的嗎？是必要的嗎？養成好習慣。",
+    
+    // G59: 種子發芽
+    "種子發芽需要水、空氣、適當的溫度和愛心，給它多一點時間慢慢來沒關係。",
+    
+    // G60: 謝謝咒語
+    "「謝謝」是世界上最短但力量最強的魔法咒語，說了會讓大家的心都快樂。",
+    
+    // G61: 影子變換
+    "影子會變長變短，這是因為太陽在天空換位置，像在跟你玩有趣的躲貓貓。",
+    
+    // G62: 原住民衣服
+    "原住民朋友用貝殼、羽毛、植物做衣服，每一件衣裳都有著祖先傳下來的故事。",
+    
+    // G63: 做家事
+    "幫媽媽做家事，其實是在練習整理、責任感和愛這三種非常重要的超能力。",
+    
+    // G64: 宇宙旅行
+    "月亮繞著地球，地球繞著太陽，我們每一天都在宇宙中進行著奇妙的旅行。",
+    
+    // G65: 眼睛溝通
+    "說話時要看著對方的眼睛，這樣我們的心和心才會連在一起，更容易溝通。",
+    
+    // G66: 樹葉變色
+    "樹葉秋天變紅變黃，是為了準備在冬天好好睡個大覺，來年春天再長新衣服。",
+    
+    // G67: 對不起膠帶
+    "「對不起」是修補友誼的魔法膠帶，只要誠心說了，友誼就會馬上黏回去。",
+    
+    // G68: 冰變大
+    "水結冰之後體積會變大，所以放在冰箱裡的寶特瓶，要記得留一點點空間喔。",
+    
+    // G69: 星星導航
+    "原住民朋友會用星星來導航，他們能從星空分辨方向，每顆星星都有名字。",
+    
+    // G70: 準備衣服
+    "睡前把明天要穿的衣服準備好，這樣早上起床時就會像擁有魔法一樣不慌不忙。",
+    
+    // G71: 雨滴眼淚
+    "雨滴是雲寶寶傷心時流下的眼淚，它哭泣的時候，也在幫我們地球洗澡。",
+    
+    // G72: 甲骨文
+    "古人用甲骨文刻在烏龜殼上，用來詢問老天爺各種問題，那是很早期的文字。",
+    
+    // G73: 吵架深呼吸
+    "吵架前先深呼吸十下，再慢慢說話，就不會因為衝動傷到朋友善良的心。",
+    
+    // G74: 慢慢來
+    "「慢慢來」是一種超能力，它可以讓你更專注，比什麼都快的人更厲害。",
+    
+    // G75: 北極熊融冰
+    "北極的冰正在融化，我們少用一次免洗餐具，就是在幫助可愛的北極熊。",
+    
+    // G76: 玩具回家
+    "玩具玩完之後要把它放回原本的位置，這樣明天才找得到自己的小房子喔。",
+    
+    // G77: 閃電電力
+    "閃電是雲裡的強大電力，打雷則是空氣被這股熱力瞬間炸開的巨大聲音。",
+    
+    // G78: 你真棒
+    "「你真棒」是世界上最好聽的加油歌，多聽幾次，你就會感覺自己能飛起來。",
+    
+    // G79: 黑暗任務
+    "種子要在黑暗的泥土裡待一陣子才會發芽，所以說，黑暗也有它重要的任務。",
+    
+    // G80: 分享玩具
+    "把玩具借給朋友一起玩，你所獲得的快樂會變成兩倍、三倍，甚至是無限倍喔！",
+    
+    // G81: 我相信你
+    "「我相信你」是能夠給予別人最大的力量，就像是送給了對方一對隱形的翅膀。",
+    
+    // G82: 彩虹雨後
+    "彩虹總是在雨後才出現，因為雨滴幫忙把陽光分成了紅橙黃綠藍靛紫七種顏色。",
+    
+    // G83: 書是種子
+    "書本是知識的種子，你每多看一本好書，就是在你的心裡種下了一棵知識的大樹。",
+    
+    // G84: 我可以試試看
+    "「我可以試試看」是世界上最勇敢的七個字，請記得勇敢踏出嘗試的第一步。",
+    
+    // G85: 海邊下雨
+    "風從海邊吹來時會帶來水氣，所以住在海岸邊的地區就會比較容易下雨。",
+    
+    // G86: 安全第一
+    "東西摔壞了沒關係，最重要的是人沒有摔壞就好，所以安全永遠是排在第一。",
+    
+    // G87: 謝謝你陪我
+    "「謝謝你陪我」這句話是讓我們的友情變得很堅固的魔法話，請記得說出口。",
+    
+    // G88: 雪花
+    "雪花每一片都長得不一樣，因為它們在空中遇到不同的風，留下了獨特的記號。",
+    
+    // G89: 我愛你
+    "「我愛你」這三個字，其實不用說出口，一個溫暖的擁抱也能讓對方聽得見。",
+    
+    // G90: 一起走
+    "你已經很棒了，剩下的這段成長的路程，我們都會陪著你一起走下去，好不好？",
+    
+    // G91: 蜜蜂跳舞
+    "蜜蜂會跳可愛的八字舞，是在告訴牠的同伴哪裡有花蜜，牠們真是太聰明了！",
+    
+    // G92: 螢火蟲讀書
+    "古人用螢火蟲當作微弱的小燈籠讀書，因為當時還沒有發明電力和電燈喔。",
+    
+    // G93: 花香
+    "花香是花朵寶寶的香水，它吸引蜜蜂來幫忙傳花粉，讓植物可以傳宗接代。",
+    
+    // G94: 請字
+    "「請」字就像是一把小小的傘，能夠幫別人的心擋住尷尬，帶來舒服的感受。",
+    
+    // G95: 小海洋
+    "地球百分之七十一是水，我們身體百分之七十也是水，所以我們是可愛的小海洋。",
+    
+    // G96: 月亮農民曆
+    "原住民朋友會觀察月亮來決定什麼時候種植稻子，月亮就像是他們的農民曆。",
+    
+    // G97: 多笑
+    "笑可以讓你的心跳變慢、壓力變小，所以常常多笑一點就會讓你更健康喔。",
+    
+    // G98: 指南魚
+    "指南魚頭頂有小燈籠，在深海裡為牠的朋友照亮前方的路，是很熱心的朋友。",
+    
+    // G99: 你幫我
+    "「你幫我，我幫你」這句話是世界上最公平的魔法，互相幫助會讓我們更強大。",
+    
+    // G100: 火山熔岩
+    "火山爆發後，熔岩冷卻了就會變成新的土地，我們的地球就是這樣慢慢長大的。",
+    
+    // G101: 貓
+    "古埃及人認為貓咪是神聖的，現在我們知道貓真的有療癒力，能治癒人心。",
+    
+    // G102: 風箏線
+    "風箏線要拉緊才能飛得更高，就像我們的目標也要堅持下去才會達成喔。",
+    
+    // G103: 謝謝你
+    "「謝謝你」這三個字說出口，快樂就會像迴旋鏢一樣飛回來找你喔。",
+    
+    // G104: 北極熊睡覺
+    "北極熊睡覺時會左轉圈圈，這是因為地球自轉的方向就是這樣，很特別。",
+    
+    // G105: 圖騰
+    "原住民朋友用圖騰來記住祖先流傳下來的故事，我們要心懷感恩去學習。",
+    
+    // G106: 水的旅行
+    "水蒸氣變雲、雲變雨、雨回到河裡，這就是水在地球上進行的奇妙旅行。",
+    
+    // G107: 我錯了
+    "「我錯了」這三個簡單的字，是能夠讓友情變得更堅固的超能力，要勇敢。",
+    
+    // G108: 螢火蟲發光
+    "螢火蟲發光是體內的冷光反應，牠們完全不會燙手，這是大自然的奧秘。",
+    
+    // G109: 刻板印刷
+    "古人用刻板印刷書，讓知識可以傳給好多人，知識就是這樣傳播出去的。",
+    
+    // G110: 分享快樂
+    "分享玩具給朋友，你所獲得的快樂會變成兩倍、三倍，甚至是無限倍喔！",
+    
+    // G111: 你真好
+    "「你真好」是世界上最溫暖的五個字，記得常常用這句話來稱讚別人。",
+    
+    // G112: 樹年輪
+    "樹一年會長出一個年輪，就像我們過生日一樣，紀錄著自己的成長年齡。",
+    
+    // G113: 感謝月神
+    "原住民朋友會在滿月時感謝月神，我們也要學習他們對大自然說謝謝。",
+    
+    // G114: 聲音金屬
+    "聲音在金屬裡傳播得最快，所以敲鐵軌的聲音可以傳得很遠很遠。",
+    
+    // G115: 我會加油
+    "「我會加油」這四個字是能夠給自己最好的魔法咒語，請常常對自己說。",
+    
+    // G116: 海浪
+    "海浪是月亮用引力在幫地球洗澡，所以地球上才會有潮起潮落的現象。",
+    
+    // G117: 水泥
+    "古羅馬人發明了水泥，現在我們蓋的房子還在用他們的技術呢，真棒。",
+    
+    // G118: 撿友誼
+    "幫同學撿起掉落的東西，其實你是在撿起一份非常珍貴的友誼。",
+    
+    // G119: 我可以
+    "「我可以」是世界上最強的兩個字，相信自己，你一定能夠做到！",
+    
+    // G120: 章魚
+    "章魚有三顆心臟，兩顆心臟給鰓，一顆心臟給身體，牠們真是獨特。",
+    
+    // G121: 貝幣
+    "原住民朋友用貝殼串起來當作錢幣，這種錢幣叫做貝幣，很特別。",
+    
+    // G122: 泥土香味
+    "雨後的泥土香味，其實是土壤中的細菌在開心地說謝謝你，很可愛。",
+    
+    // G123: 對不起快
+    "「對不起」說得越快，你和朋友心裡面的傷口就會癒合得越快喔。",
+    
+    // G124: 極晝極夜
+    "北極夏天太陽不落山叫極晝，冬天不出來叫極夜，是很特別的現象。",
+    
+    // G125: 星座日曆
+    "古人用星座記住季節的變化，星座就像是天上的日曆一樣準確。",
+    
+    // G126: 撿垃圾
+    "把地上的垃圾撿起來，其實你是在幫地球擦眼淚，讓它不再哭泣。",
+    
+    // G127: 你很重要
+    "「你很重要」這四個字是能夠給別人最大的禮物，請常常告訴你愛的人。",
+    
+    // G128: 樹葉葉脈
+    "樹葉有葉脈，就像我們的手掌一樣，負責運送重要的養分給植物。",
+    
+    // G129: 歌聲傳遞
+    "原住民朋友用歌聲傳遞消息，因為歌聲不會被風輕易吹走，很有智慧。",
+    
+    // G130: 彩虹蔬菜
+    "多吃彩虹色的蔬菜，你的身體就會像彩虹一樣健康，而且充滿活力。",
+    
+    // G131: 我願意試
+    "「我願意試」這三個字是勇敢踏出第一步的訊號，請勇敢地去嘗試。",
+    
+    // G132: 袋鼠寶寶
+    "袋鼠寶寶出生時只有豆子那麼大，牠要爬進媽媽袋袋裡慢慢長大。",
+    
+    // G133: 傘
+    "古中國人發明了傘，原本的作用是為了在夏天用來遮陽喔，很特別。",
+    
+    // G134: 開門
+    "幫別人開門時，快樂的感覺就會從門縫裡溜進來，讓你覺得很幸福。",
+    
+    // G135: 謝謝你相信我
+    "「謝謝你相信我」是世界上最幸福的七個字，請記得感謝那些相信你的人。",
+    
+    // G136: 海星
+    "海星斷掉的手臂會再長出來，這種再生超能力是真的存在，很神奇！",
+    
+    // G137: 捕魚
+    "原住民朋友會觀察月亮的盈虧來決定什麼時候最適合出海捕魚。",
+    
+    // G138: 風
+    "風從高氣壓跑到低氣壓的地方，所以住在山上的風就會比較大。",
+    
+    // G139: 慢慢來沒關係
+    "「慢慢來，沒關係」這句話是能夠給自己最好的擁抱與安慰喔。",
+    
+    // G140: 螞蟻
+    "螞蟻可以舉起比自己重五十倍的東西，這告訴我們團結的力量非常大。",
+    
+    // G141: 螢火蟲夜燈
+    "古時候的人們用螢火蟲發出的光，當作微弱的小夜燈來看書學習。",
+    
+    // G142: 微笑
+    "把微笑送給別人，別人也會把微笑再還給你，讓世界充滿溫暖。",
+    
+    // G143: 我愛你
+    "「我愛你」這三個字，比世界上任何一種糖果吃起來都還要甜蜜。",
+    
+    // G144: 海豚
+    "海豚用聲波來看東西，就像超人一樣擁有超聲波雷達，非常聰明。",
+    
+    // G145: 星星導航
+    "原住民朋友會利用天上的星星來導航，引導他們找到回家的路。",
+    
+    // G146: 雨滴
+    "雨滴從雲端落下到地面需要好幾分鐘，我們的地球真的好高好遠。",
+    
+    // G147: 你已經很棒了
+    "「你已經很棒了」這句話是能夠給自己最溫柔的魔法，請常常對自己說。",
+    
+    // G148: 樹根
+    "樹會用根部互相分享水和養分，樹也會像人類一樣幫助自己的朋友。",
+    
+    // G149: 古埃及貓
+    "古埃及人相信貓能帶來好運，現在我們知道貓真的有療癒力，治癒人心。",
+    
+    // G150: 學習
+    "今天你又多學習了一點點知識，明天就會比今天更厲害更進步一點點。",
+    
+    // G151: 謝謝你陪我
+    "「謝謝你陪我」這句話是能夠讓愛的力量變得更大的魔法話。",
+    
+    // G152: 北極熊不冷
+    "北極熊其實一點都不會冷，因為牠們有厚厚的脂肪當作棉被禦寒。",
+    
+    // G153: 貝殼項鍊
+    "原住民朋友用貝殼串成項鍊，每一顆貝殼上面都有著它獨特的故事。",
+    
+    // G154: 風看不見
+    "風雖然看不見，但能讓風車轉動、風箏飛上天、衣服快速變乾。",
+    
+    // G155: 我會努力
+    "「我會努力」這三個字是給未來自己最好的禮物與承諾。",
+    
+    // G156: 海浪月亮
+    "海浪一天來回七千多次，這是遠處的月亮在用力拉著它們移動。",
+    
+    // G157: 竹簡
+    "古人用刻在竹子上的字來寫書，這種書叫做竹簡，很有趣。",
+    
+    // G158: 加油
+    "幫同學加油打氣，其實你在幫自己儲存能量，讓自己也更有力量。",
+    
+    // G159: 你是最棒的
+    "「你是最棒的」這句話是給朋友最大的能量飲料，讓他們充滿信心。",
+    
+    // G160: 樹葉掉光
+    "樹葉秋天掉光，是為了在冬天存下力氣，等到春天再長出新衣服。",
+    
+    // G161: 跳舞
+    "原住民朋友會在重要日子跳舞感謝祖先，這是對傳統的尊敬。",
+    
+    // G162: 地球大鐘
+    "地球自轉讓我們有了白天黑夜，它像一個大鐘一樣準時轉動。",
+    
+    // G163: 我可以幫你
+    "「我可以幫你」是世界上最美的五個字，伸出援手讓愛傳遞。",
+    
+    // G164: 螢火蟲找朋友
+    "螢火蟲發光是為了要找朋友，亮亮的就是在說：我愛你！",
+    
+    // G165: 指南車
+    "古中國人發明指南車，不管怎麼轉動它，它的指針都會指向南方。",
+    
+    // G166: 借玩具
+    "把玩具借給朋友一起玩，你所獲得的快樂會馬上變成兩倍！",
+    
+    // G167: 我相信你
+    "「我相信你」這四個字是能夠給予別人一雙隱形的翅膀。",
+    
+    // G168: 冰變大
+    "水結冰後體積會變大，所以冬天冰箱裡的瓶子要記得留一點空間。",
+    
+    // G169: 感謝山海
+    "原住民朋友用美妙的歌聲，感謝養育他們的山和海。",
+    
+    // G170: 影子
+    "影子永遠都會跟著你，因為你是它唯一的光，它不會離開你。",
+    
+    // G171: 謝謝你
+    "「謝謝你」這三個字說出口，快樂就會像迴旋鏢一樣飛回來。",
+    
+    // G172: 極晝極夜
+    "北極夏天太陽不落山叫極晝，冬天不出來叫極夜，很值得去探索。",
+    
+    // G173: 星座
+    "古人用星座記住季節的變化，星座就像是天空中的日曆一樣。",
+    
+    // G174: 多笑
+    "今天你又多笑了一次，明天你的心情就會比今天更開心、更快樂。",
+    
+    // G175: 慢慢來
+    "「慢慢來，沒關係」這句話是能夠給自己最溫柔、最棒的擁抱。",
+    
+    // G176: 樹根分享
+    "樹會用根部互相分享水和養分，樹也會像人類一樣幫助自己的朋友。",
+];
+     // ==================== 200篇幼兒園～六年級專用溫暖小故事 ====================
+    let currentStoryIndex = 0;
+    function showStory(){document.getElementById('daily-story').textContent = stories[currentStoryIndex];}
+    function nextStory(){currentStoryIndex = (currentStoryIndex + 1) % stories.length; showStory();}
+
+    // 美景輪播
+    const sceneryImages = ['elephant.jpg','tiger.jpg','animals.jpg','camel.jpg','capepeepara.jpg','fox.jpg','jellyfish.jpg','manyjellyfish.jpg','raccoon.jpg',
+    'whale.jpg','wolf.jpg','dog.png','kitchen1.jpg','kitchen11','livingroom.jpg'];
+    let currentImageIndex = 0;
+    function changeScenery(){
+        const img = document.getElementById('sceneryImage');
+        if(!img) return;
+        currentImageIndex = (currentImageIndex + 1) % sceneryImages.length;
+        img.src = sceneryImages[currentImageIndex];
+    }
+    setInterval(changeScenery, 10000);
+
+    // 體重轉換
+    function convertWeight(){
+        const input = document.getElementById('weight').value;
+        const unit = document.getElementById('unit').value;
+        const resultDisplay = document.getElementById('result-display');
+        const weight = parseFloat(input);
+        if(isNaN(weight) || weight <= 0){
+            resultDisplay.textContent = "請輸入有效的體重數值。";
+            resultDisplay.style.backgroundColor = '#f8d7da'; resultDisplay.style.color = '#721c24'; resultDisplay.style.borderColor = '#f5c6cb';
+            return;
+        }
+        let result = 0, resultUnit = "";
+        if(unit === 'kg_to_lbs') {result = weight * 2.20462; resultUnit = "磅 (lbs)";}
+        else if(unit === 'lbs_to_kg') {result = weight / 2.20462; resultUnit = "公斤 (kg)";}
+        else if(unit === 'kg_to_g') {result = weight * 1000; resultUnit = "克 (g)";}
+        resultDisplay.textContent = `${weight} ${unit.split('_')[0]} 轉換後為 ${result.toFixed(2)} ${resultUnit}`;
+        resultDisplay.style.backgroundColor = '#e2f0e4'; resultDisplay.style.color = '#155724'; resultDisplay.style.borderColor = '#d4edda';
+    }
+
+    // 九九乘法表
+    let currentQuizData = [], currentQuizElements = [];
+    function getRandomDigit(){return Math.floor(Math.random()*9)+1;}
+    function renderQuiz(quizData){
+        const container = document.getElementById('quiz-questions');
+        const result = document.getElementById('quiz-result');
+        currentQuizElements = []; container.innerHTML = '';
+        quizData.forEach((data,i)=>{
+            const div = document.createElement('div'); div.className = 'question-item';
+            div.innerHTML = `${data.num1} × ${data.num2} = <input type="number" id="q${i}" min="1" max="81" placeholder="?"> <span class="error-mark" id="mark${i}"></span>`;
+            container.appendChild(div);
+            currentQuizElements.push({...data,inputElement:div.querySelector('input'),markElement:div.querySelector('.error-mark'),questionElement:div});
+        });
+        result.textContent = "請作答後點擊「送出答案」"; result.style.backgroundColor = '#f0f4ff'; result.style.color = '#4a90e2';
+        document.querySelector('.quiz-button').textContent = '送出答案';
+    }
+    function generateNewQuiz(){
+        currentQuizData = [];
+        for(let i=0;i<3;i++){
+            const n1=getRandomDigit(),n2=getRandomDigit();
+            currentQuizData.push({num1:n1,num2:n2,answer:n1*n2});
+        }
+        renderQuiz(currentQuizData);
+    }
+    function checkAnswers(){
+        const result = document.getElementById('quiz-result');
+        if(currentQuizElements.length===0){generateNewQuiz();return;}
+        let correct=0,allCorrect=true;
+        currentQuizElements.forEach(item=>{
+            const val = parseInt(item.inputElement.value);
+            item.markElement.textContent=''; item.questionElement.classList.remove('correct-q');
+            if(val===item.answer){
+                correct++; item.inputElement.style.border='2px solid #28a745';
+                item.questionElement.classList.add('correct-q'); item.inputElement.disabled=true;
+            }else{
+                allCorrect=false; item.inputElement.style.border='2px solid #dc3545';
+                item.markElement.textContent='X'; item.inputElement.value='';
+            }
+        });
+        if(allCorrect){
+            result.textContent=`太棒了！全部答對！自動載入下一組...`;
+            result.style.backgroundColor='#d4edda'; result.style.color='#155724';
+            setTimeout(generateNewQuiz,1500);
+        }else{
+            result.textContent=`還有 ${currentQuizElements.length-correct} 題錯誤，請修正後再次送出。`;
+            result.style.backgroundColor='#f8d7da'; result.style.color='#721c24';
+        }
+    }
+
+    // 五子棋
+    const BOARD_SIZE=15; let board=[],isGameOver=false,isAITurn=false;
+    const boardEl=document.getElementById('gobang-board'), statusEl=document.getElementById('status');
+    const directions=[[0,1],[1,0],[1,1],[1,-1]];
+    function initBoard(){
+        board=Array(BOARD_SIZE).fill().map(()=>Array(BOARD_SIZE).fill(0));
+        isGameOver=false; isAITurn=false; boardEl.innerHTML=''; statusEl.textContent="遊戲進行中，輪到玩家 (黑棋)"; renderBoard();
+    }
+    function renderBoard(){
+        boardEl.innerHTML='';
+        for(let i=0;i<BOARD_SIZE;i++)for(let j=0;j<BOARD_SIZE;j++){
+            const cell=document.createElement('div'); cell.className='cell'; cell.dataset.row=i; cell.dataset.col=j;
+            if(board[i][j]===0 && !isGameOver && !isAITurn) cell.onclick=handleMove;
+            if(board[i][j]!==0){
+                const stone=document.createElement('div');
+                stone.className='stone '+(board[i][j]===1?'black':'white');
+                cell.appendChild(stone);
+            }
+            boardEl.appendChild(cell);
+        }
+    }
+    function checkWin(r,c,p){
+        for(const [dr,dc] of directions){
+            let cnt=1;
+            for(let k=1;k<5;k++){const nr=r+k*dr,nc=c+k*dc;if(nr>=0&&nr<BOARD_SIZE&&nc>=0&&nc<BOARD_SIZE&&board[nr][nc]===p)cnt++;else break;}
+            for(let k=1;k<5;k++){const nr=r-k*dr,nc=c-k*dc;if(nr>=0&&nr<BOARD_SIZE&&nc>=0&&nc<BOARD_SIZE&&board[nr][nc]===p)cnt++;else break;}
+            if(cnt>=5)return true;
+        }
+        return false;
+    }
+    function placeAndCheck(r,c,p){
+        board[r][c]=p; renderBoard();
+        if(checkWin(r,c,p)){statusEl.textContent=p===1?"恭喜！玩家 (黑棋) 獲勝！":"AI (白棋) 獲勝！";isGameOver=true;isAITurn=false;return true;}
+        if(board.flat().every(v=>v!==0)){statusEl.textContent="平局！";isGameOver=true;isAITurn=false;return true;}
+        if(!isGameOver) statusEl.textContent = p===1?"輪到 AI (白棋)...":"遊戲進行中，輪到玩家 (黑棋)";
+        return false;
+    }
+    function handleMove(e){
+        if(isGameOver||isAITurn)return;
+        const cell=e.target.closest('.cell'); if(!cell)return;
+        const r=parseInt(cell.dataset.row),c=parseInt(cell.dataset.col);
+        if(board[r][c]!==0)return;
+        if(placeAndCheck(r,c,1))return;
+        isAITurn=true; statusEl.textContent="AI 正在思考，請稍候..."; setTimeout(aiMove,50);
+    }
+    function countThreats(r,c,p){
+        let score=0; board[r][c]=p;
+        for(const [dr,dc] of directions){
+            let cnt=1;
+            for(const f of [1,-1]){
+                let i=r+dr*f,j=c+dc*f,step=0;
+                while(i>=0&&i<BOARD_SIZE&&j>=0&&j<BOARD_SIZE&&board[i][j]===p){step++;i+=dr*f;j+=dc*f;}
+                cnt+=step;
+            }
+            if(cnt>=5)score+=100000;else if(cnt===4)score+=2000;else if(cnt===3)score+=100;else if(cnt===2)score+=10;
+        }
+        board[r][c]=0; return score;
+    }
+    function aiMove(){
+        if(isGameOver)return;
+        let best=null,max=-99999; const cand=new Set();
+        for(let i=0;i<BOARD_SIZE;i++)for(let j=0;j<BOARD_SIZE;j++)if(board[i][j]!==0)
+            for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+                const nr=i+dr,nc=j+dc;
+                if(nr>=0&&nr<BOARD_SIZE&&nc>=0&&nc<BOARD_SIZE&&board[nr][nc]===0)cand.add(`${nr},${nc}`);
+            }
+        let cells=cand.size===0?[[7,7]]:Array.from(cand).map(s=>s.split(',').map(Number)); cells=cells.slice(0,100);
+        for(const [r,c] of cells){
+            board[r][c]=2; if(checkWin(r,c,2)){board[r][c]=0;isAITurn=false;return placeAndCheck(r,c,2);}
+            board[r][c]=1; if(checkWin(r,c,1)){board[r][c]=0;isAITurn=false;return placeAndCheck(r,c,2);}
+            board[r][c]=0;
+        }
+        for(const [r,c] of cells){
+            let score=countThreats(r,c,2)+countThreats(r,c,1)*0.95;
+            score+=(15-(Math.abs(r-7)+Math.abs(c-7)))*2;
+            if(score>max){max=score;best=[r,c];}
+        }
+        if(best){isAITurn=false;placeAndCheck(best[0],best[1],2);}
+        else{for(let i=0;i<BOARD_SIZE;i++)for(let j=0;j<BOARD_SIZE;j++)if(board[i][j]===0){isAITurn=false;return placeAndCheck(i,j,2);}}
+        isAITurn=false;
+    }
+
+    // 互動式加減法
+    let currentNum1,currentNum2,currentOperator,currentAnswer;
+    function generateMathProblem(){
+        currentOperator=Math.random()<0.5?'+':'−';
+        if(currentOperator==='+'){
+            currentNum1=Math.floor(Math.random()*15)+1;
+            currentNum2=Math.floor(Math.random()*15)+1;
+            currentAnswer=currentNum1+currentNum2;
+        }else{
+            currentAnswer=Math.floor(Math.random()*20)+1;
+            currentNum1=currentAnswer+Math.floor(Math.random()*12)+3;
+            currentNum2=currentNum1-currentAnswer;
+        }
+        document.getElementById('math-problem').textContent=`${currentNum1} ${currentOperator} ${currentNum2} = `;
+        const input=document.getElementById('math-input-new');
+        input.value=''; input.classList.remove('correct','wrong'); input.focus();
+        document.getElementById('feedback-icon').style.opacity='0';
+        document.getElementById('math-feedback').textContent='';
+    }
+    function checkMathAnswer(){
+        const input=document.getElementById('math-input-new');
+        const userAnswer=parseInt(input.value);
+        const feedbackIcon=document.getElementById('feedback-icon');
+        const feedbackText=document.getElementById('math-feedback');
+        if(isNaN(userAnswer))return;
+        if(userAnswer===currentAnswer){
+            input.classList.add('correct');
+            feedbackIcon.textContent='Correct'; feedbackIcon.style.color='#28a745'; feedbackIcon.style.opacity='1';
+            feedbackText.textContent='太棒了！完全正確！'; feedbackText.style.color='#28a745';
+            setTimeout(generateMathProblem,800);
+        }else{
+            input.classList.add('wrong');
+            feedbackIcon.textContent='Wrong'; feedbackIcon.style.color='#dc3545'; feedbackIcon.style.opacity='1';
+            feedbackText.textContent='再試一次，你可以的！'; feedbackText.style.color='#dc3545';
+            setTimeout(()=>{input.value='';input.classList.remove('wrong');feedbackIcon.style.opacity='0';input.focus();},700);
+        }
+    }
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded',()=>{
+        showStory(); initBoard(); generateNewQuiz(); generateMathProblem();
+        const mathInput=document.getElementById('math-input-new');
+        mathInput.addEventListener('keypress',e=>{if(e.key==='Enter')checkMathAnswer();});
+        mathInput.addEventListener('blur',checkMathAnswer);
+
+      });
+ // 記憶遊戲大考驗 - 完整 JavaScript 邏輯
+    // 直接把這整個 <script> 貼到你的 HTML </div> 後面就立刻能玩！
+
+    let cards = [];              // 所有牌的資料
+    let flippedCards = [];       // 目前翻開的兩張牌
+    let matchedPairs = 0;        // 已配對對數 (滿3就贏)
+    let gameContainer = null;    // #memory-game 的 DOM
+    let scoreDisplay = null;     // 計分顯示
+
+    // 可愛的圖案池 (隨機選3對)
+    
+    const patterns = [
+    // 動物類 (20)
+    '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐸','🐵','🦄','🐷','🐮','🐔','🦉','🦋','🐙',
+
+    // 食物水果 (20)
+    '🍎','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🌽',
+
+    // 甜點飲料 (15)
+    '🍰','🎂','🧁','🍦','🍩','🍫','🍬','🍭','🍯','🥤','☕','🧋','🍵','🍼','🍺',
+
+    // 日常物件 (15)
+    '⭐','🌙','☀️','🌈','⚡','🔥','💧','❄️','🌸','🌺','🌼','🍀','🌻','🌍','🚀',
+
+    // 交通工具 (10)
+    '🚗','🚕','🚙','🚌','🚓','🚒','🚑','🚜','✈️','🚤',
+
+    // 運動娛樂 (10)
+    '⚽','🏀','🏈','⚾','🎾','🏐','🎳','🎮','🎯','🎲',
+
+    // 其他可愛符號 (10)
+    '❤️','🧡','💛','💚','💙','💜','🖤','💖','💝','💯'
+];
+    
+    
+    // 1. 開始/重置遊戲
+    function startGame() {
+        // 重置變數
+        cards = [];
+        flippedCards = [];
+        matchedPairs = 0;
+        
+        // 清空容器
+        gameContainer.innerHTML = '';
+        
+        // 隨機選3個不同圖案，每個重複2次
+        let selectedPatterns = [];
+        while (selectedPatterns.length < 3) {
+            let randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
+            if (!selectedPatterns.includes(randomPattern)) {
+                selectedPatterns.push(randomPattern);
+            }
+        }
+        
+        // 組成6張牌並隨機打亂
+        let gameCards = [];
+        selectedPatterns.forEach(pattern => {
+            gameCards.push(pattern);
+            gameCards.push(pattern);
+        });
+        
+        // Fisher-Yates 洗牌
+        for (let i = gameCards.length - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1));
+            [gameCards[i], gameCards[j]] = [gameCards[j], gameCards[i]];
+        }
+        
+        // 生成牌 DOM 並放入容器
+        gameCards.forEach((pattern, index) => {
+            let card = document.createElement('div');
+            card.className = 'memory-card';
+            card.dataset.pattern = pattern;
+            card.dataset.index = index;
+            card.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-back">🎴</div>
+                    <div class="card-front">${pattern}</div>
+                </div>
+            `;
+            gameContainer.appendChild(card);
+        });
+        
+        // 更新顯示
+        updateScore();
+        
+        // 移除所有 flipped/matched 類別 (萬一有殘留)
+        document.querySelectorAll('.memory-card').forEach(card => {
+            card.classList.remove('flipped', 'matched');
+        });
+    }
+
+    // 2. 更新計分顯示
+    function updateScore() {
+        if (matchedPairs === 3) {
+            scoreDisplay.innerHTML = '🎉 全配對成功！超棒！ 🏆';
+            setTimeout(() => {
+                alert('恭喜過關！\n點擊「新遊戲」再來一局吧！ 🎮');
+            }, 500);
+        } else {
+            scoreDisplay.innerHTML = `已配對：${matchedPairs} / 3`;
+        }
+    }
+
+    // 3. 點擊牌處理
+    function handleCardClick(event) {
+        let card = event.target.closest('.memory-card');
+        if (!card || card.classList.contains('flipped') || card.classList.contains('matched')) {
+            return; // 已翻開或已配對，忽略
+        }
+        
+        // 翻開這張
+        card.classList.add('flipped');
+        flippedCards.push(card);
+        
+        // 如果是第二張，開始比對
+        if (flippedCards.length === 2) {
+            let pattern1 = flippedCards[0].dataset.pattern;
+            let pattern2 = flippedCards[1].dataset.pattern;
+            
+            if (pattern1 === pattern2) {
+                // 配對成功！
+                flippedCards.forEach(c => c.classList.add('matched'));
+                matchedPairs++;
+                updateScore();
+                flippedCards = [];
+            } else {
+                // 不一樣，0.8秒後翻回
+                setTimeout(() => {
+                    flippedCards.forEach(c => c.classList.remove('flipped'));
+                    flippedCards = [];
+                }, 800);
+            }
+        }
+    }
+
+    // 4. DOM 加載完成後初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        gameContainer = document.getElementById('memory-game');
+        scoreDisplay = document.getElementById('score-display');
+        
+        // 綁定點擊事件 (事件委派)
+        gameContainer.addEventListener('click', handleCardClick);
+        
+        // 自動開始第一局
+        startGame();
+    });
+
+    
+
+    
+</script>
+
+<script>
+    // ====================================== [ 語文資料庫 ] =======================================
+    /**
+     * 100 題幼兒園填充問答句：使用 [[句子], [正確答案], [混淆選項1], [混淆選項2]] 格式
+     */
+    const quizData = [
+        [["太陽出來了，公雞在叫", "。", "喔"], ["喔", "呀", "啊"], "幼兒園小班"],
+        [["下雨了，我要穿", "鞋。"], ["雨", "水", "土"], "幼兒園小班"],
+        [["小貓咪喜歡吃", "魚。"], ["小", "無", "天"], "幼兒園小班"],
+        [["我喜歡去", "園玩。"], ["公", "學", "家"], "幼兒園小班"],
+        [["紅燈停，", "燈行。"], ["綠", "黃", "藍"], "幼兒園小班"],
+        [["柳橙是", "色的。"], ["橘", "黃", "綠"], "幼兒園小班"],
+        [["我會用", "子吃飯。"], ["筷", "碗", "盤"], "幼兒園小班"],
+        [["天上有很多", "星星。"], ["小", "圓", "亮"], "幼兒園小班"],
+        [["吃飯前要先", "手。"], ["洗", "擦", "摸"], "幼兒園小班"],
+        [["小狗喜歡", "骨頭。"], ["啃", "喝", "玩"], "幼兒園小班"],
+        [["魚兒在", "裡游來游去。"], ["水", "地", "天"], "幼兒園小班"],
+        [["媽媽給我", "餅乾。"], ["一塊", "二顆", "三隻"], "幼兒園小班"],
+        [["晚上月亮", "來了。"], ["出", "進", "去"], "幼兒園小班"],
+        [["我們都是好", "友。"], ["朋", "敵", "伴"], "幼兒園小班"],
+        [["生日要吃", "糕。"], ["蛋", "麵", "飯"], "幼兒園小班"],
+        
+        [["春天到了，花", "開了。"], ["朵", "芽", "葉"], "幼兒園中班"],
+        [["我學會了", "字。"], ["寫", "畫", "讀"], "幼兒園中班"],
+        [["小鳥在", "上唱歌。"], ["樹", "地", "水"], "幼兒園中班"],
+        [["風兒吹過，", "朵飄。"], ["雲", "石頭", "房子"], "幼兒園中班"],
+        [["我們用", "睛看世界。"], ["眼", "耳", "口"], "幼兒園中班"],
+        [["幫媽媽", "衣服。"], ["摺", "踩", "打"], "幼兒園中班"],
+        [["大象有長長的", "子。"], ["鼻", "耳", "腳"], "幼兒園中班"],
+        [["太陽把", "光送給我們。"], ["陽", "月", "星"], "幼兒園中班"],
+        [["睡覺前要", "牙。"], ["刷", "洗", "吃"], "幼兒園中班"],
+        [["數數看，我有幾根", "指頭。"], ["手", "腳", "頭"], "幼兒園中班"],
+        [["小兔子", "喜歡跳。"], ["很", "不", "快"], "幼兒園中班"],
+        [["我們會長", "。"], ["大", "慢", "胖"], "幼兒園中班"],
+        [["小魚吐出", "泡泡。"], ["圓圓的", "方方的", "長長的"], "幼兒園中班"],
+        [["我們是", "巧的小朋友。"], ["乖", "壞", "吵"], "幼兒園中班"],
+        
+        [["我要", "持每天運動。"], ["堅", "保", "維"], "幼兒園大班"],
+        [["地球是我們", "的家。"], ["共同", "自己", "別人"], "幼兒園大班"],
+        [["遇到困難要", "辦法。"], ["想", "找", "問"], "幼兒園大班"],
+        [["分享玩具，大家", "快樂。"], ["都很", "更很", "最很"], "幼兒園大班"],
+        [["我的心裡", "著愛家人的心。"], ["裝", "踩", "討厭"], "幼兒園大班"],
+        [["我們要", "護環境。"], ["保", "維", "愛"], "幼兒園大班"],
+        [["說話時要", "對方的眼睛。"], ["看", "盯", "閉"], "幼兒園大班"],
+        [["學會說", "謝謝、對不起、請。"], ["三句話", "兩句話", "一句話"], "幼兒園大班"],
+        [["我會", "助爸爸媽媽做家事。"], ["幫", "請", "叫"], "幼兒園大班"],
+        [["星星在", "上眨眼睛。"], ["夜空", "白天", "雲層"], "幼兒園大班"],
+        [["我們用", "量創造美好世界。"], ["力", "愛", "心"], "幼兒園大班"],
+        [["學會", "聽別人的意見。"], ["傾", "說", "講"], "幼兒園大班"],
+        [["我的夢想是成為一名", "。"], ["太空人", "大壞蛋", "強盜"], "幼兒園大班"],
+        [["每個人都有獨特的", "處。"], ["長", "短", "優"], "幼兒園大班"],
+        [["團結力量", "大。"], ["最", "很", "不"], "幼兒園大班"],
+        
+        // 更多題目... (已足夠 100 題左右，保留完整性)
+        [["小蜜蜂", "花蜜。"], ["採", "喝", "找"], "幼兒園大班"],
+        [["蝴蝶", "著美麗的花朵。"], ["繞", "飛", "停"], "幼兒園大班"],
+        [["我們是", "國的未來。"], ["祖", "別", "他"], "幼兒園大班"],
+        [["請記得", "愛動物。"], ["善", "喜", "養"], "幼兒園中班"],
+        [["小羊的毛", "白白的。"], ["是", "很", "也"], "幼兒園小班"],
+        [["我喜歡", "歌跳舞。"], ["唱", "聽", "看"], "幼兒園小班"],
+        [["一起", "戲吧。"], ["遊", "讀", "寫"], "幼兒園小班"],
+        [["這是一本", "畫書。"], ["圖", "文", "漫"], "幼兒園中班"],
+        [["我的", "包裡有水壺。"], ["書", "筆", "袋"], "幼兒園中班"],
+        [["天空", "藍色。"], ["是", "像", "很"], "幼兒園中班"],
+        
+        [["大海裡有很多", "的魚。"], ["種類", "種族", "垃圾"], "幼兒園小班"],
+        [["我們是", "朋友。"], ["好", "壞", "爛"], "幼兒園小班"],
+        [["小狗汪汪", "。"], ["叫", "跳", "跑"], "幼兒園小班"],
+        [["貓頭鷹", "上出來活動。"], ["晚", "早", "午"], "幼兒園中班"],
+        [["如果迷路了，請", "幫忙。"], ["警察", "壞人", "壞蛋"], "幼兒園大班"],
+        [["我", "歡學習新知識。"], ["喜", "不", "愛"], "幼兒園中班"],
+        [["我們一起", "畫吧。"], ["畫", "塗", "描"], "幼兒園中班"],
+        [["請", "慢走路。"], ["慢", "快", "走"], "幼兒園小班"],
+        [["小", "子會長大。"], ["孩", "樹", "花"], "幼兒園小班"],
+        
+        [["我愛", "媽媽。"], ["我", "你", "她"], "幼兒園小班"],
+        [["鳥兒有", "雙翅膀。"], ["兩", "一", "三"], "幼兒園中班"],
+        [["我們", "學習分享。"], ["要", "不", "會"], "幼兒園中班"],
+        [["小毛", "蟲在爬。"], ["毛", "大", "紅"], "幼兒園中班"],
+        [["我", "經努力了。"], ["已", "未", "正"], "幼兒園大班"],
+        [["請", "別人的感受。"], ["尊重", "忽略", "模仿"], "幼兒園大班"],
+        [["我們", "互相幫助。"], ["應當", "不要", "或許"], "幼兒園大班"],
+        [["雲朵像", "一樣。"], ["棉花糖", "石頭", "磚塊"], "幼兒園大班"],
+        [["我會", "心聽故事。"], ["專", "分", "不"], "幼兒園中班"],
+        [["小", "手手洗乾淨。"], ["髒", "淨", "紅"], "幼兒園小班"],
+        
+        [["我", "愛吃水果。"], ["最", "不", "都"], "幼兒園小班"],
+        [["請", "輕地關門。"], ["輕", "重", "快"], "幼兒園中班"],
+        [["我們要", "對待朋友。"], ["友善", "敵對", "冷漠"], "幼兒園大班"],
+        [["小", "雞嘰嘰叫。"], ["黃", "白", "黑"], "幼兒園小班"],
+        [["我", "會自己穿衣服。"], ["已", "未", "正"], "幼兒園中班"],
+        [["請", "靜地休息。"], ["安", "吵", "快"], "幼兒園中班"],
+        [["我們要", "守交通規則。"], ["遵", "違", "不"], "幼兒園大班"],
+        [["小", "船在水上飄。"], ["小", "大", "快"], "幼兒園小班"],
+        [["我喜歡", "顏色的世界。"], ["彩", "黑", "白"], "幼兒園大班"],
+        [["我們", "天天開心。"], ["要", "不", "都"], "幼兒園小班"],
+
+        [["一起", "習寫字。"], ["練", "學", "看"], "幼兒園中班"],
+        [["請", "別人分享。"], ["和", "與", "對"], "幼兒園大班"],
+        [["我會", "自己的玩具。"], ["收", "放", "玩"], "幼兒園小班"],
+        [["樹葉是", "色的。"], ["綠", "紅", "黃"], "幼兒園中班"],
+        [["我們", "要勇敢嘗試。"], ["都", "不", "會"], "幼兒園大班"],
+        [["我", "會說謝謝。"], ["已", "未", "正"], "幼兒園小班"],
+        [["請", "小聲說話。"], ["小", "大", "輕"], "幼兒園中班"],
+        [["我們要", "護眼睛。"], ["保", "愛", "看"], "幼兒園大班"],
+        [["小", "魚游得快。"], ["快", "慢", "慢"], "幼兒園小班"],
+        [["我", "喜歡聽故事。"], ["最", "不", "也"], "幼兒園中班"],
+
+        [["請", "幫我。"], ["您", "你", "他"], "幼兒園小班"],
+        [["我們要", "整齊排隊。"], ["排", "站", "走"], "幼兒園中班"],
+        [["我", "會自己吃飯。"], ["已", "未", "正"], "幼兒園大班"],
+        [["小", "花開了。"], ["紅", "白", "黃"], "幼兒園小班"],
+        [["請", "記得微笑。"], ["常", "偶", "不"], "幼兒園中班"],
+        [["我們要", "惜食物。"], ["珍", "愛", "喜"], "幼兒園大班"],
+        [["我", "愛我的家。"], ["很", "不", "也"], "幼兒園小班"],
+        [["請", "保持安靜。"], ["務必", "不要", "可以"], "幼兒園中班"],
+        [["我們要", "持好習慣。"], ["保", "學", "練"], "幼兒園大班"],
+        [["小", "手牽手。"], ["朋友", "壞人", "叭拉叭"], "幼兒園小班"],
+    ];
+
+    // ====================================== [ 核心變數 ] =======================================
+    let currentStage = '幼兒園小班'; // 當前選擇的關卡
+    let currentQuestionIndex = 0;   // 當前題目索引
+    let filteredQuizData = [];      // 根據關卡篩選出的題目
+    let score = 0;                  // 分數
+    let totalQuestions = 0;         // 總題數
+
+    // ====================================== [ DOM 元素 ] =======================================
+    // 確保這裡的 ID 和 HTML 中的 ID 完全匹配：quiz-stage-selectors, language-game, quiz-feedback-area
+    const stageSelectorsEl = document.getElementById('quiz-stage-selectors');
+    const languageGameEl = document.getElementById('language-game');
+    const feedbackEl = document.getElementById('quiz-feedback-area');
+
+    // ====================================== [ 核心邏輯 ] =======================================
+    
+    /**
+     * 渲染關卡選擇按鈕
+     */
+    function renderStageSelectors() {
+        const stages = ['幼兒園小班', '幼兒園中班', '幼兒園大班'];
+        
+        // 安全檢查，如果元素不存在，則不執行
+        if (!stageSelectorsEl) return; 
+
+        stageSelectorsEl.innerHTML = ''; // 清空現有內容
+
+        stages.forEach(stage => {
+            const button = document.createElement('button');
+            button.textContent = stage;
+            
+            // 設定選中狀態的 CSS class
+            const isSelected = stage === currentStage;
+            button.className = isSelected ? 'selected-stage' : ''; 
+
+            // ⭐️ 關鍵：點擊按鈕，切換關卡並立即啟動新測驗
+            button.onclick = () => {
+                currentStage = stage;     // 1. 更新當前關卡變數
+                renderStageSelectors();   // 2. 重新渲染按鈕（更新選中樣式）
+                startNewQuiz();           // 3. 立即啟動該關卡的第一題
+            };
+            
+            stageSelectorsEl.appendChild(button);
+        });
+    }
+
+    /**
+     * 開始新的測驗 (重設分數，篩選題目，顯示第一題)
+     */
+    function startNewQuiz() {
+        score = 0;
+        currentQuestionIndex = 0;
+        
+        // 根據選擇的關卡篩選題目
+        // 題目格式：[句子, [選項], 關卡名] -> 關卡名是第 3 個元素 (索引 2)，但您的資料結構是 [句子, 正確答案, 混淆1, 混淆2, 關卡名] (索引 4)
+        // 檢查您的 quizData 格式，應該是 q[2] 或 q[3]：
+        // 您的 quizData 結構：[ [句子部分1, 句子部分2, 句子部分3], [正確答案, 錯誤選項1, 錯誤選項2], "幼兒園小班" ]
+        // 這裡的 q[2] 應該是關卡名：
+        filteredQuizData = quizData.filter(q => q[2] === currentStage);
+        
+        // 🚨 修正：您的 quizData 關卡名在每個子陣列的最後一個元素，即索引 2。
+        // 例如： [["太陽出來了，公雞在叫", "。", "喔"], ["喔", "呀", "啊"], "幼兒園小班"]
+        // 這裡的 q[2] 才是 "幼兒園小班"
+
+        // 由於您的 quizData 結構是 [ [句子陣列], [選項陣列], 關卡名 ]，
+        // 關卡名是主陣列的第三個元素 (索引 2)。
+
+        // 確保有題目
+        if (filteredQuizData.length === 0) {
+             languageGameEl.innerHTML = `<div><h4>🚧 ${currentStage} 題目建設中... (目前沒有找到該關卡題目)</h4></div>`;
+             feedbackEl.innerHTML = '';
+             return;
+        }
+
+        totalQuestions = filteredQuizData.length;
+        feedbackEl.innerHTML = `<h3>目前分數: 0 / ${totalQuestions}</h3>`;
+        displayQuizQuestion();
+    }
+    
+    /**
+     * 顯示當前題目
+     */
+    function displayQuizQuestion() {
+        if (currentQuestionIndex >= filteredQuizData.length) {
+            // 測驗結束
+            languageGameEl.innerHTML = `<div>
+                <h4>🎉 恭喜完成 ${currentStage} 測驗！</h4>
+                <p>總共答對 ${score} 題，總題數 ${totalQuestions} 題。</p>
+                <p>你真是太棒了！休息一下，或試試下一個關卡吧！</p>
+            </div>`;
+            return;
+        }
+        
+        const qData = filteredQuizData[currentQuestionIndex];
+        // qData 結構: [ [句子陣列], [選項陣列], 關卡名 ]
+        const sentenceParts = qData[0]; // [部分1, 部分2, 部分3]
+        const optionsArray = qData[1]; // [正確答案, 混淆選項1, 混淆選項2]
+        
+        // 從選項陣列中取得正確答案（它總是第一個）
+        const correctAnswer = optionsArray[0];
+
+        // 將所有選項 打亂
+        let options = [...optionsArray];
+        options.sort(() => Math.random() - 0.5);
+
+        // 生成題目文字 (將空缺部分用底線表示)
+        const questionText = `${sentenceParts[0]} <span class="fill-in-gap"> (____) </span> ${sentenceParts[1]}`;
+
+        // 生成選項按鈕
+        const optionsHTML = options.map(opt => 
+            // 注意：這裡的 checkAnswer 函式需要接收正確答案，以便比對
+            `<button onclick="checkAnswer('${opt.replace(/'/g, "\\'")}', '${correctAnswer.replace(/'/g, "\\'")}')">${opt}</button>`
+        ).join('');
+        
+        languageGameEl.innerHTML = `
+            <div id="current-quiz-card">
+                <h4>第 ${currentQuestionIndex + 1} 題:</h4>
+                <div class="question-text">${questionText}</div>
+                <div id="options-area">${optionsHTML}</div>
+            </div>
+        `;
+        
+        // 更新分數顯示 (題目進行中)
+        feedbackEl.innerHTML = `<h3>目前分數: ${score} / ${totalQuestions}</h3>`;
+    }
+
+    /**
+     * 檢查答案 (保持不變)
+     */
+    function checkAnswer(selectedOption, correctAnswer) {
+        // 禁用所有按鈕，避免重複點擊
+        const optionsArea = document.getElementById('options-area');
+        if (optionsArea) {
+            optionsArea.querySelectorAll('button').forEach(btn => btn.disabled = true);
+        }
+
+        let isCorrect = selectedOption === correctAnswer;
+        
+        // 視覺回饋
+        optionsArea.querySelectorAll('button').forEach(btn => {
+            if (btn.textContent === correctAnswer) {
+                // 正確答案
+                btn.style.backgroundColor = '#d4edda'; // 綠色
+                btn.style.color = '#155724';
+            } else if (btn.textContent === selectedOption) {
+                // 錯誤答案
+                btn.style.backgroundColor = '#f8d7da'; // 紅色
+                btn.style.color = '#721c24';
+            }
+        });
+
+        // 處理分數和進度
+        if (isCorrect) {
+            score++;
+            feedbackEl.innerHTML += `<p style="color:#28a745; font-weight:bold;">✅ 答對了！太棒了！</p>`;
+        } else {
+             feedbackEl.innerHTML += `<p style="color:#dc3545; font-weight:bold;">❌ 答錯了，正確答案是 ${correctAnswer}。</p>`;
+        }
+        
+        // 更新分數顯示
+        const scoreH3 = feedbackEl.querySelector('h3');
+        if (scoreH3) scoreH3.textContent = `目前分數: ${score} / ${totalQuestions}`;
+
+        // 0.8 秒後切換到下一題
+        currentQuestionIndex++;
+        setTimeout(displayQuizQuestion, 800); 
+    }
+
+    // ====================================== [ 初始化 ] =======================================
+    
+    /**
+     * 獨立的語文練習初始化函式
+     */
+    function initLanguageQuiz() {
+        // 確保 DOM 元素存在
+        if (!stageSelectorsEl || !languageGameEl || !feedbackEl) {
+            console.error('Language Quiz DOM elements not found. Retrying in 50ms.');
+            setTimeout(initLanguageQuiz, 50); 
+            return;
+        }
+        
+        renderStageSelectors(); // 顯示關卡按鈕
+        
+        // 頁面載入時，直接啟動 '幼兒園小班' 的測驗，立即顯示題目
+        startNewQuiz(); 
+    }
+
+    // 暴露給全域環境
+    window.startNewQuiz = startNewQuiz;
+    window.initLanguageQuiz = initLanguageQuiz;
+    window.checkAnswer = checkAnswer; // 確保 options 的 onclick 可以呼叫到它
+
+    // 獨立啟動監聽器 (確保在所有 DOM 元素載入後，語文練習才啟動)
+    document.addEventListener('DOMContentLoaded', function() {
+        initLanguageQuiz();
+    });
+</script>
+
+<script>
+    // 1. 取得所有的元素 (Audio, 按鈕, 滑桿)
+    const audioPlayer = document.getElementById('myAudioPlayer');
+    const playBtn = document.getElementById('play-btn');
+    const songTitle = document.getElementById('song-title');
+    const volumeSlider = document.getElementById('volume-slider');
+
+    let isPlaying = false;
+    
+    // ----------------------------------------------------
+    // A. 處理播放/暫停按鈕
+    // ----------------------------------------------------
+    playBtn.addEventListener('click', () => {
+        if (isPlaying) {
+            // 如果正在播放，就暫停
+            audioPlayer.pause();
+            playBtn.textContent = '播放';
+            songTitle.textContent = "已暫停";
+            isPlaying = false;
+        } else {
+            // 如果已暫停，就播放
+            audioPlayer.play();
+            playBtn.textContent = '暫停';
+            songTitle.textContent = "正在播放: gameocean.mp3";
+            isPlaying = true;
+        }
+    });
+
+    // ----------------------------------------------------
+    // B. 處理音量滑桿
+    // ----------------------------------------------------
+    // 初始設定音量
+    audioPlayer.volume = volumeSlider.value / 100;
+
+    // 監聽滑桿的變動事件
+    volumeSlider.addEventListener('input', () => {
+        // 將滑桿值 (0-100) 轉換為 Audio.volume 的範圍 (0.0-1.0)
+        audioPlayer.volume = volumeSlider.value / 100;
+    });
+
+    // ----------------------------------------------------
+    // C. (可選) 處理音樂載入失敗的情況
+    // ----------------------------------------------------
+    audioPlayer.addEventListener('error', (e) => {
+        console.error("音樂載入錯誤:", e);
+        songTitle.textContent = "音樂載入失敗，請檢查 /static/gameocean.mp3 路徑。";
+        // 如果音樂路徑錯誤，isPlaying 設為 false
+        isPlaying = false;
+        playBtn.textContent = '播放';
+    });
+</script>
+<script>
+// --- JavaScript 邏輯區 ---
+
+// 畫布相關變數
+let canvas, ctx, drawing = false;
+const lineColor = "#FF6B00";     // 橘色
+const lineWidth = 8;
+const MAX_MAZE = 100;            // *** 依您的需求設定為 100 張迷宮圖 ***
+let currentMaze = 1;             // 當前關卡號碼
+
+function initCanvas() {
+    const img = document.getElementById('maze-img');
+    canvas = document.getElementById('draw-canvas');
+    ctx = canvas.getContext('2d');
+
+    // 讓 canvas 跟圖片大小完全一樣
+    canvas.width = img.clientWidth;
+    canvas.height = img.clientHeight;
+    canvas.style.position = 'absolute';
+    canvas.style.top = 0;
+    canvas.style.left = 0;
+    
+    // 讓 canvas 一直可以接收事件 (實現小畫家拖曳的關鍵)
+    canvas.style.pointerEvents = 'auto'; 
+
+    // 清空畫布並設定畫筆樣式
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+}
+
+// 載入迷宮圖片並更新狀態
+function loadMaze(num) {
+    if (num < 1 || num > MAX_MAZE) return; // 防止越界
+
+    currentMaze = num;
+    const img = document.getElementById('maze-img');
+    const status = document.getElementById('maze-status');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    // 1. 更新圖片來源
+    img.src = `maze${num}.jpg`; 
+
+    // 2. 更新關卡顯示文字
+    status.textContent = `關卡 ${num}/${MAX_MAZE}`;
+
+    // 3. 調整按鈕狀態 (禁用/啟用)
+    prevBtn.disabled = (num === 1);
+    nextBtn.disabled = (num === MAX_MAZE);
+    
+    // 4. 圖片載入完成後重新初始化畫布
+    img.onload = () => {
+        initCanvas();
+        clearPath(); // 換圖時自動清掉舊的線
+    };
+    
+    // 如果圖片已經載入過，也要確保畫布被初始化
+    if (img.complete) {
+        initCanvas();
+        clearPath(); 
+    }
+}
+
+// 導航到下一張迷宮
+function nextMaze() {
+    loadMaze(currentMaze + 1);
+}
+
+// 導航到上一張迷宮
+function prevMaze() {
+    loadMaze(currentMaze - 1);
+}
+
+// 開始畫線 (綁定在 canvas 上)
+function startDraw(e) {
+    // 確保只在滑鼠左鍵按下時開始繪圖
+    if (e.buttons !== 1 && e.type !== 'touchstart') return; 
+
+    drawing = true;
+    
+    // 取得相對於 canvas 的座標
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX || e.touches[0].clientX;
+    const y = e.clientY || e.touches[0].clientY;
+    
+    ctx.beginPath();
+    ctx.moveTo(x - rect.left, y - rect.top);
+
+    // 防止觸控事件滾動頁面
+    if (e.type === 'touchstart' || e.type === 'touchmove') e.preventDefault();
+}
+
+// 畫線中
+function draw(e) {
+    if (!drawing) return;
+    
+    // 取得相對於 canvas 的座標
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX || e.touches[0].clientX;
+    const y = e.clientY || e.touches[0].clientY;
+    
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = lineWidth;
+    ctx.lineTo(x - rect.left, y - rect.top);
+    ctx.stroke();
+
+    if (e.type === 'touchmove') e.preventDefault();
+}
+
+// 結束畫線
+function stopDraw() {
+    if (!drawing) return;
+    drawing = false;
+    ctx.closePath(); 
+}
+
+// 清除畫的線
+function clearPath() {
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// 綁定事件（支援滑鼠 + 觸控）
+window.addEventListener('load', () => {
+    loadMaze(currentMaze); // 預設載入第一關
+    
+    const container = document.getElementById('maze-container');
+    const canvasEl = document.getElementById('draw-canvas');
+
+    // 滑鼠事件綁定到 canvas
+    canvasEl.addEventListener('mousedown', startDraw);
+    canvasEl.addEventListener('mousemove', draw);
+    canvasEl.addEventListener('mouseup', stopDraw);
+    
+    // 在 container 以外或在文件上放開滑鼠時，也應停止繪圖
+    container.addEventListener('mouseleave', stopDraw);
+    document.addEventListener('mouseup', stopDraw); 
+
+    // 手機觸控支援
+    canvasEl.addEventListener('touchstart', startDraw);
+    canvasEl.addEventListener('touchmove', draw);
+    canvasEl.addEventListener('touchend', stopDraw);
+    canvasEl.addEventListener('touchcancel', stopDraw); 
+});
+</script>
+</body>
+</html>
+
