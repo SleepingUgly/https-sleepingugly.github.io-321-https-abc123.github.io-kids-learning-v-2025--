@@ -626,10 +626,237 @@ h2 + div a:hover,
     text-decoration: underline; 
 }
 
+
+:root {
+            --main-color: #6a1b9a;
+            --light-bg: #f3e5f5;
+            --btn-color: #9c27b0;
+            --btn-hover: #7b1fa2;
+            --msg-bg: #e1bee7;
+        }
+
+        /* 您的目標容器：限制寬度並向左對齊，讓外部文字不受影響 */
+        .module.message-module2 {
+            padding: 10px;
+            max-width: 320px; /* 限制整體寬度 */
+            /* 調整這裡！ */
+    /* 預設是靠左對齊，如果要向右推離左邊界 20 像素： */
+    margin-left: 0px;
+            margin: 0; /* 確保向左對齊 */
+            position: relative; 
+            display: block;
+        }
+        
+        /* 隱藏空的 <p> 標籤 */
+        .gemini-message-text2 {
+            display: none; 
+        }
+/* 填滿外層 max-width (520px) 調整面板大小調整面板大小調整面板大小 */
+        .pet-container {
+            width: 90%; /* 填滿外層 max-width (520px) */
+            max-width: none;
+            margin: 0 auto; 
+            padding: 15px;
+            border: 3px solid var(--main-color);
+            border-radius: 15px;
+            background-color: var(--light-bg);
+            text-align: center;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        h2 {
+            color: var(--main-color);
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        /* 訊息區 */
+        .module.message-module1 {
+            background-color: var(--msg-bg);
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            min-height: 20px;
+        }
+        .gemini-message-text1 {
+            color: #4a148c;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        /* 影片播放和靜態圖片覆蓋層 */
+        .video-overlay {
+            /* 影片層現在會對齊 pet-container 的內容區域 */
+            position: absolute;
+            /* 調整 top/left 參考點，以確保在 pet-container 邊界內 */
+            top: 15px; /* 減去 pet-container 的 padding */
+            left: 15px;
+            width: calc(100% - 30px); /* 100% 減去左右 padding */
+            /* 設置一個固定高度或使用 padding-bottom 技巧來控制高度 */
+            height: 400px; /* 暫時設定一個固定高度 */
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 10; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px; /* 配合 pet-container 的邊角 */
+            overflow: hidden; /* 確保內容不溢出 */
+        }
+        #pet-video-player {
+            max-width: 90%;
+            height: 100%;
+            object-fit: cover; 
+        }
+        
+        /* 寵物圖片和狀態區 */
+        .pet-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative; 
+            z-index: 20; 
+            /* 調整上邊距以讓出影片區域的高度 */
+            margin-top: 320px; /* 略大於影片層的高度 (300px + 上下 padding) */
+        }
+
+        #pet-image-wrapper {
+            width: 90%;
+            height: 300px; 
+            position: relative;
+            margin-bottom: 10px;
+            overflow: hidden;
+            display: none; /* 影片模式下這個還是要隱藏 */
+        }
+        .hidden { display: none !important; }
+
+        /* 裝扮疊加層 */
+        #accessory-display {
+            position: absolute; 
+            /* 讓配件疊加層對齊影片層 */
+            top: 15px;
+            left: 15px;
+            width: calc(100% - 30px);
+            height: 300px; 
+            background-size: contain; 
+            background-repeat: no-repeat;
+            z-index: 30; 
+        }
+
+        /* 狀態顯示區 */
+        #pet-status {
+            width: 100%;
+            text-align: left;
+            padding: 8px 0;
+            font-size: 15px;
+            color: #4a148c;
+            border-top: 1px dashed #ce93d8;
+            background-color: rgba(255, 255, 255, 0.8); 
+            border-radius: 8px;
+            padding: 10px;
+        }
+        #pet-status p { 
+            margin: 4px 0; 
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 進度條樣式 */
+        #pet-status progress {
+            flex-grow: 1;
+            margin: 0 10px;
+            height: 12px;
+            border-radius: 6px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        /* 進度條基礎顏色 */
+        #pet-status progress::-webkit-progress-bar {
+            background-color: #e0e0e0;
+            border-radius: 6px;
+        }
+        /* 進度條填充顏色 */
+        #health-bar::-webkit-progress-value,
+        #food-bar::-webkit-progress-value,
+        #water-bar::-webkit-progress-value,
+        #clean-bar::-webkit-progress-value,
+        #love-bar::-webkit-progress-value {
+            background-color: var(--btn-color);
+            border-radius: 6px;
+        }
+        /* 針對低血量/狀態給予警告色 */
+        #health-bar[value^="0"], #health-bar[value^="1"], #health-bar[value^="2"], #health-bar[value^="3"] {
+             background-color: #ffcdd2;
+        }
+        #health-bar[value^="0"]::-webkit-progress-value, #health-bar[value^="1"]::-webkit-progress-value, #health-bar[value^="2"]::-webkit-progress-value, #health-bar[value^="3"]::-webkit-progress-value {
+             background-color: #e53935;
+        }
+
+
+        /* 互動按鈕區 */
+        .interaction-panel {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+            position: relative; 
+            z-index: 20;
+        }
+        .interaction-panel button {
+            padding: 10px 8px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--btn-color);
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: calc(33.33% - 8px); 
+            max-width: 130px; 
+        }
+        .interaction-panel button:hover {
+            background-color: var(--btn-hover);
+        }
+
+        /* 裝扮區 */
+        .wardrobe-panel {
+            margin-top: 12px;
+            padding: 8px;
+            border-top: 2px dashed #ce93d8;
+            position: relative;
+            z-index: 20;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+        }
+        .wardrobe-panel button {
+            margin-top: 5px;
+            width: auto;
+            min-width: 100px;
+            font-size: 14px;
+        }
+
+
+/* 寵物狗圖片 */
+#video-overlay {
+    background: url('petinthelivingroom1b.jpg') center/contain no-repeat !important;
+    background-size: 90% !important;        /* 原本 100% → 現在 78% 超剛好 */
+    background-position: center 15% !important; /* 稍微往上移一點，讓狗狗頭部更好看 */
+}
+
+
+
 </style></head>
 
 
 <body>
+
+
+
 
 <div class="main-layout">
 
@@ -740,14 +967,30 @@ h2 + div a:hover,
     </div>
 </div>
 
+
+
+
 <div class="volume-control">
     <span>音量</span>
     <input type="range" id="volume-slider" min="0" max="100" value="70">
+
+<br>
+<br>
+
+    <p >XAI Grok / Gooogle Gemini / goldandjadeM.
+            影片 grok / 圖片 Gemini<br><br>
+            
+            音響音樂使用 Ocean_coast_02_092025br0659AM by YevgVerh  https://freesound.org/s/827528/ 
+            - License: Creative Commons</p> 
 </div>
+
 </div>
 
 <audio id="audio" preload="auto"></audio>
 
+       
+        
+ 
 </div>
 
 
@@ -791,7 +1034,6 @@ h2 + div a:hover,
     
     <div id="quiz-stage-selectors" class="stage-selectors">
         </div>
-    
     <div id="language-game" class="question-container">
     </div>
     
@@ -835,19 +1077,69 @@ h2 + div a:hover,
        
     </div>
     <div class="module message-module">
-        <p class="gemini-message">Aroth 守護心語：</p>
-        <p class="gemini-message-text"> 過馬路一定要看紅綠燈，並且走斑馬線，遇到 大卡車 大貨車 時，要離它們遠一點，要不然會被捲進去喔 !</p> 
-    </div>
+        <p class="gemini-message">EGM. 守護心語：</p>
+        <p class="gemini-message-text"> 1. 過馬路一定要看紅綠燈，並且走斑馬線，遇到 大卡車 大貨車 時，要離它們遠一點，要不然會被捲進去喔 !<br><br>
+            2.每一區都可按 Ctrl+Z 放大，不建議用手機玩，但可玩，用手指把想玩的區域撐大。<br><br>3.遇到哪區沒顯示出來時，按 Ctrl+shift+R </p>
+            
+</div>
 
-<div class="module message-module">
-        <p class="gemini-message">準備區：</p>
-        <p class="gemini-message-text"> </p> 
-    </div>
+
+
+
+<div class="module message-module2">
+        <h2 class="gemini-message-text2">電子寵物</h2>
+<br>
+
+        <div class="pet-container">
+            
+            
+           
+
+            <div id="video-overlay" class="video-overlay">
+                <video id="pet-video-player" width="110%" height="auto" autoplay muted></video>
+            </div>
+
+            <div class="pet-display">
+                <div id="pet-image-wrapper" class="hidden">
+                    <div id="pet-image" class="pet-state normal"></div>
+                </div>
+                <div id="accessory-display" class="accessory"></div>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                
+                <!-- 狀態列保持不變 -->
+<div id="pet-status">
+    <p>健康: <progress id="health-bar" value="100" max="100"></progress> <span id="health-value">100</span>/100</p>
+    <p>飽足感: <progress id="food-bar" value="80" max="100"></progress> <span id="food-value">80</span>/100</p>
+    <p>水分: <progress id="water-bar" value="80" max="100"></progress> <span id="water-value">80</span>/100</p>
+    <p>衛生: <progress id="clean-bar" value="100" max="100"></progress> <span id="clean-value">100</span>/100</p>
+    <p>親密度: <progress id="love-bar" value="50" max="100"></progress> <span id="love-value">50</span>/100</p>
+    <p>心情: <span id="mood-text">開心</span></p>
+</div>
+ <br>
+ <br>
+<!-- 這裡什麼 button 都不要寫！全交給 JS 生成 -->
+<div class="interaction-panel" id="interaction-panel"></div>
+
+         
+ <br>
+ <br>
+ <br>
+
+   
  </div>
-    
+
+
     
 
 
+
+</div>
+    
 </div>
 
 <script>
@@ -875,8 +1167,7 @@ h2 + div a:hover,
     // G8: 樹
     "樹用根像吸管一樣喝水，再吐新鮮空氣給我們。樹木是地球偉大的肺葉。",
 
-       // G5: 月亮
-    "月亮晚上在天上值班，白天牠其實是去睡覺。但牠一直都在天上守護我們喔。",
+  
 
     "我們的身體像一座小型的化學工廠，不斷將食物轉變成能量，讓生活運行。",
 
@@ -887,7 +1178,7 @@ h2 + div a:hover,
 
     "月亮每天看起來會變化形狀，這是因為它繞地球公轉時，被陽光照射的角度不同。",
 
-    "生活中常見的摩擦力，是一種讓物體減速、防止我們跌倒的國小自然科學原理。",
+    "生活中常見的摩擦力，是一種讓物體減速、防止我們跌倒的自然科學原理。",
 
     "植物的根部會吸收土壤中的水分和養分，這對植物生存和我們的生活非常重要。",
 
@@ -1440,6 +1731,11 @@ h2 + div a:hover,
     // G147: 你已經很棒了
     "「你已經很棒了」這句話是能夠給自己最溫柔的魔法，請常常對自己說。",
     
+         // G5: 月亮
+   "月球 Moon 是一個環繞地球運轉的天然衛星。它並非只在晚上出現，白天它也持續存在於天空中，",
+   "只是因為太陽的光芒太過強烈，使得我們難以在白天看見它。月球始終在它固定的軌道上繞行地球，",
+   "運行，默默地以它的引力 Gravity 影響著地球上的潮汐 Tides,持續地守護並影響著我們的星球",
+    
     // G148: 樹根
     "樹會用根部互相分享水和養分，樹也會像人類一樣幫助自己的朋友。",
     
@@ -1531,19 +1827,54 @@ h2 + div a:hover,
     let currentStoryIndex = 0;
     function showStory(){document.getElementById('daily-story').textContent = stories[currentStoryIndex];}
     function nextStory(){currentStoryIndex = (currentStoryIndex + 1) % stories.length; showStory();}
+// SleepingUgly 美景輪播 2025 終極穩定版 ❤️
+const sceneryImages = [
+    'elephant.jpg','tiger.jpg','animals.jpg','camel.jpg',
+    'capepeepara.jpg','fox.jpg','jellyfish.jpg','manyjellyfish.jpg',
+    'raccoon.jpg','whale.jpg','wolf.jpg','dog.png',
+    'kitchen1.jpg','kitchen11.jpg','livingroom.jpg','readstory.jpg',
+    'drawing1.jpg','playgroundkids.jpg','ridebike.jpg','unnamed.jpg','breakfast.jpg'
+];
 
-    // 美景輪播
-    const sceneryImages = ['elephant.jpg','tiger.jpg','animals.jpg','camel.jpg','capepeepara.jpg','fox.jpg','jellyfish.jpg','manyjellyfish.jpg','raccoon.jpg',
-    'whale.jpg','wolf.jpg','dog.png','kitchen1.jpg','kitchen11','livingroom.jpg'];
-    let currentImageIndex = 0;
-    function changeScenery(){
-        const img = document.getElementById('sceneryImage');
-        if(!img) return;
+let currentImageIndex = 0;
+const imgElement = document.getElementById('sceneryImage');
+
+// 圖片載入失敗時自動跳下一張（絕對不會卡在黑畫面）
+function safeSetImage(src) {
+    if (!imgElement) return;
+    
+    // 加時間戳破快取 + 今天日期當版本號（每天自動更新）
+    const cacheBuster = '?v=20251208';
+    imgElement.src = src + cacheBuster;
+    
+    // 如果這張壞掉，自動換下一張
+    imgElement.onerror = () => {
+        console.log('圖片壞掉囉～自動跳下一張:', src);
         currentImageIndex = (currentImageIndex + 1) % sceneryImages.length;
-        img.src = sceneryImages[currentImageIndex];
-    }
-    setInterval(changeScenery, 10000);
+        safeSetImage(sceneryImages[currentImageIndex]);
+    };
+}
 
+// 主要換圖函式
+function changeScenery() {
+    currentImageIndex = (currentImageIndex + 1) % sceneryImages.length;
+    safeSetImage(sceneryImages[currentImageIndex]);
+}
+
+// 每 9 秒換一張
+setInterval(changeScenery, 9000);
+
+// 網頁一載入就立刻顯示第一張（不用等 10 秒！）
+window.addEventListener('load', () => {
+    if (imgElement && imgElement.src === '') {
+        safeSetImage(sceneryImages[0]);
+    }
+});
+
+// 可愛小彩蛋
+console.log('%c美景輪播已啟動～今天也要被可愛動物治癒喔❤️', 'color:#ff69b4;font-size:14px;font-weight:bold');
+    
+    
     // 體重轉換
     function convertWeight(){
         const input = document.getElementById('weight').value;
@@ -2406,29 +2737,34 @@ window.addEventListener('load', () => {
     canvasEl.addEventListener('touchcancel', stopDraw); 
 });
 </script>
+
+
+
 <script>
-// ============ SleepingUgly 終極防拷貝 - 推薦穩定版 (2025/12/06) ============
+// ============ SleepingUgly 終極防拷貝 (純淨版 - 已修復所有全形問題) ============
 
 (() => {
-  // === 0. 設置您的 GitHub Pages 網域！ (必修) ===
-  // 請將 YOUR_GITHUB_USERNAME_HERE 換成您實際的用戶名/組織名
+  // === 0. 設置您的 GitHub Pages 網域！(必填) ===
   const GITHUB_HOST = 'sleepingugly.github.io';
-  
+
   // 1. 每0.3秒狂丟 debugger → F12 永久卡死
   setInterval(() => { Function('debugger')(); }, 300);
 
   // 2. 完全封死右鍵與所有開發者快捷鍵
   document.oncontextmenu = () => false;
   document.onkeydown = document.onkeyup = document.onkeypress = e => {
-    // 封鎖 F12, Ctrl+Shift+I/J/C/K, Ctrl+U (原始碼), Ctrl+S (另存), Ctrl+A (全選), Ctrl+C (複製)
-    if (e.key === 'F12' || 
-        (e.ctrlKey && e.shiftKey && ['I','J','C','K'].includes(e.key.toUpperCase())) ||
-        (e.ctrlKey && ['U','S','A','C'].includes(e.key.toUpperCase()))) {
-      e.preventDefault(); e.stopPropagation(); return false;
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && ['I', 'J', 'C', 'K'].includes(e.key.toUpperCase())) ||
+      (e.ctrlKey && ['U', 'S', 'A', 'C'].includes(e.key.toUpperCase()))
+    ) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
     }
   };
 
-  // 3. 域名鎖 (只允許你自己的 GitHub Pages + 本地測試)
+  // 3. 域名鎖 (只允許自己的 GitHub Pages + 本地測試)
   const allowed = [GITHUB_HOST, 'localhost', '127.0.0.1', ''];
   if (!allowed.includes(location.hostname)) {
     document.body.innerHTML = `<div style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:#fff9fb;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:30px;font-family:'Comic Sans MS',sans-serif;">
@@ -2438,27 +2774,32 @@ window.addEventListener('load', () => {
     throw '';
   }
 
-  // 4. 徹底封死選取與複製 (連長按選單都死)
+  // 4. 徹底封死選取與複製 (迷宮區拖曳已特別放行)
   const blockSelect = e => {
-    // 允許 input/textarea/button/[contenteditable] 進行操作
+    // 關鍵：如果點擊的是迷宮容器內的元素，就允許選取/拖曳
+    if (e.target.closest('#maze-container')) {
+      return true;
+    }
+
+    // 允許 input、textarea、button 等可編輯元素正常操作
     if (!e.target.closest('input, textarea, button, [contenteditable]')) {
-      e.preventDefault(); e.stopPropagation(); return false;
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
     }
   };
-  
-  const eventsToBlock = ['selectstart','mousedown','mouseup','touchstart','touchmove','copy','cut','contextmenu'];
-  eventsToBlock.forEach(ev => document.addEventListener(ev, blockSelect, {capture:true, passive:false}));
 
-  // 額外增加防雙擊選字
-  document.addEventListener('mousedown', e => { if (e.detail > 1) e.preventDefault(); }, {capture:true, passive:false}); 
-  
-  // 5. 離開視窗立刻清空畫面 (防另存網頁/螢幕錄影)
-  // 註：切換分頁或程式會清空，但不會影響 window.onblur，避免過度干擾
-  document.addEventListener('visibilitychange', () => { 
-    if (document.hidden) document.body.innerHTML = ''; 
-  });
-  
-  // 6. 絕殺：任何方式選取文字都立刻清空
+  const eventsToBlock = ['selectstart', 'mousedown', 'mouseup', 'touchstart', 'touchmove', 'copy', 'cut', 'contextmenu'];
+  eventsToBlock.forEach(ev => 
+    document.addEventListener(ev, blockSelect, { capture: true, passive: false })
+  );
+
+  // 防雙擊選字
+  document.addEventListener('mousedown', e => {
+    if (e.detail > 1) e.preventDefault();
+  }, { capture: true, passive: false });
+
+  // 6. 絕殺：任何選取到的文字立刻清空
   setInterval(() => {
     if (window.getSelection && window.getSelection().toString()) {
       window.getSelection().empty();
@@ -2466,9 +2807,148 @@ window.addEventListener('load', () => {
   }, 50);
 
   // 7. 粉紅彩蛋
-  console.log('%c❤️ SleepingUgly原創保護模式已啟動\n複製貼上不可能的啦','color:#ff69b4;font-size:18px;font-weight:bold');
+  console.log(
+    '%c❤️ SleepingUgly原創保護模式已啟動\n複製貼上不可能的啦',
+    'color:#ff69b4;font-size:18px;font-weight:bold'
+  );
 })();
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+// 寵物狀態
+const pet = {
+    health: 100, food: 80, water: 80, clean: 100, love: 50,
+    isSick: false, isDirty: false, accessory: 'none'
+};
+
+// DOM 元素
+const video = document.getElementById('pet-video-player');
+const accLayer = document.getElementById('accessory-display');
+const msg = document.getElementById('gemini-message-text');
+const mood = document.getElementById('mood-text');
+
+// 所有動作對應的影片
+const videos = {
+    feed:      ['dogeat (2).mp4','eatwell.mp4'],
+    water:     ['dogdrink.mp4'],
+    pet:       ['dogpethead.mp4','dogpettummy.mp4'],
+    bath:      ['dogshower1.mp4', 'dogshower2.mp4'],
+    clean_poo: ['dpgpoo.mp4'],
+    heal:      ['dogdoctor.mp4'],
+    out:       ['doglongwall.mp4','dogwalk.mp4','dogdisney.mp4','dog101.mp4','dogjapan.mp4','dogitaly.mp4','dogswims.mp4','gotospace.mp4','spaceelon.mp4','dogplay1.mp4','dogplay.mp4'],
+    watch:     ['dogsleep.mp4','dogbreak.mp4', 'dpgplaycups.mp4', 'dogitsback.mp4', 'dogwithorangecat.mp4','dogwithtwocats.mp4','dogmouse1.mp4','dogsmart1.mp4'],
+    dress:     ['dogcollar.mp4', 'dress2.mp4', 'dress3.mp4','newdress1.mp4','withcollar.mp4','newdress.mp4'], //  // 換你實際的換裝影片檔名
+    default:   ['dogsleep.mp4', 'dogbreak.mp4', 'dogplaycups.mp4', 'dogitsback.mp4','dogtricks.mp4']
+};
+
+// 按鈕顯示文字
+const buttonLabels = {
+    feed:      '肚子餓<br>hungry',
+    water:     '喝水水<br>thirsty',
+    pet:       '摸摸<br>pet me',
+    bath:      '洗澡澡<br>shower',
+    clean_poo: '清理便便<br>poop',
+    heal:      '看醫生<br>sick',
+    out:       '出去玩<br>go out',
+    watch:     '看監視器<br>check camera',
+    dress:     '換裝扮<br>styles'
+};
+
+// 隨機取一支影片
+function getRandomVideo(action) {
+    const list = videos[action] || videos.default;
+    return list[Math.floor(Math.random() * list.length)];
+}
+
+// 更新畫面上的進度條與心情
+function updateStatus() {
+    document.getElementById('health-value').textContent = pet.health;
+    document.getElementById('food-value').textContent = pet.food;
+    document.getElementById('water-value').textContent = pet.water;
+    document.getElementById('clean-value').textContent = pet.clean;
+    document.getElementById('love-value').textContent = pet.love;
+
+    document.getElementById('health-bar').value = pet.health;
+    document.getElementById('food-bar').value = pet.food;
+    document.getElementById('water-bar').value = pet.water;
+    document.getElementById('clean-bar').value = pet.clean;
+    document.getElementById('love-bar').value = pet.love;
+
+    // 簡單心情判斷
+    const avg = (pet.health + pet.food + pet.water + pet.clean + pet.love) / 5;
+    if (avg >= 80) mood.textContent = '超開心';
+    else if (avg >= 60) mood.textContent = '開心';
+    else if (avg >= 40) mood.textContent = '普通';
+    else if (avg >= 20) mood.textContent = '不開心';
+    else mood.textContent = '哭哭';
+}
+
+// 主要動作函式
+function doAction(action) {
+    // 改變數值
+    if (action === 'feed')       pet.food = Math.min(100, pet.food + 25);
+    if (action === 'water')      pet.water = Math.min(100, pet.water + 25);
+    if (action === 'pet')        pet.love = Math.min(100, pet.love + 15);
+    if (action === 'bath')       pet.clean = 100;
+    if (action === 'clean_poo')  pet.clean = Math.min(100, pet.clean + 40);
+    if (action === 'heal')       { pet.health = 100; pet.isSick = false; }
+    if (action === 'dress')      pet.accessory = (pet.accessory === 'none' ? 'hat' : 'none'); // 範例切換
+
+    // 播放對應影片
+    video.src = getRandomVideo(action);
+    video.play();
+
+    // 更新狀態列
+    updateStatus();
+}
+
+// 動態生成 9 顆按鈕
+function createButtons() {
+    const panel = document.getElementById('interaction-panel');
+    panel.innerHTML = ''; // 清空
+
+    const actions = ['feed', 'water', 'pet', 'bath', 'clean_poo', 'heal', 'out', 'watch', 'dress'];
+
+    actions.forEach(action => {
+        const btn = document.createElement('button');
+        btn.innerHTML = buttonLabels[action];
+        btn.onclick = () => doAction(action);
+        panel.appendChild(btn);
+    });
+}
+
+// 頁面載入完成後執行
+document.addEventListener('DOMContentLoaded', () => {
+    createButtons();
+    updateStatus();                    // 初次更新數字
+    video.src = getRandomVideo('default');
+    video.play();
+    
+    // 影片結束後自動播放待機動畫
+    video.addEventListener('ended', () => {
+        video.src = getRandomVideo('default');
+        video.play();
+    });
+});
+</script>
+
+
+
+
+
+
+
 </body>
 </html>
 
