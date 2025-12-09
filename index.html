@@ -287,17 +287,20 @@
 
 
 /* 1. 連結容器的樣式 遊戲連結區 遊戲連結區調整*/
+.link-to-python-page {
+    margin-top: -10px; 
+    margin-bottom: 30px;
+    text-align: center; 
+    background-color: #cbfdc5;  /* 新增：柔和的淡綠色底色 */
+    padding: 0px;              /* 建議：增加內邊距，讓內容和底色邊緣有呼吸空間 */
+    border-radius: 8px;         /* 建議：讓邊角圓潤一點，視覺上更舒服 */
+}
 
-        .link-to-python-page {
-            margin-top: 20px; 
-            margin-bottom: 20px;
-            text-align: center; 
-        }
-
-        /* 2. 連結按鈕本身的樣式 */
+        
+/* 2. 連結按鈕本身的樣式 */
         .python-link-button {
             display: inline-block;
-            padding: 12px 25px;
+            padding: 15px 25px;
             background-color: #f7931e; /* 按鈕背景色 */
             color: white; /* 文字顏色 */
             text-decoration: none; /* 移除底線 */
@@ -930,16 +933,33 @@ h2 + div a:hover,
     <h2>小遊戲連結</h2>
     
     <div class="link-to-python-page">
-    <a href="game.html">⭐️ 前往反應能力小遊戲 ⭐️</a>
+    <a href="game.html">前往反應能力小遊戲 </a>
 </div>
     <div id="quiz-questions"></div>
 
     <div class="link-to-python-page">
-    <a href="https://www.khanacademy.org/">⭐️美國免費學習資源⭐️<br>⭐️有中文頁面 ⭐️</a>
+    <a href="https://www.khanacademy.org/">美國免費資源，有中文頁面 </a>
 </div>
     <div id="quiz-questions"></div>
-    
-  
+
+    <!-- 療癒森林圖：靠左 + 與下方區塊距離變近 --> 
+  <!-- 療癒森林圖：靠左 + 與下方區塊距離變近 -->
+<div style="margin: 30px 0 px 0; text-align: left;">
+    <img src="forest.jpg" 
+         alt="綠色療癒森林遠望天空" 
+         style="width: 108%;               /* 比容器稍微寬一點，往左突出 */
+                max-width: none;           /* 取消 max-width 限制 */
+                margin-left: -18px;        /* 關鍵！往左移 30px 可自行調 -20 到 -50 */
+                height: 320px;
+                border-radius: 20px;
+                box-shadow: 0 12px 10px rgba(100,160,120,0.35);
+                border: 5px solid #37942e;
+                display: block; opacity:1;"
+                >
+</div>
+
+
+
 
 <!-- Ocean_coast_02_092025_0659AM by YevgVerh -->
 <!-- https://freesound.org/s/827528/ - License: Creative Commons -->
@@ -976,12 +996,9 @@ h2 + div a:hover,
 
 <br>
 <br>
+<br>
 
-    <p >XAI Grok / Gooogle Gemini / goldandjadeM.
-            影片 grok / 圖片 Gemini<br><br>
-            
-            音響音樂使用 Ocean_coast_02_092025br0659AM by YevgVerh  https://freesound.org/s/827528/ 
-            - License: Creative Commons</p> 
+   
 </div>
 
 </div>
@@ -989,7 +1006,11 @@ h2 + div a:hover,
 <audio id="audio" preload="auto"></audio>
 
        
-        
+   <p >XAI Grok / Gooogle Gemini / goldandjadeM.
+            影片 grok / 圖片 Gemini<br><br>
+            
+            音響音樂使用 Ocean_coast_02_092025br0659AM by YevgVerh  https://freesound.org/s/827528/ 
+            - License: Creative Commons</p>       
  
 </div>
 
@@ -1074,19 +1095,19 @@ h2 + div a:hover,
      <div class="module art-module">
         <h3>看圖練說話🌈</h3>
         <img src="elephant.jpg" alt="美景" class="art-image" id="sceneryImage">
-       
+       <br>
+       <br>
+       <br>
+       <br>
     </div>
     <div class="module message-module">
-        <p class="gemini-message">EGM. 守護心語：</p>
+        <p class="gemini-message"> XGM. 守護心語：</p>
         <p class="gemini-message-text"> 1. 過馬路一定要看紅綠燈，並且走斑馬線，遇到 大卡車 大貨車 時，要離它們遠一點，要不然會被捲進去喔 !<br><br>
             2.每一區都可按 Ctrl+Z 放大，不建議用手機玩，但可玩，用手指把想玩的區域撐大。<br><br>3.遇到哪區沒顯示出來時，按 Ctrl+shift+R </p>
-            
-</div>
-
-
-
-
-<div class="module message-module2">
+   <br>
+                <br>
+                <br>
+            <div class="module message-module2">
         <h2 class="gemini-message-text2">電子寵物</h2>
 <br>
 
@@ -1132,6 +1153,13 @@ h2 + div a:hover,
 
    
  </div>
+
+</div>
+
+
+
+
+
 
 
     
