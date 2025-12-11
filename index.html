@@ -2775,76 +2775,67 @@ window.addEventListener('load', () => {
 
 
 <script>
-// ============ SleepingUgly 終極防拷貝 (純淨版 - 已修復所有全形問題) ============
+// ============ SleepingUgly 防拷貝 V2.0 (全世界通用，優化手機性能) ============
 
 (() => {
-  // === 0. 設置您的 GitHub Pages 網域！(必填) ===
-  const GITHUB_HOST = 'sleepingugly.github.io';
+    // 原始域名鎖已移除，現在代碼可在全世界任何網站運行。
 
-  // 1. 每0.3秒狂丟 debugger → F12 永久卡死
-  setInterval(() => { Function('debugger')(); }, 300);
+    // 1. 移除每0.3秒狂丟 debugger (解決手機卡頓問題)
+    // setInterval(() => { Function('debugger')(); }, 300); // <-- 此行已註解或移除
 
-  // 2. 完全封死右鍵與所有開發者快捷鍵
-  document.oncontextmenu = () => false;
-  document.onkeydown = document.onkeyup = document.onkeypress = e => {
-    if (
-      e.key === 'F12' ||
-      (e.ctrlKey && e.shiftKey && ['I', 'J', 'C', 'K'].includes(e.key.toUpperCase())) ||
-      (e.ctrlKey && ['U', 'S', 'A', 'C'].includes(e.key.toUpperCase()))
-    ) {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }
-  };
+    // 2. 完全封死右鍵與所有開發者快捷鍵 (保留，這是防拷貝的核心)
+    document.oncontextmenu = () => false;
+    document.onkeydown = document.onkeyup = document.onkeypress = e => {
+        if (
+            e.key === 'F12' ||
+            (e.ctrlKey && e.shiftKey && ['I', 'J', 'C', 'K'].includes(e.key.toUpperCase())) ||
+            (e.ctrlKey && ['U', 'S', 'A', 'C'].includes(e.key.toUpperCase()))
+        ) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    };
 
-  // 3. 域名鎖 (只允許自己的 GitHub Pages + 本地測試)
-  const allowed = [GITHUB_HOST, 'localhost', '127.0.0.1', ''];
-  if (!allowed.includes(location.hostname)) {
-    document.body.innerHTML = `<div style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:#fff9fb;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:30px;font-family:'Comic Sans MS',sans-serif;">
-      <h1 style="font-size:48px;color:#ff69b4;">只能在原網站玩喔～</h1>
-      <p style="font-size:28px;background:#ffeef8;padding:20px;border-radius:20px;">https://${GITHUB_HOST}/kids-learning-v-2025/</p>
-    </div>`;
-    throw '';
-  }
+    // 3. 原始域名鎖區塊已移除 (為了讓全世界都能用)
 
-  // 4. 徹底封死選取與複製 (迷宮區拖曳已特別放行)
-  const blockSelect = e => {
-    // 關鍵：如果點擊的是迷宮容器內的元素，就允許選取/拖曳
-    if (e.target.closest('#maze-container')) {
-      return true;
-    }
+    // 4. 徹底封死選取與複製 (保留，這是防拷貝的核心)
+    const blockSelect = e => {
+        // 關鍵：如果點擊的是迷宮容器內的元素，就允許選取/拖曳 (保留迷宮特殊放行)
+        if (e.target.closest('#maze-container')) {
+            return true;
+        }
 
-    // 允許 input、textarea、button 等可編輯元素正常操作
-    if (!e.target.closest('input, textarea, button, [contenteditable]')) {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }
-  };
+        // 允許 input、textarea、button 等可編輯元素正常操作
+        if (!e.target.closest('input, textarea, button, [contenteditable]')) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    };
 
-  const eventsToBlock = ['selectstart', 'mousedown', 'mouseup', 'touchstart', 'touchmove', 'copy', 'cut', 'contextmenu'];
-  eventsToBlock.forEach(ev => 
-    document.addEventListener(ev, blockSelect, { capture: true, passive: false })
-  );
+    const eventsToBlock = ['selectstart', 'mousedown', 'mouseup', 'touchstart', 'touchmove', 'copy', 'cut', 'contextmenu'];
+    eventsToBlock.forEach(ev => 
+        document.addEventListener(ev, blockSelect, { capture: true, passive: false })
+    );
 
-  // 防雙擊選字
-  document.addEventListener('mousedown', e => {
-    if (e.detail > 1) e.preventDefault();
-  }, { capture: true, passive: false });
+    // 防雙擊選字
+    document.addEventListener('mousedown', e => {
+        if (e.detail > 1) e.preventDefault();
+    }, { capture: true, passive: false });
 
-  // 6. 絕殺：任何選取到的文字立刻清空
-  setInterval(() => {
-    if (window.getSelection && window.getSelection().toString()) {
-      window.getSelection().empty();
-    }
-  }, 50);
+    // 5. 絕殺：任何選取到的文字立刻清空 (保留)
+    setInterval(() => {
+        if (window.getSelection && window.getSelection().toString()) {
+            window.getSelection().empty();
+        }
+    }, 50);
 
-  // 7. 粉紅彩蛋
-  console.log(
-    '%c❤️ SleepingUgly原創保護模式已啟動\n複製貼上不可能的啦',
-    'color:#ff69b4;font-size:18px;font-weight:bold'
-  );
+    // 6. 粉紅彩蛋
+    console.log(
+        '%c❤️ SleepingUgly原創保護模式已啟動\n複製貼上不可能的啦',
+        'color:#ff69b4;font-size:18px;font-weight:bold'
+    );
 })();
 </script>
 
@@ -2882,8 +2873,8 @@ const videos = {
     heal:      ['dogdoctor.mp4'],
     out:       ['doglongwall.mp4','dogwalk.mp4','dogdisney.mp4','dog101.mp4','dogjapan.mp4','dogitaly.mp4','dogswims.mp4','gotospace.mp4','spaceelon.mp4','dogplay1.mp4','dogplay.mp4'],
     watch:     ['dogsleep.mp4','dogbreak.mp4','dpgplaycups.mp4','dogitsback.mp4','dogwithorangecat.mp4','dogwithtwocats.mp4','dogmouse1.mp4','dogsmart1.mp4'],
-    dress:     ['dogcollar.mp4','dress2.mp4','dress3.mp4','newdress1.mp4','withcollar.mp4','newdress.mp4'], //  // 換你實際的換裝影片檔名
-    default:   ['dogsleep.mp4','dogbreak.mp4','dogplaycups.mp4','dogitsback.mp4','dogtricks.mp4']
+    dress:     ['dogcollar.mp4','newdress1.mp4','newdress.mp4'], //  // 換你實際的換裝影片檔名
+    default:   ['dogsleep.mp4','dogbreak.mp4','dogplaycups.mp4',]
 };
 
 // 按鈕顯示文字
