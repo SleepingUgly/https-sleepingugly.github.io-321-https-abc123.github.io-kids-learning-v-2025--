@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>腦力開發遊戲</title>
-    <meta name="description" content="學齡學習網頁，腦力開發遊戲。">
+    <meta name="description" content="學齡學習網頁，兒童腦力開發遊戲。">
     <meta name="keywords" content="自閉症,遲緩兒,腦力開發,大字體閱讀,國小練習,天使">
     <meta name="author" content="遲緩兒，腦力開發遊戲">
     
@@ -892,6 +892,7 @@ h2 + div a:hover,
 
     <div class="quiz-wrapper">
         <h2>九九乘法表隨機考試</h2>
+        <h2>Multiplication practice</h2>
         <div id="quiz-questions"></div>
         <button class="quiz-button" onclick="checkAnswers()">送出答案</button>
         <div id="quiz-result" class="quiz-result">點擊「送出答案」查看結果</div>
@@ -928,6 +929,9 @@ h2 + div a:hover,
     <div id="maze-container" style="position:relative;display:inline-block;box-shadow:0 0 15px rgba(238, 125, 125, 0.856);border-radius:12px;overflow:hidden;">
         <img id="maze-img" src="maze1.jpg" style="display:block;max-width:100%;height:auto;">
         <canvas id="draw-canvas"></canvas>
+          <h1>❄️❄️Maze Zone❄️❄️</h1>
+          <p>Press "Ctrl" and "+" to zoom in.</p>
+          <p>Drag your mouse to draw lines.</p>
     </div>
 </div>
 
@@ -1012,7 +1016,7 @@ h2 + div a:hover,
 <audio id="audio" preload="auto"></audio>
 
        
-   <p >XAI Grok / Gooogle Gemini / goldandjadeM.
+   <p >XAI Grok / Gooogle Gemini / Micropaint / goldandjadeM.
             影片 grok / 圖片 Gemini<br><br>
             
             音響音樂使用 Ocean_coast_02_092025br0659AM by YevgVerh  https://freesound.org/s/827528/ 
@@ -1026,8 +1030,14 @@ h2 + div a:hover,
 
 
 <div class="gobang-section">
-    <h2>五子棋 AI 對戰 (先手: 玩家 黑棋)</h2>
-    <div id="status">遊戲進行中...</div>
+ <h2 style="text-align: center; margin-bottom: 15px; color: #6a1b9a;">五子棋 AI 對戰 (先手: 玩家 黑棋)</h2>
+
+<h2 style="text-align: center; margin-bottom: 25px; color: #6a1b9a;">Gomoku: Player vs. AI (Black Moves First)</h2> 
+
+<h style="display: block; text-align: center; margin-bottom: 40px; font-size: 1.2em; font-weight: bold;">
+    The first player to get 5 stones in a row wins!
+</h>
+          <div id="status">遊戲進行中...</div>
     <div id="gobang-board"></div>
     <button class="restart-button" onclick="initBoard()">重新開始</button>
 
@@ -1035,8 +1045,9 @@ h2 + div a:hover,
 
 
  <div class="new-section">
-    <h2>🧠記憶配對遊戲</h2>
-  
+    <h2 style="display: block; text-align: center;">🧠記憶配對遊戲🧠</h2>
+<h2 style="display: block; text-align: center;">Memory Match Game</h2>
+    
     
     <div id="memory-game" 
      style="display:grid;
@@ -1135,7 +1146,7 @@ h2 + div a:hover,
 
     <!-- 數學時間 -->
     <div class="module math-module">
-        <h3>數學時間</h3>
+        <h3>數學時間🌈Math</h3>
         <div class="math-question-new">
             <span id="math-problem" class="large-text">載入中...</span>
             <input type="number" id="math-input-new" placeholder="?" autofocus>
@@ -1147,7 +1158,7 @@ h2 + div a:hover,
 
 
      <div class="module art-module">
-        <h3>看圖練說話🌈</h3>
+        <h3>看圖練說話🌈Look and Speak</h3>
         <img src="elephant.jpg" alt="美景" class="art-image" id="sceneryImage">
        <br>
        <br>
@@ -2919,7 +2930,7 @@ const videos = {
     bath:      ['dogshower1.mp4','dogshower2.mp4'],
     clean_poo: ['dpgpoo.mp4'],
     heal:      ['dogdoctor.mp4'],
-    out:       ['doglongwall.mp4','dogwalk.mp4','dogdisney.mp4','dog101.mp4','dogjapan.mp4','dogitaly.mp4','dogswims.mp4','gotospace.mp4','spaceelon.mp4','dogplay1.mp4','dogplay.mp4'],
+    out:       ['bigtree.mp4','doglongwall.mp4','dogwalk.mp4','dogdisney.mp4','dog101.mp4','dogjapan.mp4','dogitaly.mp4','dogswims.mp4','gotospace.mp4','spaceelon.mp4','dogplay1.mp4','dogplay.mp4'],
     watch:     ['dogcook.mp4','dogsleep.mp4','dogbreak.mp4','dpgplaycups.mp4','dogitsback.mp4','dogwithorangecat.mp4','dogwithtwocats.mp4','dogmouse1.mp4','dogsmart1.mp4'],
     dress:     ['dogcollar.mp4','newdress1.mp4','newdress.mp4'], //  // 換你實際的換裝影片檔名
     default:   ['dogsleep.mp4','dogbreak.mp4','dogplaycups.mp4','newdress1.mp4','newdress.mp4']
