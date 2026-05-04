@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>小精靈 (Pac-Man) 三關卡教學版</title>
+    <style>
+        :root {
+            --bg-color: #05050a;
+            --wall-color: #3b59ff;
+            --pacman-color: #ffff00;
+            --dot-color: #ffb8ae;
+            --text-color: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            font-family: '微軟正黑體', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        .new-section {
+            width: 95%;
+            max-width: 580px; 
+            background: rgba(20, 20, 35, 0.8);
+            border-radius: 30px;
+            padding: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 20px rgba(59, 89, 255, 0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+        }
+
+        h2 {
+            margin: 5px 0 10px;
+            font-size: 1.6rem;
+            color: #ffeb3b;
+            text-shadow: 0 0 12px rgba(255, 235, 59, 0.6);
+        }
+
+        .stage-selectors {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-stage {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-stage:hover, .btn-stage.active {
+            background: var(--wall-color);
+            border-color: #fff;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--pacman-color);
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* 速度調整 BAR ── 隨時都可以拉 */
+        .speed-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 12px 0 8px;
+            padding: 10px 18px;
+            background: rgba(0,0,0,0.35);
+            border-radius: 9999px;
+            border: 2px solid rgba(255,235,59,0.3);
+            font-size: 1.1rem;
+            color: #ffeb3b;
+            box-shadow: 0 4px 15px rgba(255,235,59,0.2);
+        }
+        .speed-control label {
+            font-weight: 900;
+            white-space: nowrap;
+            letter-spacing: 1px;
+        }
+        #speed-slider {
+            width: 240px;
+            accent-color: #ffeb3b;
+            cursor: pointer;
+            height: 12px;
+            border-radius: 9999px;
+        }
+        #speed-val {
+            font-family: 'Courier New', monospace;
+            font-size: 1.35rem;
+            font-weight: bold;
+            min-width: 42px;
+            text-align: center;
+            color: #ffff00;
+            text-shadow: 0 0 8px #ffff00;
+        }
+        .speed-hint {
+            font-size: 0.85rem;
+            color: #a0a0ff;
+            margin-top: 4px;
+            opacity: 0.9;
+        }
+
+        .question-container {
+            position: relative;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 4px solid var(--wall-color);
+            box-shadow: 0 0 30px rgba(36, 36, 255, 0.4);
+            margin: 0 auto;
+            touch-action: none;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            image-rendering: pixelated; 
+            max-width: 100%;
+            height: auto;
+            max-height: 65vh; 
+        }
+
+        .game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10;
+            backdrop-filter: blur(6px);
+        }
+
+        .btn-start {
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #ffeb3b, #fbc02d);
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            font-weight: 900;
+            color: #000;
+            box-shadow: 0 5px 20px rgba(255, 235, 59, 0.5);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-start:hover {
+            transform: scale(1.12) translateY(-4px);
+        }
+
+        .controls-mobile {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            width: 180px;
+            margin: 15px auto 5px;
+        }
+
+        @media (min-width: 768px) {
+            .controls-mobile { display: none; }
+        }
+
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3rem;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.1s;
+        }
+        
+        .control-btn:active {
+            background: var(--wall-color);
+            transform: scale(0.9);
+        }
+        
+        .up { grid-column: 2; }
+        .left { grid-column: 1; }
+        .down { grid-column: 2; }
+        .right { grid-column: 3; }
+
+    </style>
+</head>
+<body>
+
+<div class="new-section">
+    <h2>⭐ 小精靈大冒險 🌈</h2>
+    
+    <div id="quiz-stage-selectors" class="stage-selectors">
+        <button class="btn-stage active" onclick="selectLevel(1)">第一關</button>
+        <button class="btn-stage" onclick="selectLevel(2)">第二關</button>
+        <button class="btn-stage" onclick="selectLevel(3)">第三關</button>
+    </div>
+
+    <div class="stats">
+        <div>LEVEL: <span id="level-val">1</span></div>
+        <div>SCORE: <span id="score-val">0</span></div>
+        <div>LIVES: <span id="lives-val">3</span></div>
+    </div>
+
+    <!-- 速度調整 BAR ── 隨時都可以拉 -->
+    <div class="speed-control">
+        <label>🚀 小精靈速度：</label>
+        <input type="range" id="speed-slider" min="0.8" max="3.5" step="0.1" value="1.8">
+        <span id="speed-val">1.8</span>
+    </div>
+    <div class="speed-hint">速度隨時可調整，左上角圓圈可重新整理<br>Ctrl加 + 號 可以調整螢幕大小</div>
+
+    <div id="language-game" class="question-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="game-overlay" class="game-overlay">
+            <h1 id="overlay-title" style="color: var(--pacman-color); margin-bottom: 10px; font-size: 2.2rem;">READY?</h1>
+            <p id="overlay-msg" style="margin-bottom: 25px; opacity: 0.8; font-size: 1rem;">第一關：練習吃豆豆（沒有妖怪）</p>
+            <button id="start-btn" class="btn-start">開始遊戲</button>
+        </div>
+    </div>
+
+    <div class="controls-mobile">
+        <div class="control-btn up" onpointerdown="changeDir(0, -1)">▲</div>
+        <div class="control-btn left" onpointerdown="changeDir(-1, 0)">◀</div>
+        <div class="control-btn down" onpointerdown="changeDir(0, 1)">▼</div>
+        <div class="control-btn right" onpointerdown="changeDir(1, 0)">▶</div>
+    </div>
+</div>
+
+<script>
+    // --- 音效引擎 ---
+    let audioCtx = null;
+    function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+    function playSound(type) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+        if (type === 'eat') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+            gain.gain.setValueAtTime(0.04, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc.start(); osc.stop(now + 0.1);
+        } else if (type === 'start') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.5);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.5);
+            osc.start(); osc.stop(now + 0.5);
+        } else if (type === 'death') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(500, now); osc.frequency.linearRampToValueAtTime(50, now + 0.8);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.8);
+            osc.start(); osc.stop(now + 0.8);
+        } else if (type === 'win') {
+            osc.type = 'square'; [523, 659, 783, 1046].forEach((f, i) => osc.frequency.setValueAtTime(f, now + i * 0.1));
+            gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.6);
+            osc.start(); osc.stop(now + 0.6);
+        }
+    }
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score-val');
+    const livesEl = document.getElementById('lives-val');
+    const levelEl = document.getElementById('level-val');
+    const overlay = document.getElementById('game-overlay');
+    const startBtn = document.getElementById('start-btn');
+    const overlayTitle = document.getElementById('overlay-title');
+    const overlayMsg = document.getElementById('overlay-msg');
+
+    const speedSlider = document.getElementById('speed-slider');
+    const speedVal = document.getElementById('speed-val');
+
+    const TILE_SIZE = 27; 
+    const ROWS = 21;
+    const COLS = 19;
+    canvas.width = COLS * TILE_SIZE;
+    canvas.height = ROWS * TILE_SIZE;
+
+    const originalMap = [
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+        [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
+        [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+        [1,1,1,1,0,1,1,1,2,1,2,1,1,1,0,1,1,1,1],
+        [2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2],
+        [1,1,1,1,0,1,2,1,1,2,1,1,2,1,0,1,1,1,1],
+        [2,2,2,2,0,2,2,1,2,2,2,1,2,2,0,2,2,2,2],
+        [1,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,1],
+        [2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2],
+        [1,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,1],
+        [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+        [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+        [1,0,0,1,0,0,0,0,0,2,0,0,0,0,0,1,0,0,1],
+        [1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1],
+        [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+        [1,0,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    ];
+
+    let map = [];
+    let gameState = 'STOPPED';
+    let currentLevel = 1;
+    let score = 0;
+    let lives = 3;
+    let dotsLeft = 0;
+
+    const pacman = {
+        x: 0, y: 0, dirX: 0, dirY: 0, nextDirX: 0, nextDirY: 0,
+        speed: 1.8,
+        radius: TILE_SIZE / 2.3,
+        mouth: 0,
+        mouthSpeed: 0.03
+    };
+
+    let ghosts = [];
+
+    function selectLevel(level) {
+        currentLevel = level;
+        const btns = document.querySelectorAll('.btn-stage');
+        btns.forEach((btn, idx) => idx + 1 === level ? btn.classList.add('active') : btn.classList.remove('active'));
+
+        if (gameState === 'RUNNING') initLevel(level);
+        else {
+            overlay.style.display = 'flex';
+            overlayTitle.innerText = `READY - LEVEL ${level}`;
+            overlayMsg.innerText = level === 1 ? "練習吃豆豆（沒有妖怪）" : level === 2 ? "妖怪出來囉！一隻慢速妖怪" : "大挑戰！兩隻慢速妖怪";
+            initLevel(level);
+            draw();
+        }
+    }
+
+    function initLevel(level) {
+        currentLevel = level;
+        levelEl.innerText = currentLevel;
+        map = originalMap.map(row => [...row]);
+        dotsLeft = 0;
+        for(let r=0; r<ROWS; r++) for(let c=0; c<COLS; c++) if(map[r][c] === 0) dotsLeft++;
+        
+        ghosts = level === 1 ? [] :
+                 level === 2 ? [{ startX: 1, startY: 1, x: 0, y: 0, color: '#FF0000', dirX: 1, dirY: 0, speed: 1.0 }] :
+                 [{ startX: 1, startY: 1, x: 0, y: 0, color: '#FF0000', dirX: 1, dirY: 0, speed: 1.0 },
+                  { startX: 17, startY: 1, x: 0, y: 0, color: '#FFB8FF', dirX: -1, dirY: 0, speed: 1.0 }];
+        resetPositions();
+    }
+
+    function resetPositions() {
+        pacman.x = 9 * TILE_SIZE + TILE_SIZE/2;
+        pacman.y = 15 * TILE_SIZE + TILE_SIZE/2;
+        pacman.dirX = pacman.dirY = pacman.nextDirX = pacman.nextDirY = 0;
+        ghosts.forEach(g => {
+            g.x = g.startX * TILE_SIZE + TILE_SIZE/2;
+            g.y = g.startY * TILE_SIZE + TILE_SIZE/2;
+            g.dirX = g.color === '#FF0000' ? 1 : -1;
+            g.dirY = 0;
+        });
+    }
+
+    function drawMap() {
+        ctx.shadowBlur = 0;
+        for(let r=0; r<ROWS; r++) {
+            for(let c=0; c<COLS; c++) {
+                let x = c * TILE_SIZE, y = r * TILE_SIZE;
+                if(map[r][c] === 1) {
+                    ctx.strokeStyle = '#2424ff'; ctx.lineWidth = 3; ctx.shadowColor = '#2424ff'; ctx.shadowBlur = 6;
+                    ctx.strokeRect(x+4, y+4, TILE_SIZE-8, TILE_SIZE-8);
+                } else if(map[r][c] === 0) {
+                    ctx.fillStyle = '#ffb8ae';
+                    ctx.beginPath();
+                    ctx.arc(x + TILE_SIZE/2, y + TILE_SIZE/2, 2.5, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            }
+        }
+    }
+
+    function drawPacman() {
+        ctx.shadowBlur = 10; ctx.shadowColor = '#ffff00'; ctx.fillStyle = '#ffff00';
+        ctx.beginPath();
+        let rotation = 0;
+        if(pacman.dirX === 1) rotation = 0;
+        else if(pacman.dirX === -1) rotation = Math.PI;
+        else if(pacman.dirY === 1) rotation = Math.PI/2;
+        else if(pacman.dirY === -1) rotation = -Math.PI/2;
+
+        pacman.mouth += pacman.mouthSpeed;
+        if(pacman.mouth > 0.25 || pacman.mouth < 0) pacman.mouthSpeed *= -1;
+
+        ctx.moveTo(pacman.x, pacman.y);
+        ctx.arc(pacman.x, pacman.y, pacman.radius, rotation + pacman.mouth, rotation + Math.PI*2 - pacman.mouth);
+        ctx.fill();
+    }
+
+    function drawGhosts() {
+        ghosts.forEach(g => {
+            ctx.shadowBlur = 8; ctx.shadowColor = g.color; ctx.fillStyle = g.color;
+            ctx.beginPath();
+            ctx.arc(g.x, g.y, pacman.radius, Math.PI, 0);
+            ctx.lineTo(g.x + pacman.radius, g.y + pacman.radius);
+            ctx.lineTo(g.x - pacman.radius, g.y + pacman.radius);
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(g.x-3.5, g.y-2.5, 3.5, 0, Math.PI*2);
+            ctx.arc(g.x+3.5, g.y-2.5, 3.5, 0, Math.PI*2);
+            ctx.fill();
+
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(g.x-3.5 + g.dirX*1.5, g.y-2.5 + g.dirY*1.5, 1.5, 0, Math.PI*2);
+            ctx.arc(g.x+3.5 + g.dirX*1.5, g.y-2.5 + g.dirY*1.5, 1.5, 0, Math.PI*2);
+            ctx.fill();
+        });
+    }
+
+    function isWalkable(col, row) {
+        if(row < 0 || row >= ROWS || col < 0 || col >= COLS) return false;
+        return map[row][col] !== 1;
+    }
+
+    function update() {
+        if(gameState !== 'RUNNING') return;
+
+        let col = Math.floor(pacman.x / TILE_SIZE);
+        let row = Math.floor(pacman.y / TILE_SIZE);
+        let centerX = col * TILE_SIZE + TILE_SIZE/2;
+        let centerY = row * TILE_SIZE + TILE_SIZE/2;
+
+        if(pacman.nextDirX || pacman.nextDirY) {
+            if(Math.abs(pacman.x - centerX) < pacman.speed && Math.abs(pacman.y - centerY) < pacman.speed) {
+                if(isWalkable(col + pacman.nextDirX, row + pacman.nextDirY)) {
+                    pacman.dirX = pacman.nextDirX;
+                    pacman.dirY = pacman.nextDirY;
+                    pacman.x = centerX; pacman.y = centerY;
+                    pacman.nextDirX = pacman.nextDirY = 0;
+                }
+            }
+        }
+
+        if(pacman.dirX || pacman.dirY) {
+            let nCol = col + (pacman.dirX > 0 ? 1 : pacman.dirX < 0 ? -1 : 0);
+            let nRow = row + (pacman.dirY > 0 ? 1 : pacman.dirY < 0 ? -1 : 0);
+            if(!isWalkable(nCol, nRow)) {
+                if((pacman.dirX > 0 && pacman.x >= centerX) || (pacman.dirX < 0 && pacman.x <= centerX) ||
+                   (pacman.dirY > 0 && pacman.y >= centerY) || (pacman.dirY < 0 && pacman.y <= centerY)) {
+                    pacman.x = centerX; pacman.y = centerY;
+                    pacman.dirX = pacman.dirY = 0;
+                }
+            }
+            pacman.x += pacman.dirX * pacman.speed;
+            pacman.y += pacman.dirY * pacman.speed;
+        }
+
+        if(map[row][col] === 0) {
+            map[row][col] = 2;
+            score += 10;
+            dotsLeft--;
+            scoreEl.innerText = score;
+            playSound('eat');
+            if(dotsLeft === 0) endLevel();
+        }
+
+        ghosts.forEach(g => {
+            let gCol = Math.floor(g.x / TILE_SIZE);
+            let gRow = Math.floor(g.y / TILE_SIZE);
+            let gCX = gCol * TILE_SIZE + TILE_SIZE/2;
+            let gCY = gRow * TILE_SIZE + TILE_SIZE/2;
+
+            if(Math.abs(g.x - gCX) < g.speed && Math.abs(g.y - gCY) < g.speed) {
+                let p = [];
+                if(isWalkable(gCol+1, gRow) && g.dirX !== -1) p.push({x:1,y:0});
+                if(isWalkable(gCol-1, gRow) && g.dirX !== 1) p.push({x:-1,y:0});
+                if(isWalkable(gCol, gRow+1) && g.dirY !== -1) p.push({x:0,y:1});
+                if(isWalkable(gCol, gRow-1) && g.dirY !== 1) p.push({x:0,y:-1});
+                if(p.length) {
+                    let c = p[Math.floor(Math.random()*p.length)];
+                    g.dirX = c.x; g.dirY = c.y;
+                } else {
+                    g.dirX *= -1; g.dirY *= -1;
+                }
+                g.x = gCX; g.y = gCY;
+            }
+            g.x += g.dirX * g.speed;
+            g.y += g.dirY * g.speed;
+
+            if(Math.hypot(pacman.x - g.x, pacman.y - g.y) < TILE_SIZE * 0.75) {
+                lives--;
+                livesEl.innerText = lives;
+                playSound('death');
+                if(lives <= 0) endGame('💀 遊戲結束');
+                else resetPositions();
+            }
+        });
+    }
+
+    function draw() {
+        ctx.fillStyle = '#05050a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawMap();
+        drawPacman();
+        drawGhosts();
+    }
+
+    function gameLoopFn() {
+        update();
+        draw();
+        if(gameState === 'RUNNING') requestAnimationFrame(gameLoopFn);
+    }
+
+    function endLevel() {
+        gameState = 'STOPPED';
+        playSound('win');
+        overlay.style.display = 'flex';
+        if(currentLevel === 1) {
+            overlayTitle.innerText = '🎉 第一關達成！';
+            overlayMsg.innerText = '接下來... 妖怪要出來囉！';
+            startBtn.innerText = '進入第二關';
+        } else if(currentLevel === 2) {
+            overlayTitle.innerText = '🎉 第二關達成！';
+            overlayMsg.innerText = '小心！現在有兩支妖怪！';
+            startBtn.innerText = '進入第三關挑戰';
+        } else {
+            endGame('🏆 全破關啦！恭喜小朋友！');
+        }
+    }
+
+    function endGame(title) {
+        gameState = 'STOPPED';
+        overlay.style.display = 'flex';
+        overlayTitle.innerText = title;
+        overlayTitle.style.color = title.includes('💀') ? '#f44336' : '#4caf50';
+        overlayMsg.innerText = `最終得分: ${score}`;
+        startBtn.innerText = '重新遊戲';
+    }
+
+    function changeDir(dx, dy) {
+        pacman.nextDirX = dx; pacman.nextDirY = dy;
+        if(!pacman.dirX && !pacman.dirY) {
+            let c = Math.floor(pacman.x/TILE_SIZE);
+            let r = Math.floor(pacman.y/TILE_SIZE);
+            if(isWalkable(c+dx, r+dy)) {
+                pacman.dirX = dx;
+                pacman.dirY = dy;
+            }
+        }
+    }
+
+    // ====================== 速度 BAR ── 隨時都可以調整 + Gemini 建議修正 ======================
+    function initSpeedControl() {
+        speedSlider.addEventListener('input', () => {
+            pacman.speed = parseFloat(speedSlider.value);
+            speedVal.textContent = pacman.speed.toFixed(1);
+            
+            // Gemini 建議：調整完立刻取消聚焦，防止方向鍵還在控制滑桿
+            speedSlider.blur();
+        });
+        speedVal.textContent = pacman.speed.toFixed(1);
+    }
+
+    window.addEventListener('keydown', e => {
+        // Gemini 建議：阻止方向鍵的預設行為（避免滑桿被誤操作）
+        if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            e.preventDefault();
+        }
+
+        if(e.key === 'ArrowUp') changeDir(0,-1);
+        if(e.key === 'ArrowDown') changeDir(0,1);
+        if(e.key === 'ArrowLeft') changeDir(-1,0);
+        if(e.key === 'ArrowRight') changeDir(1,0);
+    });
+
+    startBtn.addEventListener('click', () => {
+        initAudio();
+        overlay.style.display = 'none';
+
+        if(startBtn.innerText === '重新遊戲') {
+            score = 0; scoreEl.innerText = 0;
+            lives = 3; livesEl.innerText = 3;
+            initLevel(1);
+            selectLevel(1);
+        } else if(startBtn.innerText === '進入第二關') {
+            selectLevel(2);
+        } else if(startBtn.innerText === '進入第三關挑戰') {
+            selectLevel(3);
+        } else {
+            initLevel(currentLevel);
+        }
+
+        gameState = 'RUNNING';
+        gameLoopFn();
+        playSound('start');
+    });
+
+    // 初始化遊戲
+    initLevel(1);
+    initSpeedControl();
+    draw();
+</script>
+
+</body>
+</html>
