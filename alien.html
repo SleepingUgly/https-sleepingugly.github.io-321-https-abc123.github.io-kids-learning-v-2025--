@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宇宙人物資救援行動：家族冒險最終版</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #0a0a2a;
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        canvas {
+            display: block;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+            background: linear-gradient(to bottom, #1e3c72, #2a5298, #6a11cb);
+        }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            pointer-events: none;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+        .controls-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            background: rgba(0,0,0,0.5);
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            z-index: 10;
+        }
+        #boss-ui {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            display: none;
+            text-align: center;
+            color: #ff4d4d;
+            font-weight: bold;
+            z-index: 20;
+        }
+        #boss-hp-bg {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border: 2px solid white;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        #boss-hp-fill {
+            width: 100%;
+            height: 100%;
+            background: #ff4d4d;
+            transition: width 0.3s;
+        }
+        #start-prompt {
+            position: absolute;
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            background: rgba(0,0,0,0.7);
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            z-index: 100;
+        }
+        #end-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            border: 3px solid #ffd700;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+            z-index: 200;
+            display: none;
+        }
+        #end-screen h2 {
+            margin: 0 0 20px 0;
+            font-size: 42px;
+            color: gold;
+            text-shadow: 0 0 15px gold;
+        }
+        #play-again {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 24px;
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #c0392b;
+            transition: all 0.2s;
+        }
+        #play-again:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #c0392b;
+        }
+        #level-up-ui {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: gold;
+            font-size: 48px;
+            font-weight: bold;
+            text-shadow: 0 0 20px orange;
+            display: none;
+            z-index: 50;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-prompt">🚀 點擊畫面開始星際救援任務！</div>
+    <div id="level-up-ui">第二關：糖果星系大驚喜！🍭</div>
+
+    <div id="ui">
+        <h1 style="margin:0;">✨ 物資分送進度: <span id="score">0</span></h1>
+    </div>
+
+    <div id="boss-ui">
+        <h2>👾 星際大魔王出現了！跳起來踩他的頭！</h2>
+        <div id="boss-hp-bg"><div id="boss-hp-fill"></div></div>
+    </div>
+
+    <div class="controls-hint">
+        控制：A (左) | D (右) | W 或 空白鍵 (跳躍) <br>
+        <small>第二關：自己跳起來吃糖果！</small>
+    </div>
+
+    <!-- 新增：遊戲結束畫面 -->
+    <div id="end-screen">
+        <h2>🎉 任務完美達成！</h2>
+        <p style="font-size: 22px; margin: 15px 0;">你拯救了整個宇宙！</p>
+        <p style="font-size: 28px; color: #ffd700;">最終分數: <span id="final-score">0</span></p>
+        <button id="play-again">🔄 再玩一次</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const bossUi = document.getElementById('boss-ui');
+        const bossHpFill = document.getElementById('boss-hp-fill');
+        const startPrompt = document.getElementById('start-prompt');
+        const levelUpUi = document.getElementById('level-up-ui');
+        const endScreen = document.getElementById('end-screen');
+        const finalScore = document.getElementById('final-score');
+        const playAgainBtn = document.getElementById('play-again');
+
+        const thankYouList = [
+            "謝謝你！！", "超級感謝！", "好棒喔，謝謝！", 
+            "谢谢你！！", "太感谢了！",                 
+            "Thank you!!", "Thanks a lot!", "You're the best!", 
+            "Gracias !!", "شكراً لك !!", "Merci !!", "Danke !!", "Grazie !!", 
+            "ありがとうございます !!", "감사합니다 !!",
+            "⏃⍀⟟⏃ ✨ (Aria!)", "⌰⎍☊⏃ 💖 (Luca!)"
+        ];
+
+        const candyIcons = ["🍭", "🍬", "🍪", "🍩", "🍫", "🧁", "📦", "🎁"];
+
+        const Sound = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+            play(freq, type, duration, vol, slide = 0) {
+                if (!this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    if (slide) osc.frequency.exponentialRampToValueAtTime(slide, this.ctx.currentTime + duration);
+                    gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e) {}
+            },
+            jump() { this.play(150, 'triangle', 0.3, 0.15, 600); },
+            deliver() { this.play(800, 'sine', 0.2, 0.1, 1200); },
+            hit() { this.play(100, 'square', 0.2, 0.2, 50); },
+            bossSpawn() { this.play(80, 'sawtooth', 1.0, 0.2, 200); },
+            levelUp() { this.play(523.25, 'sine', 0.5, 0.2, 1046.5); },
+            victory() {
+                if (!this.ctx) return;
+                [440, 554, 659, 880].forEach((f, i) => {
+                    setTimeout(() => this.play(f, 'sine', 0.5, 0.1), i * 150);
+                });
+            }
+        };
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        let score = 0;
+        let gameState = 'DELIVERING'; 
+        const gravity = 0.45; 
+        const keys = {};
+
+        const player = {
+            x: 150, y: 50, width: 80, height: 120,
+            velX: 0, velY: 0, speed: 6.5, 
+            jumpStrength: -18, 
+            grounded: false
+        };
+
+        const boss = {
+            x: 0, y: 0, width: 160, height: 240, hp: 5, maxHp: 5,
+            velX: 2, direction: 1, active: false, color: '#4a235a', hurtTime: 0
+        };
+
+        const airplane = { x: -100, y: 30, width: 450, height: 160 };
+        const aliens = [];
+        const platforms = [];
+        const bubbles = [];
+        const fallingItems = [];
+        let rainbowAlpha = 0;
+        let l2TransitionTriggered = false;
+        let level2GoalReached = false;
+        let gameEnded = false;
+
+        function initScene() {
+            platforms.push({ type: 'ground', x: -1000, y: canvas.height - 60, width: 15000, height: 60 });
+            
+            const brickLayouts = [
+                {x: 550, y: canvas.height - 220, w: 200},
+                {x: 850, y: canvas.height - 380, w: 200},
+                {x: 1800, y: canvas.height - 280, w: 320},
+                {x: 3200, y: canvas.height - 350, w: 200},
+                {x: 4800, y: canvas.height - 300, w: 250}
+            ];
+            brickLayouts.forEach(b => platforms.push({ type: 'brick', x: b.x, y: b.y, width: b.w, height: 50 }));
+
+            const starWallLayouts = [
+                {x: 1200, y: canvas.height - 450, w: 450},
+                {x: 2400, y: canvas.height - 500, w: 550},
+                {x: 4000, y: canvas.height - 420, w: 500},
+                {x: 5500, y: canvas.height - 480, w: 600}
+            ];
+            starWallLayouts.forEach(s => platforms.push({ type: 'starwall', x: s.x, y: s.y, width: s.w, height: 30 }));
+
+            for (let i = 0; i < 4; i++) createAlien(1000 + i * 1500, canvas.height - 140);
+            
+            createAlien(1350, canvas.height - 530); 
+            createAlien(1550, canvas.height - 530); 
+            createAlien(2600, canvas.height - 580); 
+            createAlien(2800, canvas.height - 580); 
+            createAlien(4150, canvas.height - 500); 
+            createAlien(4350, canvas.height - 500); 
+            createAlien(5700, canvas.height - 560); 
+            createAlien(5900, canvas.height - 560); 
+
+            createAlien(600, canvas.height - 300); 
+            createAlien(1950, canvas.height - 360); 
+            createAlien(3300, canvas.height - 430);
+            createAlien(4900, canvas.height - 380);
+        }
+
+        function createAlien(x, y, isFinal = false) {
+            aliens.push({
+                x: x, y: y, width: 80, height: 80,
+                color: `hsl(${Math.random() * 360}, 80%, 70%)`,
+                helped: false, opacity: 1, leaveSpeed: 0, isFinal: isFinal,
+                floatOffset: Math.random() * Math.PI * 2,
+                thankYouText: thankYouList[Math.floor(Math.random() * thankYouList.length)]
+            });
+        }
+
+        function spawnFinalCelebration() {
+            Sound.victory();
+            for (let i = 0; i < 30; i++) {
+                const x = player.x - 500 + Math.random() * 1000;
+                const y = canvas.height - 140;
+                createAlien(x, y, true);
+            }
+        }
+
+        function spawnFallingItem() {
+            const range = 1000;
+            const item = {
+                x: player.x - range/2 + Math.random() * range,
+                y: -100,
+                size: 50,
+                speed: 2.5 + Math.random() * 4.5,
+                icon: candyIcons[Math.floor(Math.random() * candyIcons.length)],
+                rot: Math.random() * Math.PI * 2,
+                rotSpeed: (Math.random() - 0.5) * 0.15
+            };
+            fallingItems.push(item);
+        }
+
+        function drawBackground() {
+            const pX = canvas.width * 0.7;
+            const pY = 250;
+            const pR = 300;
+            const grad = ctx.createRadialGradient(pX, pY, 50, pX, pY, pR);
+            if (gameState === 'BOSS_BATTLE') {
+                grad.addColorStop(0, '#ff4d4d');
+                grad.addColorStop(0.4, '#c0392b');
+            } else if (gameState === 'LEVEL_2') {
+                grad.addColorStop(0, '#f8bbd0'); 
+                grad.addColorStop(0.4, '#ce93d8');
+            } else {
+                grad.addColorStop(0, '#fbc2eb');
+                grad.addColorStop(0.4, '#a6c1ee');
+            }
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(pX, pY, pR, 0, Math.PI*2); ctx.fill();
+        }
+
+        function drawRainbow() {
+            if (rainbowAlpha <= 0 || gameState === 'LEVEL_2') return;
+            ctx.save();
+            ctx.globalAlpha = rainbowAlpha;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height * 0.8;
+            const baseRadius = canvas.width * 0.4;
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = "rgba(255, 215, 0, 0.8)"; 
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(255, 215, 0, 0.3)";
+            ctx.lineWidth = 150; 
+            ctx.arc(centerX, centerY, baseRadius + 45, Math.PI, 0, false);
+            ctx.stroke();
+            const colors = ["#FF0000", "#FF7F00", "#FFFF00", "#00FF00", "#0000FF", "#4B0082", "#8B00FF"];
+            ctx.lineWidth = 15;
+            ctx.lineCap = "round";
+            ctx.shadowBlur = 20;
+            colors.forEach((color, i) => {
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+                ctx.arc(centerX, centerY, baseRadius + (i * 15), Math.PI, 0, false);
+                ctx.stroke();
+            });
+            ctx.restore();
+        }
+
+        function drawAirplane() {
+            ctx.save();
+            ctx.translate(airplane.x, airplane.y);
+            ctx.fillStyle = '#f0f0f0';
+            ctx.beginPath(); ctx.ellipse(200, 80, 230, 75, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#dcdcdc';
+            ctx.fillRect(140, 50, 45, 180); ctx.fillRect(140, -120, 45, 180);
+            ctx.fillStyle = '#a9cce3';
+            for(let i=0; i<6; i++) ctx.fillRect(180 + i*35, 70, 18, 18);
+            ctx.restore();
+        }
+
+        function drawStar(cx, cy, spikes, outerRadius, innerRadius, color) {
+            let rot = Math.PI / 2 * 3;
+            let x = cx, y = cy, step = Math.PI / spikes;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - outerRadius);
+            for (let i = 0; i < spikes; i++) {
+                x = cx + Math.cos(rot) * outerRadius; y = cy + Math.sin(rot) * outerRadius; ctx.lineTo(x, y);
+                rot += step;
+                x = cx + Math.cos(rot) * innerRadius; y = cy + Math.sin(rot) * innerRadius; ctx.lineTo(x, y);
+                rot += step;
+            }
+            ctx.lineTo(cx, cy - outerRadius); ctx.closePath(); ctx.fillStyle = color; ctx.fill();
+        }
+
+        function drawPlatforms() {
+            platforms.forEach(p => {
+                if (p.type === 'ground') {
+                    ctx.fillStyle = (gameState === 'LEVEL_2') ? '#512e5f' : '#1c2833'; 
+                    ctx.fillRect(p.x, p.y, p.width, p.height);
+                } else if (p.type === 'brick') {
+                    ctx.fillStyle = (gameState === 'LEVEL_2') ? '#ec407a' : '#e67e22'; 
+                    ctx.fillRect(p.x, p.y, p.width, p.height);
+                    ctx.strokeStyle = '#880e4f'; ctx.lineWidth = 4; ctx.strokeRect(p.x, p.y, p.width, p.height);
+                    ctx.beginPath(); ctx.moveTo(p.x + p.width/2, p.y); ctx.lineTo(p.x + p.width/2, p.y + p.height); ctx.stroke();
+                } else if (p.type === 'starwall') {
+                    ctx.strokeStyle = 'rgba(241, 196, 15, 0.4)';
+                    ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(p.x, p.y + p.height/2); ctx.lineTo(p.x + p.width, p.y + p.height/2); ctx.stroke();
+                    for (let x = p.x; x <= p.x + p.width; x += 45) drawStar(x, p.y + p.height/2, 5, 18, 8, '#f1c40f');
+                }
+            });
+        }
+
+        function drawPlayer() {
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.fillStyle = 'white';
+            ctx.beginPath(); ctx.roundRect(0, 20, player.width, player.height - 20, 20); ctx.fill();
+            ctx.fillStyle = '#3498db';
+            ctx.beginPath(); ctx.arc(player.width / 2, 35, 40, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = 'white'; ctx.lineWidth = 5; ctx.stroke();
+            ctx.fillStyle = '#c0392b'; ctx.fillRect(-18, 45, 28, 65);
+            ctx.restore();
+        }
+
+        function drawBoss() {
+            if (!boss.active) return;
+            ctx.save();
+            ctx.translate(boss.x, boss.y);
+            if (Date.now() - boss.hurtTime < 500 && Math.floor(Date.now() / 100) % 2 === 0) ctx.globalAlpha = 0.5;
+            ctx.fillStyle = boss.color;
+            ctx.beginPath(); ctx.ellipse(boss.width/2, boss.height/2, boss.width/2, boss.height/2, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.beginPath(); ctx.arc(boss.width * 0.3, boss.height * 0.3, 35, 0, Math.PI * 2); ctx.arc(boss.width * 0.7, boss.height * 0.3, 35, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = 'red';
+            ctx.beginPath(); ctx.arc(boss.width * 0.3, boss.height * 0.3, 12, 0, Math.PI * 2); ctx.arc(boss.width * 0.7, boss.height * 0.3, 12, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.beginPath(); ctx.moveTo(boss.width * 0.3, boss.height * 0.6); ctx.lineTo(boss.width * 0.4, boss.height * 0.7); ctx.lineTo(boss.width * 0.5, boss.height * 0.6); ctx.lineTo(boss.width * 0.6, boss.height * 0.7); ctx.lineTo(boss.width * 0.7, boss.height * 0.6); ctx.fill();
+            ctx.restore();
+        }
+
+        function drawAliens() {
+            aliens.forEach(alien => {
+                if (alien.opacity <= 0) return;
+                ctx.save(); ctx.globalAlpha = alien.opacity;
+                const hover = Math.sin(Date.now() / 400 + alien.floatOffset) * 10;
+                ctx.translate(alien.x, alien.y + hover);
+                ctx.fillStyle = alien.color;
+                ctx.beginPath(); ctx.ellipse(alien.width/2, alien.height/2, 40, 45, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.beginPath(); ctx.arc(22, 32, 16, 0, Math.PI * 2); ctx.arc(58, 32, 16, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = 'black';
+                ctx.beginPath(); ctx.arc(22, 32, 8, 0, Math.PI * 2); ctx.arc(58, 32, 8, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        function drawBubbles() {
+            const now = Date.now();
+            ctx.font = 'bold 20px Arial, "Microsoft JhengHei"'; 
+            bubbles.forEach((b, index) => {
+                if (now - b.startTime > 2500) { bubbles.splice(index, 1); return; }
+                const currentY = b.alien ? b.alien.y : b.y;
+                ctx.save();
+                if (b.alien) ctx.globalAlpha = b.alien.opacity;
+                const textWidth = ctx.measureText(b.text || "Thank you").width;
+                const bubbleWidth = Math.max(160, textWidth + 50);
+                ctx.fillStyle = 'white';
+                ctx.beginPath(); ctx.roundRect(b.x - bubbleWidth/4, currentY - 100, bubbleWidth, 65, 15); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(b.x + 30, currentY - 35); ctx.lineTo(b.x + 45, currentY - 10); ctx.lineTo(b.x + 60, currentY - 35); ctx.fill();
+                ctx.fillStyle = '#2c3e50'; 
+                ctx.textAlign = 'center';
+                ctx.fillText(b.text || "Thank you !!", b.x + bubbleWidth/4, currentY - 60);
+                ctx.restore();
+            });
+        }
+
+        function drawFallingItems() {
+            fallingItems.forEach(item => {
+                ctx.save();
+                ctx.translate(item.x, item.y);
+                ctx.rotate(item.rot);
+                ctx.font = '50px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(item.icon, 0, 0);
+                ctx.restore();
+            });
+        }
+
+        function resetGame() {
+            // 重置所有遊戲變數
+            score = 0;
+            scoreElement.innerText = '0';
+            gameState = 'DELIVERING';
+            gameEnded = false;
+            level2GoalReached = false;
+            l2TransitionTriggered = false;
+            rainbowAlpha = 0;
+            
+            player.x = 150;
+            player.y = 50;
+            player.velX = 0;
+            player.velY = 0;
+            
+            boss.active = false;
+            boss.hp = boss.maxHp;
+            bossUi.style.display = 'none';
+            
+            aliens.length = 0;
+            platforms.length = 0;
+            bubbles.length = 0;
+            fallingItems.length = 0;
+            
+            initScene();
+            endScreen.style.display = 'none';
+        }
+
+        function update() {
+            if (gameEnded) return;
+
+            if (keys['d'] || keys['D']) player.velX = player.speed;
+            else if (keys['a'] || keys['A']) player.velX = -player.speed;
+            else player.velX *= 0.85;
+
+            if ((keys['w'] || keys['W'] || keys[' ']) && player.grounded) {
+                player.velY = player.jumpStrength;
+                player.grounded = false;
+                Sound.jump();
+            }
+
+            player.velY += gravity;
+            player.x += player.velX;
+            player.y += player.velY;
+
+            player.grounded = false;
+            platforms.forEach(p => {
+                if (player.velY >= 0 &&
+                    player.x + player.width > p.x && player.x < p.x + p.width &&
+                    player.y + player.height > p.y && player.y + player.height < p.y + p.height + 25) {
+                    player.y = p.y - player.height; player.velY = 0; player.grounded = true;
+                }
+            });
+
+            if (gameState === 'DELIVERING') {
+                aliens.forEach(alien => {
+                    if (alien.helped) {
+                        alien.leaveSpeed += 0.05; alien.y -= alien.leaveSpeed; alien.opacity -= 0.008; return;
+                    }
+                    if (player.x < alien.x + alien.width && player.x + player.width > alien.x &&
+                        player.y < alien.y + alien.height && player.y + player.height > alien.y) {
+                        alien.helped = true; score++; scoreElement.innerText = score;
+                        bubbles.push({ x: alien.x, y: alien.y, alien: alien, text: alien.thankYouText, startTime: Date.now() });
+                        Sound.deliver();
+                    }
+                });
+
+                if (aliens.filter(a => !a.helped && !a.isFinal).length === 0) {
+                    gameState = 'BOSS_BATTLE';
+                    boss.active = true;
+                    boss.x = player.x + 450;
+                    boss.y = canvas.height - boss.height - 60;
+                    bossUi.style.display = 'block';
+                    Sound.bossSpawn();
+                }
+            }
+
+            if (gameState === 'BOSS_BATTLE' && boss.active) {
+                boss.x += boss.velX * boss.direction;
+                if (boss.x > player.x + 400 || boss.x < player.x - 400) boss.direction *= -1;
+                if (player.velY > 0 && 
+                    player.x + player.width > boss.x + 15 && player.x < boss.x + boss.width - 15 &&
+                    player.y + player.height > boss.y && player.y + player.height < boss.y + 110) {
+                    player.velY = -14; boss.hp--; boss.hurtTime = Date.now();
+                    bossHpFill.style.width = (boss.hp / boss.maxHp * 100) + '%';
+                    Sound.hit();
+                    if (boss.hp <= 0) {
+                        boss.active = false; bossUi.style.display = 'none';
+                        gameState = 'VICTORY'; spawnFinalCelebration();
+                    }
+                }
+            }
+
+            if (gameState === 'VICTORY') {
+                if (rainbowAlpha < 0.8) rainbowAlpha += 0.005; 
+                aliens.forEach(alien => {
+                    if (alien.isFinal) {
+                        alien.y = canvas.height - 140 + Math.sin(Date.now() / 200 + alien.floatOffset) * 20;
+                    }
+                });
+
+                const rightBoundary = 7000;
+                if (player.x > rightBoundary && !l2TransitionTriggered) {
+                    l2TransitionTriggered = true;
+                    levelUpUi.style.display = 'block';
+                    Sound.levelUp();
+                    setTimeout(() => {
+                        gameState = 'LEVEL_2';
+                        levelUpUi.style.display = 'none';
+                    }, 2000);
+                }
+            }
+
+            if (gameState === 'LEVEL_2') {
+                for (let i = fallingItems.length - 1; i >= 0; i--) {
+                    const item = fallingItems[i];
+                    item.y += item.speed;
+                    item.rot += item.rotSpeed;
+
+                    if (player.x < item.x + 30 && player.x + player.width > item.x - 30 &&
+                        player.y < item.y + 30 && player.y + player.height > item.y - 30) {
+                        
+                        fallingItems.splice(i, 1);
+                        score += 10;
+                        scoreElement.innerText = score;
+                        Sound.deliver();
+
+                        bubbles.push({
+                            x: player.x + 30,
+                            y: player.y - 80,
+                            text: "好吃 Yummy 🍭",
+                            startTime: Date.now()
+                        });
+                        continue;
+                    }
+
+                    if (item.y > canvas.height + 100) fallingItems.splice(i, 1);
+                }
+
+                if (!level2GoalReached && fallingItems.length < 2 && Math.random() < 0.085) {
+                    spawnFallingItem();
+                }
+
+                if (!level2GoalReached && score >= 200) {
+                    level2GoalReached = true;
+                    Sound.victory();
+                    gameEnded = true;
+
+                    for (let k = 0; k < 60; k++) {
+                        spawnFallingItem();
+                    }
+
+                    // 顯示結束畫面
+                    finalScore.innerText = score;
+                    endScreen.style.display = 'block';
+                }
+            }
+
+            if (player.x < -200) player.x = -200;
+            if (player.y > canvas.height + 250) { 
+                player.x = 150; player.y = 50; player.velY = 0; 
+                if(gameState === 'BOSS_BATTLE') boss.x = player.x + 450;
+            }
+        }
+
+        function draw() {
+            ctx.setTransform(1, 0, 0, 1, 0, 0); 
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
+            
+            if (gameState === 'VICTORY') {
+                drawRainbow();
+            }
+
+            const cameraOffset = player.x > canvas.width / 2 ? player.x - canvas.width / 2 : 0;
+            ctx.translate(-cameraOffset, 0);
+            
+            ctx.fillStyle = (gameState === 'LEVEL_2') ? 'rgba(255, 182, 193, 0.7)' : 'rgba(255,255,255,0.7)';
+            for(let i=0; i<120; i++) {
+                const sx = (i * 197) % (canvas.width * 15);
+                const sy = (i * 243) % canvas.height;
+                ctx.fillRect(sx, sy, 2, 2);
+            }
+            
+            drawAirplane(); 
+            drawPlatforms(); 
+            drawAliens(); 
+            drawBoss(); 
+            drawFallingItems();
+            drawPlayer(); 
+            drawBubbles();
+        }
+
+        function loop() { update(); draw(); requestAnimationFrame(loop); }
+
+        window.addEventListener('keydown', (e) => { Sound.init(); keys[e.key] = true; });
+        window.addEventListener('keyup', (e) => keys[e.key] = false);
+        startPrompt.addEventListener('click', () => { Sound.init(); startPrompt.style.display = 'none'; });
+
+        // 再玩一次按鈕
+        playAgainBtn.addEventListener('click', () => {
+            resetGame();
+        });
+
+        initScene(); 
+        loop();
+    </script>
+</body>
+</html>
