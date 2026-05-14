@@ -28,7 +28,7 @@
         
 
     .quiz-wrapper {width: 300px;margin-top: 30px;background-color: #f6e5e3;padding: 25px;border-radius: 8px;box-shadow: 0 4px 8px rgba(0,0,0,0.1);}
-    .quiz-wrapper h2 {text-align: center;color: #ff5733;margin-bottom: 30px;border-bottom: 2px solid #ffe5d8;padding-bottom: 0px;font-size: 30px;}
+    .quiz-wrapper h2 {text-align: center;color: #ff5733;margin-bottom: 30px;border-bottom: 2px solid #ffe5d8;padding-bottom: 0px;font-size: 25px;}
     .question-item {display: flex;align-items: center;margin-bottom: 15px;padding: 5px 0;font-size: 40px;font-weight: bold;color: #3087f0;}
     .question-item .error-mark {color: #dc3545;font-size: 28px;margin-left: 20px;width: 35px;text-align: center;}
     .question-item input[type="number"] {width: 80px;padding: 8px;margin-left: 20px;border: 2px solid #3487e6;border-radius: 30px;text-align: center;transition: border-color 0.2s;font-size: 30px;height: 40px;}
@@ -940,13 +940,21 @@ h2 + div a:hover,
 
 
     <div class="quiz-wrapper">
-    <h2>訓練反應能力<br>小遊戲連結<br>回本頁請按左上角左邊鍵頭</h2>
+    <h2>訓練反應能力，小遊戲連結<br>回本頁請按左上角左邊鍵頭</h2>
+    <h2>
+        ⭐Training Reflexes ⭐ Mini Games<br>
+        <small>Click ↩️ arrow on top-left to come back main page</small>
+    </h2>
+    <br>
+    <br>
     
     <div class="link-to-python-page">
+        <br>
     <a href="game.html"> 跳跳貓<br>Jumping cat game </a>
     <a href="littlefairynet.html"> 小精靈<br>Little fairy game </a>
     <a href="shottinggame.html"> 飛機射擊<br>Airplane game </a>
     <a href="alien.html"> 外星人物資大冒險<br>Alien game </a> 
+    <br>
 
 
     
@@ -955,7 +963,7 @@ h2 + div a:hover,
     <div id="quiz-questions"></div>
 
     <div class="link-to-python-page">
-    <a href="https://www.khanacademy.org/">美國免費資源，有中文頁面<br>free learning resources Khan Academy </a>
+    <a href="https://www.khanacademy.org/">美國免費資源，有中文頁面<br>Free learning resources Khan Academy </a>
 </div>
     <div id="quiz-questions"></div>
 
@@ -981,6 +989,8 @@ h2 + div a:hover,
 <!-- Ocean_coast_02_092025_0659AM by YevgVerh -->
 <!-- https://freesound.org/s/827528/ - License: Creative Commons -->
 </audio><audio id="myAudioPlayer" src="gameocean.mp3" loop></audio>
+</audio><audio id="myAudioPlayer" src="口袋裡的太陽.mp3" loop></audio>
+</audio><audio id="myAudioPlayer" src="One_of_a_Kind.mp3" loop></audio>
 
 <div class="link-to-python-page">
     <h2></h2> 
@@ -1027,7 +1037,8 @@ h2 + div a:hover,
             影片 grok / 圖片 Gemini / 遊戲 Gemini,Grok,Microsoft VS <br><br>
             
             音響音樂使用 Ocean_coast_02_092025br0659AM by YevgVerh  https://freesound.org/s/827528/ 
-            - License: Creative Commons</p>       
+            - License: Creative Commons</p>   
+            /*歌曲創創 Gemini*/    
  <h3>✉️ 願望區域 / 寫信給我</h3>
         <p>辛苦的爸媽們，你們希望做什麼區域呢！ 不保證! 但可嘗試!!</p>
         <p>sleepingbutnotpretty@gmail.com</p>
@@ -1175,7 +1186,7 @@ h2 + div a:hover,
     <div class="module message-module">
         <p class="gemini-message"> XGM. 守護心語：</p>
         <p class="gemini-message-text"> 1. 過馬路一定要看紅綠燈，並且走斑馬線，遇到 大卡車 大貨車 時，要離它們遠一點，要不然會被捲進去喔 !<br><br>
-            2.電腦版每一區都可按 Ctrl +(加號)  放大，不能用手機玩。<br><br>3.遇到哪區沒顯示出來時，按 Ctrl+shift+R <br><br> 4.迷宮區尚未開發完全,到76關，到下一關請等待2-3秒。</p>
+            2.電腦版每一區都可按 Ctrl +(加號)  放大 / Ctrl-(減號) 縮小，不能用手機玩。<br><br>3.遇到哪區沒顯示出來時，按 Ctrl+shift+R <br><br> 4.迷宮區已增至100關</p>
    <br>
                 <br>
                 <br>
@@ -1201,21 +1212,19 @@ h2 + div a:hover,
                 <br>
                 <br>
                 <br>
-                <br>
-                <br>
+               
                 
                 <!-- 狀態列保持不變 -->
 <div id="pet-status">
-    <p>健康: <progress id="health-bar" value="100" max="100"></progress> <span id="health-value">100</span>/100</p>
-    <p>飽足感: <progress id="food-bar" value="80" max="100"></progress> <span id="food-value">80</span>/100</p>
-    <p>水分: <progress id="water-bar" value="80" max="100"></progress> <span id="water-value">80</span>/100</p>
-    <p>衛生: <progress id="clean-bar" value="100" max="100"></progress> <span id="clean-value">100</span>/100</p>
-    <p>親密度: <progress id="love-bar" value="50" max="100"></progress> <span id="love-value">50</span>/100</p>
-    <p>心情: <span id="mood-text">開心</span></p>
+    <p>健康<br>Health: <progress id="health-bar" value="100" max="100"></progress> <span id="health-value">100</span>/100</p>
+    <p>飽足感<br>Hunger: <progress id="food-bar" value="80" max="100"></progress> <span id="food-value">80</span>/100</p>
+    <p>水分<br>Water: <progress id="water-bar" value="80" max="100"></progress> <span id="water-value">80</span>/100</p>
+    <p>衛生<br>Cleanliness: <progress id="clean-bar" value="100" max="100"></progress> <span id="clean-value">100</span>/100</p>
+    <p>親密度<br>Attachment: <progress id="love-bar" value="50" max="100"></progress> <span id="love-value">50</span>/100</p>
+    <p>心情<br>Mood: <span id="mood-text">開心</span></p>
 </div>
- <br>
- <br>
-<!-- 這裡什麼 button 都不要寫！全交給 JS 生成 -->
+
+ <!-- 這裡什麼 button 都不要寫！全交給 JS 生成 -->
 <div class="interaction-panel" id="interaction-panel"></div>
 
          
@@ -2334,7 +2343,7 @@ console.log('%c美景輪播已啟動～今天也要被可愛動物治癒喔❤�
         [["小貓咪喜歡吃", "魚。"], ["小", "無", "天"], "幼兒園小班"],
         [["我喜歡去", "園玩。"], ["公", "學", "家"], "幼兒園小班"],
         [["紅燈停，", "燈行。"], ["綠", "黃", "藍"], "幼兒園小班"],
-        [["柳橙是", "色的。"], ["橘", "黃", "綠"], "幼兒園小班"],
+        [["柳橙是", "色的。"], ["橘黃", "黑", "綠"], "幼兒園小班"],
         [["我會用", "子吃飯。"], ["筷", "碗", "盤"], "幼兒園小班"],
         [["天上有很多", "星星。"], ["小", "圓", "亮"], "幼兒園小班"],
         [["吃飯前要先", "手。"], ["洗", "擦", "摸"], "幼兒園小班"],
@@ -2412,8 +2421,8 @@ console.log('%c美景輪播已啟動～今天也要被可愛動物治癒喔❤�
         [["我", "愛吃水果。"], ["最", "不", "都"], "幼兒園小班"],
         [["請", "輕地關門。"], ["輕", "重", "快"], "幼兒園中班"],
         [["我們要", "對待朋友。"], ["友善", "敵對", "冷漠"], "幼兒園大班"],
-        [["小", "雞嘰嘰叫。"], ["黃", "白", "黑"], "幼兒園小班"],
-        [["我", "會自己穿衣服。"], ["已", "未", "正"], "幼兒園中班"],
+        [["小", "雞嘰嘰叫。"], ["黃", "討厭", "大象"], "幼兒園小班"],
+        [["我", "會自己穿衣服。"], ["已經", "未", "正"], "幼兒園中班"],
         [["請", "靜地休息。"], ["安", "吵", "快"], "幼兒園中班"],
         [["我們要", "守交通規則。"], ["遵", "違", "不"], "幼兒園大班"],
         [["小", "船在水上飄。"], ["小", "大", "快"], "幼兒園小班"],
@@ -2423,7 +2432,7 @@ console.log('%c美景輪播已啟動～今天也要被可愛動物治癒喔❤�
         [["一起", "習寫字。"], ["練", "學", "看"], "幼兒園中班"],
         [["請", "別人分享。"], ["和", "與", "對"], "幼兒園大班"],
         [["我會", "自己的玩具。"], ["收", "放", "玩"], "幼兒園小班"],
-        [["樹葉是", "色的。"], ["綠", "紅", "黃"], "幼兒園中班"],
+        [["樹葉是", "色的。"], ["綠", "金", "銀"], "幼兒園中班"],
         [["我們", "要勇敢嘗試。"], ["都", "不", "會"], "幼兒園大班"],
         [["我", "會說謝謝。"], ["已", "未", "正"], "幼兒園小班"],
         [["請", "小聲說話。"], ["小", "大", "輕"], "幼兒園中班"],
@@ -2639,6 +2648,7 @@ console.log('%c美景輪播已啟動～今天也要被可愛動物治癒喔❤�
         initLanguageQuiz();
     });
 </script>
+
 
 <script>
     // 1. 取得所有的元素 (Audio, 按鈕, 滑桿)
@@ -2978,8 +2988,8 @@ function updateStatus() {
 
     // 簡單心情判斷
     const avg = (pet.health + pet.food + pet.water + pet.clean + pet.love) / 5;
-    if (avg >= 80) mood.textContent = '❤️❤️❤️❤️❤️❤️❤️❤️❤️超開心';
-    else if (avg >= 60) mood.textContent = '❤️❤️❤️❤️❤️開心';
+    if (avg >= 80) mood.textContent = '❤️❤️❤️❤️❤️❤️超開心';
+    else if (avg >= 60) mood.textContent = '❤️❤️❤️❤️開心';
     else if (avg >= 40) mood.textContent = '❤️❤️❤️普通';
     else if (avg >= 20) mood.textContent = '⚡⚡不開心';
     else mood.textContent = '⚡⚡⚡⚡⚡哭哭';
