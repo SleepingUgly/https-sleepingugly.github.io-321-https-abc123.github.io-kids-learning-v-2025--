@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>慢飛天使快樂學習天地 - 中英雙語大字體版</title>
+  <style>
+    :root {
+      --bg-color: #f0f7ff;
+      --card-bg: #fff5f8;
+      --primary-color: #ff9800;
+      --primary-hover: #f57c00;
+      --btn-blue: #a0d8ef;
+      --btn-blue-hover: #7dcaf0;
+      --btn-blue-border: #1a6f9c;
+      --text-main: #2c3e50;
+      --text-sub: #576574;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px 10px;
+      background: linear-gradient(135deg, #e3f2fd 0%, #fce4ec 100%);
+      font-family: "PingFang TC", "Microsoft JhengHei", "Comic Sans MS", -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      user-select: none;
+    }
+
+    .main-card {
+      width: 100%;
+      max-width: 650px;
+      background: #ffffff;
+      border-radius: 36px;
+      padding: 26px 20px;
+      box-shadow: 0 12px 32px rgba(44, 62, 80, 0.1);
+      text-align: center;
+      border: 4px solid #e1f0fa;
+    }
+
+    /* 頂部語言切換條 */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .logo-badge {
+      font-size: 16px;
+      font-weight: 900;
+      background: #e1f5fe;
+      color: #0288d1;
+      padding: 6px 14px;
+      border-radius: 20px;
+    }
+
+    .lang-switcher {
+      display: flex;
+      gap: 8px;
+    }
+
+    .lang-btn {
+      padding: 8px 16px;
+      font-size: 17px;
+      font-weight: 900;
+      border-radius: 22px;
+      border: 2px solid #b2bec3;
+      background: #f1f2f6;
+      color: #576574;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .lang-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .lang-btn.active {
+      background: #4caf50;
+      color: #ffffff;
+      border-color: #2e7d32;
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.35);
+      transform: scale(1.08);
+    }
+
+    /* 主標題 */
+    .header-title {
+      font-size: 34px;
+      font-weight: 900;
+      color: #2980b9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 10px 0 22px 0;
+      text-shadow: 1px 2px 2px rgba(0,0,0,0.06);
+    }
+
+    /* 年級切換按鈕 */
+    .grade-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .grade-btn {
+      padding: 12px 22px;
+      font-size: 20px;
+      font-weight: 900;
+      border-radius: 18px;
+      border: 3px solid #ff9800;
+      background: #fff8e1;
+      color: #e65100;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .grade-btn:hover {
+      background: #ffe082;
+    }
+
+    .grade-btn.active {
+      background: #ff9800;
+      color: white;
+      box-shadow: 0 6px 16px rgba(255, 152, 0, 0.38);
+      transform: translateY(-3px);
+    }
+
+    /* 題目大卡片 */
+    .question-card {
+      background: var(--card-bg);
+      border: 4px solid #ffccd5;
+      border-radius: 28px;
+      padding: 28px 22px;
+      margin-bottom: 22px;
+      position: relative;
+    }
+
+    .q-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .q-number {
+      font-size: 22px;
+      font-weight: 900;
+      color: #7f8c8d;
+    }
+
+    .speak-btn {
+      background: #ffffff;
+      border: 2px solid #3498db;
+      color: #2980b9;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 3px 8px rgba(52, 152, 219, 0.2);
+      transition: transform 0.1s;
+    }
+    .speak-btn:active {
+      transform: scale(0.92);
+    }
+
+    .q-text {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1.55;
+      margin-bottom: 26px;
+      word-break: break-word;
+    }
+
+    .q-blank {
+      color: #e74c3c;
+      text-decoration: underline;
+      padding: 0 6px;
+      font-weight: 900;
+    }
+
+    /* 選項網格 */
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .opt-btn {
+      background-color: var(--btn-blue);
+      border: 3px solid var(--btn-blue-border);
+      border-radius: 20px;
+      padding: 16px 20px;
+      font-size: 28px;
+      font-weight: 900;
+      color: #0b3d5b;
+      cursor: pointer;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 5px 0 var(--btn-blue-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .opt-btn:hover {
+      background-color: var(--btn-blue-hover);
+    }
+
+    .opt-btn:active {
+      transform: translateY(5px);
+      box-shadow: 0 0 0 var(--btn-blue-border);
+    }
+
+    .opt-btn.correct-glow {
+      background-color: #a8e6cf !important;
+      border-color: #27ae60 !important;
+      color: #145a32 !important;
+      box-shadow: 0 5px 0 #27ae60 !important;
+    }
+
+    /* 回饋提示 */
+    .feedback-box {
+      margin-top: 20px;
+      font-size: 26px;
+      font-weight: 900;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    /* 上下題導航按鈕 */
+    .nav-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .nav-btn {
+      flex: 1;
+      padding: 12px 18px;
+      font-size: 19px;
+      font-weight: 900;
+      border-radius: 16px;
+      border: 2px solid #bdc3c7;
+      background: #ecf0f1;
+      color: #2c3e50;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: #dfe6e9;
+      transform: translateY(-2px);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* 分隔虛線與準備區 */
+    .divider-zone {
+      margin: 35px 0 20px 0;
+      border-top: 3px dashed #b2bec3;
+      position: relative;
+    }
+
+    .divider-tag {
+      position: absolute;
+      top: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      padding: 0 16px;
+      font-size: 18px;
+      font-weight: 900;
+      color: #95a5a6;
+    }
+
+    /* 準備區趣味互動小天地 */
+    .playground-box {
+      background: #fdfefe;
+      border: 3px dashed #74b9ff;
+      border-radius: 24px;
+      padding: 20px 16px;
+      margin-top: 15px;
+    }
+
+    .playground-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: #0984e3;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .activity-chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .chip-btn {
+      padding: 10px 16px;
+      font-size: 17px;
+      font-weight: 800;
+      border-radius: 20px;
+      border: 2px solid #a29bfe;
+      background: #f8f7ff;
+      color: #6c5ce7;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .chip-btn.active, .chip-btn:hover {
+      background: #6c5ce7;
+      color: white;
+    }
+
+    .mini-game-area {
+      margin-top: 18px;
+      padding: 16px;
+      background: #fff9e6;
+      border-radius: 18px;
+      border: 2px solid #ffeaa7;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="main-card">
+    
+    <!-- 頂部資訊與語言切換 -->
+    <div class="top-bar">
+      <div class="logo-badge">🌱 慢飛天使無障礙特教學習</div>
+      <div class="lang-switcher">
+        <button class="lang-btn active" id="btn-lang-zh" onclick="setLanguage('zh')">🇹🇼 中文版</button>
+        <button class="lang-btn" id="btn-lang-en" onclick="setLanguage('en')">🇬🇧 English</button>
+      </div>
+    </div>
+
+    <!-- 主標題 -->
+    <div class="header-title" id="main-title">
+      ⭐ 語文練習基礎 🌈
+    </div>
+
+    <!-- 年級標籤 -->
+    <div class="grade-tabs">
+      <button class="grade-btn active" id="tab-0" onclick="switchGrade(0)">幼兒園小班</button>
+      <button class="grade-btn" id="tab-1" onclick="switchGrade(1)">幼兒園中班</button>
+      <button class="grade-btn" id="tab-2" onclick="switchGrade(2)">幼兒園大班</button>
+    </div>
+
+    <!-- 題目卡片 -->
+    <div class="question-card">
+      <div class="q-meta">
+        <span class="q-number" id="q-index-text">第 1 題:</span>
+        <button class="speak-btn" onclick="speakCurrentQuestion()">🔊 <span id="speak-btn-text">聽題目朗讀</span></button>
+      </div>
+
+      <div class="q-text" id="q-content">
+        太陽出來了，公雞在叫 <span class="q-blank">(_____)</span> 。
+      </div>
+
+      <!-- 選項按鈕區 -->
+      <div class="options-grid" id="options-container"></div>
+
+      <!-- 回饋訊息 -->
+      <div class="feedback-box" id="feedback-box"></div>
+
+      <!-- 導航按鈕 -->
+      <div class="nav-bar">
+        <button class="nav-btn" id="prev-btn" onclick="prevQuestion()" disabled>⬅️ <span id="prev-btn-text">上一題</span></button>
+        <button class="nav-btn" id="next-btn" onclick="nextQuestion()"><span id="next-btn-text">下一題</span> ➡️</button>
+      </div>
+    </div>
+
+    <!-- 準備區分界線 -->
+    <div class="divider-zone">
+      <span class="divider-tag" id="divider-text">✨ 益智遊樂小天地 ✨</span>
+    </div>
+
+    <!-- 準備區互動單元 -->
+    <div class="playground-box">
+      <div class="activity-chips">
+        <button class="chip-btn active" id="chip-0" onclick="selectMiniGame(0)">🥰 1. 情緒表情選選看</button>
+        <button class="chip-btn" id="chip-1" onclick="selectMiniGame(1)">🔊 2. 聽音辨物</button>
+        <button class="chip-btn" id="chip-2" onclick="selectMiniGame(2)">🎨 3. 顏色大挑戰</button>
+      </div>
+
+      <!-- 微遊戲動態內容 -->
+      <div class="mini-game-area" id="mini-game-container">
+        <!-- 動態渲染 -->
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // 雙語題庫資料庫
+    const quizDatabase = {
+      zh: {
+        title: "⭐ 語文練習基礎 🌈",
+        grades: ["幼兒園小班", "幼兒園中班", "幼兒園大班"],
+        qPrefix: "第 ",
+        qSuffix: " 題:",
+        speakBtn: "聽題目朗讀",
+        prevBtn: "上一題",
+        nextBtn: "下一題",
+        divider: "✨ 準備區 · 益智遊樂小天地 ✨",
+        playTitle: "🎡 趣味微互動專區",
+        chips: ["🥰 1. 情緒表情選選看", "🔊 2. 聽音辨物", "🎨 3. 顏色大挑戰"],
+        correctMsg: "🎉 太棒了！答對囉！⭐⭐⭐",
+        encourageMsg: "💪 再想一下下喔～你可以的！💕",
+        questions: [
+          // 小班 (Level 1)
+          [
+            {
+              text: "太陽出來了，公雞在叫 (_____) 。",
+              speech: "太陽出來了，公雞在叫什麼呢？",
+              options: ["啊", "喔", "呀"],
+              correct: 1
+            },
+            {
+              text: "可愛的小狗狗搖尾巴，(_____) 叫！",
+              speech: "可愛的小狗狗搖尾巴，怎麼叫呢？",
+              options: ["汪汪 🐶", "喵喵 🐱", "哞哞 🐮"],
+              correct: 0
+            },
+            {
+              text: "紅紅甜甜的水果是 (_____) 。",
+              speech: "紅紅甜甜的水果是什麼呢？",
+              options: ["蘋果 🍎", "青菜 🥬", "石頭 🪨"],
+              correct: 0
+            }
+          ],
+          // 中班 (Level 2)
+          [
+            {
+              text: "媽媽溫柔地抱抱我，心裡覺得 (_____) 。",
+              speech: "媽媽溫柔地抱抱我，心裡覺得怎麼樣呢？",
+              options: ["溫暖又開心 🥰", "很生氣 😡", "想發脾氣 😤"],
+              correct: 0
+            },
+            {
+              text: "吃好吃的飯飯前，要先把 (_____) 洗乾淨。",
+              speech: "吃好吃的飯飯前，要先把什麼洗乾淨呢？",
+              options: ["雙手 🖐️", "鞋子 👟", "書包 🎒"],
+              correct: 0
+            },
+            {
+              text: "小鳥張開翅膀，可以在天空中 (_____) 。",
+              speech: "小鳥張開翅膀，可以在天空中做什麼？",
+              options: ["飛翔 🕊️", "游泳 🐠", "挖洞 🕳️"],
+              correct: 0
+            }
+          ],
+          // 大班 (Level 3)
+          [
+            {
+              text: "早上走進幼兒園，看到老師要說 (_____) ！",
+              speech: "早上走進幼兒園，看到老師要說什麼？",
+              options: ["老師早安！ 👋", "晚安 🌙", "我不要 ❌"],
+              correct: 0
+            },
+            {
+              text: "大象的身體很大 🐘，小老鼠很 (_____) 。",
+              speech: "大象的身體很大，小老鼠很怎麼樣？",
+              options: ["嬌小可愛 🐭", "高大 🦒", "沉重 🪨"],
+              correct: 0
+            },
+            {
+              text: "外面下大雨了 🌧️，出門要記得帶 (_____) 。",
+              speech: "外面下大雨了，出門要記得帶什麼？",
+              options: ["雨傘 ☂️", "冰淇淋 🍦", "畫筆 🖍️"],
+              correct: 0
+            }
+          ]
+        ]
+      },
+      en: {
+        title: "⭐ English Learning Fun 🌈",
+        grades: ["Preschool", "Pre-K", "Kindergarten"],
+        qPrefix: "Question ",
+        qSuffix: ":",
+        speakBtn: "Read aloud",
+        prevBtn: "Back",
+        nextBtn: "Next",
+        divider: "✨ Fun Corner · Interactive Playground ✨",
+        playTitle: "🎡 Interactive Learning Zone",
+        chips: ["🥰 1. Emotion Match", "🔊 2. Sound Guess", "🎨 3. Color Quest"],
+        correctMsg: "🎉 Excellent! You got it! ⭐⭐⭐",
+        encourageMsg: "💪 Good try! Let's try again! 💕",
+        questions: [
+          // Preschool (Level 1)
+          [
+            {
+              text: "The sun is up, the rooster says (_____) !",
+              speech: "The sun is up, the rooster says what?",
+              options: ["Cock-a-doodle-doo 🐓", "Meow-meow 🐱", "Oink-oink 🐷"],
+              correct: 0
+            },
+            {
+              text: "Look at the sky! The bright sun is (_____) .",
+              speech: "Look at the sky! The bright sun is what color?",
+              options: ["Yellow 🟡", "Blue 🔵", "Green 🟢"],
+              correct: 0
+            },
+            {
+              text: "The happy puppy says (_____) !",
+              speech: "The happy puppy says what?",
+              options: ["Woof Woof 🐶", "Quack Quack 🦆", "Moo Moo 🐮"],
+              correct: 0
+            },
+            {
+              text: "I see a yummy red (_____) on the tree.",
+              speech: "I see a yummy red what on the tree?",
+              options: ["Apple 🍎", "Cloud ☁️", "Fish 🐟"],
+              correct: 0
+            }
+          ],
+          // Pre-K (Level 2)
+          [
+            {
+              text: "Mommy gives me a warm hug, I feel (_____) .",
+              speech: "Mommy gives me a warm hug, I feel...",
+              options: ["Happy & Loved 🥰", "Angry 😡", "Scared 😨"],
+              correct: 0
+            },
+            {
+              text: "Before we eat dinner, please wash your (_____) .",
+              speech: "Before we eat dinner, please wash your...",
+              options: ["Hands 🖐️", "Shoes 👟", "Backpack 🎒"],
+              correct: 0
+            },
+            {
+              text: "The little bird has wings, it can (_____) in the sky.",
+              speech: "The little bird has wings, it can do what in the sky?",
+              options: ["Fly 🕊️", "Swim 🐠", "Sleep under water 🌊"],
+              correct: 0
+            }
+          ],
+          // Kindergarten (Level 3)
+          [
+            {
+              text: "When we meet our teacher and friends, we say (_____) !",
+              speech: "When we meet our teacher and friends, we say...",
+              options: ["Hello & Good Morning! 👋", "Good night 🌙", "No! ❌"],
+              correct: 0
+            },
+            {
+              text: "An elephant is big 🐘, but a tiny mouse is (_____) .",
+              speech: "An elephant is big, but a tiny mouse is...",
+              options: ["Small 🐭", "Tall 🦒", "Heavy 🪨"],
+              correct: 0
+            },
+            {
+              text: "It is raining outside 🌧️, please take an (_____) .",
+              speech: "It is raining outside, please take an...",
+              options: ["Umbrella ☂️", "Ice cream 🍦", "Crayon 🖍️"],
+              correct: 0
+            }
+          ]
+        ]
+      }
+    };
+
+    let currentLang = 'zh';
+    let currentGrade = 0;
+    let currentQIndex = 0;
+    let currentMiniGame = 0;
+
+    // 切換語言
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.getElementById('btn-lang-zh').classList.toggle('active', lang === 'zh');
+      document.getElementById('btn-lang-en').classList.toggle('active', lang === 'en');
+      
+      const config = quizDatabase[lang];
+      document.getElementById('main-title').innerText = config.title;
+      document.getElementById('speak-btn-text').innerText = config.speakBtn;
+      document.getElementById('prev-btn-text').innerText = config.prevBtn;
+      document.getElementById('next-btn-text').innerText = config.nextBtn;
+      document.getElementById('divider-text').innerText = config.divider;
+      document.getElementById('play-title').innerText = config.playTitle;
+
+      config.grades.forEach((gName, idx) => {
+        document.getElementById(`tab-${idx}`).innerText = gName;
+      });
+
+      config.chips.forEach((cName, idx) => {
+        document.getElementById(`chip-${idx}`).innerText = cName;
+      });
+
+      currentQIndex = 0;
+      renderQuestion();
+      renderMiniGame();
+    }
+
+    // 切換年級
+    function switchGrade(gradeIdx) {
+      currentGrade = gradeIdx;
+      for (let i = 0; i < 3; i++) {
+        document.getElementById(`tab-${i}`).classList.toggle('active', i === gradeIdx);
+      }
+      currentQIndex = 0;
+      renderQuestion();
+    }
+
+    // 渲染題目
+    function renderQuestion() {
+      const qList = quizDatabase[currentLang].questions[currentGrade];
+      const q = qList[currentQIndex] || qList[0];
+      const config = quizDatabase[currentLang];
+
+      document.getElementById('q-index-text').innerText = `${config.qPrefix}${currentQIndex + 1}${config.qSuffix}`;
+      
+      // 替換填空強調
+      const formattedText = q.text.replace(/\(_____\)/g, '<span class="q-blank">(_____)</span>');
+      document.getElementById('q-content').innerHTML = formattedText;
+
+      // 導航按鈕狀態
+      document.getElementById('prev-btn').disabled = (currentQIndex === 0);
+      document.getElementById('next-btn').disabled = (currentQIndex >= qList.length - 1);
+
+      // 清空回饋
+      document.getElementById('feedback-box').innerHTML = '';
+
+      // 生成選項按鈕
+      const optContainer = document.getElementById('options-container');
+      optContainer.innerHTML = '';
+      q.options.forEach((optText, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerHTML = optText;
+        btn.onclick = () => checkAnswer(btn, idx, q.correct);
+        optContainer.appendChild(btn);
+      });
+    }
+
+    // 驗證答案
+    function checkAnswer(btnElement, chosen, correct) {
+      const fb = document.getElementById('feedback-box');
+      const config = quizDatabase[currentLang];
+
+      if (chosen === correct) {
+        btnElement.classList.add('correct-glow');
+        fb.style.color = '#27ae60';
+        fb.innerHTML = config.correctMsg;
+        playCheerSound();
+      } else {
+        fb.style.color = '#e67e22';
+        fb.innerHTML = config.encourageMsg;
+      }
+    }
+
+    function prevQuestion() {
+      if (currentQIndex > 0) {
+        currentQIndex--;
+        renderQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      const qList = quizDatabase[currentLang].questions[currentGrade];
+      if (currentQIndex < qList.length - 1) {
+        currentQIndex++;
+        renderQuestion();
+      }
+    }
+
+    // 語音朗讀功能 (Web Speech API)
+    function speakCurrentQuestion() {
+      const qList = quizDatabase[currentLang].questions[currentGrade];
+      const q = qList[currentQIndex] || qList[0];
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const textToSpeak = q.speech || q.text.replace('(_____)', '');
+        const utter = new SpeechSynthesisUtterance(textToSpeak);
+        utter.lang = (currentLang === 'zh') ? 'zh-TW' : 'en-US';
+        utter.rate = 0.85; // 慢速清晰
+        utter.pitch = 1.1; // 親切微高音調
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    // 歡呼音效合成器 (免外部音訊檔)
+    function playCheerSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
+          gain.gain.setValueAtTime(0.25, ctx.currentTime + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.35);
+          osc.start(ctx.currentTime + idx * 0.08);
+          osc.stop(ctx.currentTime + idx * 0.08 + 0.35);
+        });
+      } catch (e) {}
+    }
+
+    // 準備區微互動切換
+    function selectMiniGame(gameIdx) {
+      currentMiniGame = gameIdx;
+      for (let i = 0; i < 3; i++) {
+        document.getElementById(`chip-${i}`).classList.toggle('active', i === gameIdx);
+      }
+      renderMiniGame();
+    }
+
+    function renderMiniGame() {
+      const box = document.getElementById('mini-game-container');
+      if (currentMiniGame === 0) {
+        // 情緒選選看
+        box.innerHTML = `
+          <div style="font-size: 22px; font-weight: bold; margin-bottom: 12px; color: #2d3436;">
+            ${currentLang === 'zh' ? '❤️ 情境：好朋友分享餅乾給我吃，心裡覺得？' : '❤️ Story: A friend shared cookies with me, I feel...'}
+          </div>
+          <div style="display: flex; gap: 10px; justify-content: center;">
+            <button class="opt-btn" style="font-size: 22px; padding: 10px 16px;" onclick="checkMini(true, '🥰 ${currentLang === 'zh' ? '開心幸福' : 'Happy & Grateful'}')">🥰 ${currentLang === 'zh' ? '開心幸福' : 'Happy'}</button>
+            <button class="opt-btn" style="font-size: 22px; padding: 10px 16px;" onclick="checkMini(false, '')">😡 ${currentLang === 'zh' ? '生氣' : 'Angry'}</button>
+            <button class="opt-btn" style="font-size: 22px; padding: 10px 16px;" onclick="checkMini(false, '')">😨 ${currentLang === 'zh' ? '害怕' : 'Scared'}</button>
+          </div>
+          <div id="mini-fb" style="margin-top: 10px; font-size: 20px; font-weight: bold; min-height: 28px;"></div>
+        `;
+      } else if (currentMiniGame === 1) {
+        // 聽音辨物
+        box.innerHTML = `
+          <div style="font-size: 22px; font-weight: bold; margin-bottom: 12px; color: #2d3436;">
+            ${currentLang === 'zh' ? '🔊 點按鈕聽聲音猜猜是誰？' : '🔊 Listen to the sound and guess who it is!'}
+          </div>
+          <button class="speak-btn" style="font-size: 20px; padding: 8px 18px; border-radius: 20px; margin-bottom: 12px;" onclick="speakSoundDemo()">🔊 ${currentLang === 'zh' ? '播放動物叫聲' : 'Play Sound'}</button>
+          <div style="display: flex; gap: 10px; justify-content: center;">
+            <button class="opt-btn" style="font-size: 22px; padding: 10px 16px;" onclick="checkMini(false, '')">🐱 ${currentLang === 'zh' ? '小貓' : 'Cat'}</button>
+            <button class="opt-btn" style="font-size: 22px; padding: 10px 16px;" onclick="checkMini(true, '🐶 ${currentLang === 'zh' ? '小狗汪汪叫' : 'Doggy Woof!'}')">🐶 ${currentLang === 'zh' ? '小狗' : 'Dog'}</button>
+            <button class="opt-btn" style="font-size: 22px; padding: 10px 16px;" onclick="checkMini(false, '')">🐸 ${currentLang === 'zh' ? '青蛙' : 'Frog'}</button>
+          </div>
+          <div id="mini-fb" style="margin-top: 10px; font-size: 20px; font-weight: bold; min-height: 28px;"></div>
+        `;
+      } else {
+        // 顏色挑戰
+        box.innerHTML = `
+          <div style="font-size: 22px; font-weight: bold; margin-bottom: 12px; color: #2d3436;">
+            ${currentLang === 'zh' ? '🎯 請點出【黃色的星星 ⭐】！' : '🎯 Tap the [Yellow Star ⭐]!'}
+          </div>
+          <div style="display: flex; gap: 12px; justify-content: center;">
+            <button class="opt-btn" style="font-size: 24px; padding: 12px 20px;" onclick="checkMini(false, '')">🍎 ${currentLang === 'zh' ? '紅蘋果' : 'Red'}</button>
+            <button class="opt-btn" style="font-size: 24px; padding: 12px 20px;" onclick="checkMini(true, '⭐ ${currentLang === 'zh' ? '答對了！閃亮星星' : 'Correct! Yellow Star!'}')">⭐ ${currentLang === 'zh' ? '黃星星' : 'Yellow Star'}</button>
+            <button class="opt-btn" style="font-size: 24px; padding: 12px 20px;" onclick="checkMini(false, '')">🥦 ${currentLang === 'zh' ? '綠花椰' : 'Green'}</button>
+          </div>
+          <div id="mini-fb" style="margin-top: 10px; font-size: 20px; font-weight: bold; min-height: 28px;"></div>
+        `;
+      }
+    }
+
+    function speakSoundDemo() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance("Woof, Woof, Woof! 汪汪汪！");
+        utter.rate = 0.9;
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    function checkMini(isCorrect, label) {
+      const fb = document.getElementById('mini-fb');
+      if (isCorrect) {
+        fb.style.color = '#27ae60';
+        fb.innerHTML = `🎉 ${currentLang === 'zh' ? '太厲害了！' : 'Super Job!'} ${label} ⭐⭐⭐`;
+        playCheerSound();
+      } else {
+        fb.style.color = '#e67e22';
+        fb.innerHTML = currentLang === 'zh' ? '💪 再試一次看看喔！💕' : '💪 Try once more! 💕';
+      }
+    }
+
+    // 初始化載入
+    renderQuestion();
+    renderMiniGame();
+  </script>
+</body>
+</html>

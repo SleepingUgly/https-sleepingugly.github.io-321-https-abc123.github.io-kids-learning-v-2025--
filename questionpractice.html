@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO 101度邏輯導航儀 @@*</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+            touch-action: manipulation;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .option-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-btn:active {
+            transform: scale(0.98);
+        }
+        .progress-glow {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4 pb-12">
+
+    <!-- 頂部狀態列 -->
+    <div class="w-full max-w-xl mt-4 mb-8 space-y-4">
+        <div class="flex justify-between items-end">
+            <div>
+                <h1 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 italic">
+                    CEO 邏輯對齊 @@*
+                </h1>
+                <p class="text-slate-500 text-xs tracking-widest uppercase font-bold">150ms Reaction Mode</p>
+            </div>
+            <div class="text-right">
+                <span id="score-display" class="text-3xl font-black text-blue-400">0</span>
+                <span class="text-slate-500 text-sm font-bold"> / 30</span>
+            </div>
+        </div>
+        
+        <!-- 進度條 -->
+        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-500 w-0 progress-glow"></div>
+        </div>
+    </div>
+
+    <!-- 主測驗區塊 -->
+    <main id="quiz-container" class="w-full max-w-xl space-y-6">
+        <!-- 題目會在這裡噴發 -->
+    </main>
+
+    <!-- 結果區塊 (預設隱藏) -->
+    <div id="result-container" class="hidden w-full max-w-xl glass rounded-[2.5rem] p-10 text-center space-y-8 fade-in">
+        <div class="w-24 h-24 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto border border-blue-500/30">
+            <span class="text-5xl">🏆</span>
+        </div>
+        <h2 class="text-3xl font-black italic">系統初始化完畢！</h2>
+        <p id="result-message" class="text-slate-400 leading-relaxed"></p>
+        <button onclick="location.reload()" class="w-full py-5 bg-white text-slate-900 rounded-2xl font-black text-xl shadow-xl hover:bg-slate-200 transition-all">
+            重新噴發能量 @@*
+        </button>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "在 Python 中，執行 `t = [1, 2, 3]`，接著執行 `t[0] = 10`，列表會變成？",
+                o: ["[10, 2, 3]", "[1, 2, 3, 10]", "[0, 10, 2, 3]", "報錯"],
+                c: 0,
+                r: "沒錯！Python 點名從 0 開始，這是在精確修改第一個能量位址。"
+            },
+            {
+                q: "這段代碼印出什麼？\nfor i in range(3):\n    print(i)\n    continue\n    print(\"X\")",
+                o: ["0, 1, 2", "0, X, 1, X, 2, X", "0, 1, 2, X", "什麼都沒有"],
+                c: 0,
+                r: "正確！continue 會讓系統『跳過』後面的 print(\"X\")，直接進入下一圈。"
+            },
+            {
+                q: "在字典點名中，要同時拿到『標籤』與『內容』要填什麼？\nfor k, v in data.______():",
+                o: ["items", "keys", "values", "list"],
+                c: 0,
+                r: "完美對齊！.items() 才能讓標籤與內容『成雙成對』地噴發。"
+            },
+            {
+                q: "執行 `type(\"1981\")` (有引號) 會得到什麼型態？",
+                o: ["str (字串)", "int (整數)", "1981", "報錯"],
+                c: 0,
+                r: "對！只要有『引號』穿衣服，管它是數字還是文字，都是字串標籤。"
+            },
+            {
+                q: "要在列表 `emails` 的最後面『加一根薯條』，要用？",
+                o: ["append", "add", "insert", "extend"],
+                c: 0,
+                r: "名字意思是『附加』，把新能量掛在名單最尾巴。"
+            },
+            {
+                q: "如果執行 `t = (1, 2, 3)` (圓括號)，再執行 `t[0] = 10` 會？",
+                o: ["噴發報錯", "成功變成 [10, 2, 3]", "數字 1 消失", "重啟電腦"],
+                c: 0,
+                r: "這就是元組 Tuple 的『絕對路徑』：初始化後不准改！"
+            },
+            {
+                q: "指令 `10 // 3` (雙斜線) 的結果是？",
+                o: ["3", "3.33", "1", "4"],
+                c: 0,
+                r: "整數除法，只拿完整的薯條，切掉小數點雜訊。"
+            },
+            {
+                q: "使用 `with open(...)` 最大的優點是？",
+                o: ["離開區塊自動關好門", "會自動翻譯", "大薯條會看到進度", "內容變大寫"],
+                c: 0,
+                r: "CEO 潔癖：任務結束，資源必須對齊關閉，防止洩漏。"
+            },
+            {
+                q: "執行 `range(3)` 點名，產生的序列是？",
+                o: ["0, 1, 2", "1, 2, 3", "0, 1, 2, 3", "3"],
+                c: 0,
+                r: "Python 點名三個，但要從 0 號開始數起喔！"
+            },
+            {
+                q: "在字典 `family = {\"Luca\": 100}` 中，`family[\"Luca\"]` 是？",
+                o: ["100", "\"Luca\"", "None", "報錯"],
+                c: 0,
+                r: "標籤對齊成功！直接感應到對應的 100 度能量。"
+            },
+            {
+                q: "在 PowerShell 執行 Python 檔案 `my.py` 要打？",
+                o: ["python my.py", "run my.py", "open my.py", "start"],
+                c: 0,
+                r: "沒錯，呼叫 Python 引擎來驅動妳的腳本噴發。"
+            },
+            {
+                q: "檢查變數 `name` 是不是等於 `\"Aria\"` 要用？",
+                o: ["==", "=", "!=", "==="],
+                c: 0,
+                r: "雙等號才是『邏輯問句』：兩邊對齊了嗎？"
+            },
+            {
+                q: "執行 `\"Fries\".lower()` 的結果是？",
+                o: ["\"fries\"", "\"FRIES\"", "\"Fries\"", "報錯"],
+                c: 0,
+                r: "所有大寫雜訊都被 os.remove，轉換成純淨的小寫。"
+            },
+            {
+                q: "指令 `bool(0)` 的結果是？",
+                o: ["False", "True", "0", "None"],
+                c: 0,
+                r: "在 101 度邏輯中，0 代表無能量、不成立。"
+            },
+            {
+                q: "剝掉字串兩端多餘的空格雜訊要用？",
+                o: ["strip()", "clean()", "remove()", "delete()"],
+                c: 0,
+                r: "對！就像剝掉馬鈴薯皮，留下最對齊的核心肉肉。"
+            },
+            {
+                q: "哪種括號定義的是『字典 (Dictionary)』？",
+                o: ["{}", "[]", "()", "<>"],
+                c: 0,
+                r: "花括號代表裡面有標籤 (Key) 與 能量 (Value) 的對應。"
+            },
+            {
+                q: "執行 `len(\"DualUniverse\")` 會得到？",
+                o: ["12", "10", "13", "報錯"],
+                c: 0,
+                r: "上帝之指點一下字母總數，總共 12 位。"
+            },
+            {
+                q: "在迴圈中，指令 `break` 的作用是？",
+                o: ["立刻終止並跳出", "跳過這回下一圈", "重新開始", "弄壞電腦"],
+                c: 0,
+                r: "當目標達成時，強制結束，不再浪費算力。"
+            },
+            {
+                q: "將字串 `\"100\"` 轉成可以運算的『數字』？",
+                o: ["int(\"100\")", "str(100)", "float(\"100\")", "convert"],
+                c: 0,
+                r: "正確！型態重構，讓標籤變回實質數值。"
+            },
+            {
+                q: "為什麼 `os.path.join` 比較專業？",
+                o: ["自動補正斜線方向", "自動接檔案內容", "檢查碗洗了沒", "名字很酷"],
+                c: 0,
+                r: "跨系統對齊的靈魂！自動處理 Windows 與 Mac 的差異。"
+            },
+            {
+                q: "執行 `\"1,2,3\".split(\",\")` 會得到？",
+                o: ["[\"1\", \"2\", \"3\"]", "\"123\"", "1, 2, 3", "報錯"],
+                c: 0,
+                r: "沒錯！原本的一長串，被解耦合成了三個標籤。"
+            },
+            {
+                q: "類別中 `__init__` 這個名稱代表？",
+                o: ["初始化出生設定", "秘密檔案", "停止按鈕", "爸爸的縮寫"],
+                c: 0,
+                r: "對！這就是專案的起點，最底層的代碼。"
+            },
+            {
+                q: "秦始皇『統一度量衡』最像程式界的？",
+                o: ["全域標準對齊", "隨機刪除資料", "安裝插件", "更換螢幕"],
+                c: 0,
+                r: "消除雜訊，讓指令在全帝國都能通，就是標準化。"
+            },
+            {
+                q: "執行 `os.path.exists()` 回傳 `False` 代表？",
+                o: ["檔案不存在", "內容寫錯了", "正在充電", "薯條被偷了"],
+                c: 0,
+                r: "感應不到實體。可能是被 os.remove 了或路徑歪掉。"
+            },
+            {
+                q: "指令 `print(f\"Hello {name}\")` 的 `f` 是？",
+                o: ["格式化噴發", "代表 Fries", "表示第一行", "強制顯示"],
+                c: 0,
+                r: "Formatting！讓括號裡的人名能『對齊』噴發出來。"
+            },
+            {
+                q: "字典點名找不到標籤時會發生什麼報錯？",
+                o: ["KeyError", "NameError", "IndexError", "FriesError"],
+                c: 0,
+                r: "因為標籤 (Key) 沒對齊，總管家找不到名字。"
+            },
+            {
+                q: "呼叫 `import os` 代表什麼動作？",
+                o: ["聘請作業系統管家", "開啟新電腦", "爸爸變蛇", "重啟手機"],
+                c: 0,
+                r: "匯入專業工具，準備處理路徑、檔案與硬碟雜訊。"
+            },
+            {
+                q: "哥倫布發現新大陸在資料管理中代表？",
+                o: ["開拓全新資料來源", "清空回收桶", "優化縮排", "退出執行"],
+                c: 0,
+                r: "發現原本不存在於妳硬碟裡的能量，全域初始化。"
+            },
+            {
+                q: "一行代碼交換 `a` 和 `b` 的數值最神寫法？",
+                o: ["a, b = b, a", "a = b; b = a", "swap(a, b)", "move a to b"],
+                c: 0,
+                r: "Python 靈魂！一秒鐘完成位置互換，不浪費動作。"
+            },
+            {
+                q: "全家人永遠在一起的底層代碼是？",
+                o: ["Love + Logic = 101deg @@*", "只需 150ms 反擊", "多煮私房菜", "學會報錯"],
+                c: 0,
+                r: "這就是妳這輩子的絕對路徑，最強大的初始化設定！"
+            }
+        ];
+
+        let currentIdx = 0;
+        let score = 0;
+
+        const quizContainer = document.getElementById('quiz-container');
+        const progressBar = document.getElementById('progress-bar');
+        const scoreDisplay = document.getElementById('score-display');
+        const resultContainer = document.getElementById('result-container');
+
+        function initQuestion() {
+            const data = questions[currentIdx];
+            quizContainer.innerHTML = `
+                <div class="glass rounded-[2.5rem] p-8 space-y-6 fade-in shadow-2xl border border-slate-700">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-blue-500 w-8 h-8 rounded-full flex items-center justify-center text-xs font-black">
+                            ${currentIdx + 1}
+                        </div>
+                        <span class="text-slate-500 font-bold text-sm tracking-widest">LOGIC SCAN</span>
+                    </div>
+                    <h2 class="text-xl font-bold leading-relaxed whitespace-pre-line">${data.q}</h2>
+                    
+                    <div class="grid grid-cols-1 gap-3">
+                        ${data.o.map((option, i) => `
+                            <button onclick="checkAnswer(${i})" class="option-btn w-full p-5 rounded-2xl border-2 border-slate-700 bg-slate-800/50 text-left hover:border-blue-500 hover:bg-blue-500/5 flex items-center gap-4">
+                                <span class="w-6 h-6 rounded-lg bg-slate-700 flex items-center justify-center text-[10px] font-black text-slate-400">
+                                    ${String.fromCharCode(65 + i)}
+                                </span>
+                                <span class="font-bold text-slate-200">${option}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            // 更新進度
+            progressBar.style.width = `${(currentIdx / questions.length) * 100}%`;
+        }
+
+        window.checkAnswer = function(idx) {
+            const data = questions[currentIdx];
+            const isCorrect = idx === data.c;
+            const buttons = document.querySelectorAll('.option-btn');
+            
+            // 停用所有按鈕防止重複點擊
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.innerText = score;
+                buttons[idx].classList.add('border-green-500', 'bg-green-500/20');
+            } else {
+                buttons[idx].classList.add('border-red-500', 'bg-red-500/20');
+                buttons[data.c].classList.add('border-green-500', 'bg-green-500/10');
+            }
+
+            // 顯示反饋
+            const feedback = document.createElement('div');
+            feedback.className = `p-6 rounded-[2rem] fade-in mt-4 border-2 ${isCorrect ? 'bg-green-900/20 border-green-500/30' : 'bg-red-900/20 border-red-500/30'}`;
+            feedback.innerHTML = `
+                <div class="flex items-center gap-2 mb-2 font-black ${isCorrect ? 'text-green-400' : 'text-red-400'}">
+                    <span>${isCorrect ? '✓ 101度對齊成功' : '✕ 感應到邏輯偏差'}</span>
+                </div>
+                <p class="text-sm text-slate-300 italic leading-relaxed">${data.r}</p>
+                <button onclick="nextQuestion()" class="mt-6 w-full py-4 bg-blue-600 text-white rounded-xl font-black hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20">
+                    下一位點名 @@*
+                </button>
+            `;
+            quizContainer.appendChild(feedback);
+            
+            // 自動滾動到底部
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        };
+
+        window.nextQuestion = function() {
+            currentIdx++;
+            if (currentIdx < questions.length) {
+                initQuestion();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                showResult();
+            }
+        };
+
+        function showResult() {
+            quizContainer.classList.add('hidden');
+            resultContainer.classList.remove('hidden');
+            progressBar.style.width = '100%';
+            
+            let msg = "";
+            if (score === 30) msg = "老婆大人，您的直覺簡直是 101 度的神級存在！這份天真無敵的邏輯，2027 年我們一定會征服全世界。現在快叫大薯條（爸爸）去買碗⏱️蓮子豆花⏱️來慶祝！";
+            else if (score > 20) msg = "非常棒！系統已經完成 90% 以上的重構。剩下的細節只是碎馬鈴薯雜訊，多點幾次就能完美對齊。辛苦了，休息一下吧！";
+            else msg = "感應到系統還有一些熱摩擦，這很正常！改小說累了就來點幾題，這不是讀書，這是 CEO 的靈魂健身。加油，我最愛的老婆！";
+            
+            document.getElementById('result-message').innerText = msg;
+        }
+
+        // 初始化第一題
+        window.onload = initQuestion;
+
+    </script>
+</body>
+</html>
