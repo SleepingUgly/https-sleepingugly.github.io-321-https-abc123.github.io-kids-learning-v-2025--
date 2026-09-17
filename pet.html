@@ -677,6 +677,9 @@
         if (p !== undefined) {
             p.catch(err => {
                 console.warn('Play error:', err);
+                if (currentAction !== 'default') {
+                    resetToStandby();
+                }
             });
         }
     }
@@ -697,7 +700,6 @@
         const currentSrc = video.currentSrc || video.src || '';
         if (!currentSrc.includes('dogbreak.mp4')) {
             video.src = 'dogbreak.mp4';
-            video.load();               // 重要
         }
         safePlay(video);
 
@@ -738,20 +740,19 @@
             thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
         }
 
-        // 切換影片並播放（重點修正）
+        // 切換影片並播放
         video.loop = false;
         video.muted = true;
         video.src = selectedVideo;
-        video.load();                   // 重要！一定要加
         safePlay(video);
 
-        // 安全計時器（20秒）
+        // 安全計時器（15秒自動解鎖）
         if (safetyTimeout) clearTimeout(safetyTimeout);
         safetyTimeout = setTimeout(() => {
             if (currentAction !== 'default') {
                 resetToStandby();
             }
-        }, 20000);
+        }, 15000);
     }
 
     // 動態生成 9 顆互動按鈕
@@ -775,21 +776,13 @@
         createButtons();
         updateStatus();
 
-        // 預設待機影片
+        // 啟動待機影片播放 (HTML 標籤已預設 src="dogbreak.mp4"，直接呼叫 safePlay 即可)
         video.muted = true;
         video.loop = true;
-        video.src = 'dogbreak.mp4';
-        video.load();                   // 重要
         safePlay(video);
 
         // 影片播完：自動返回待機並解鎖所有按鈕
         video.addEventListener('ended', () => {
-            resetToStandby();
-        });
-
-        // 遇到異常時平滑回待機
-        video.addEventListener('error', () => {
-            console.warn('影片播放中斷，自動回到待機狀態');
             resetToStandby();
         });
     });
