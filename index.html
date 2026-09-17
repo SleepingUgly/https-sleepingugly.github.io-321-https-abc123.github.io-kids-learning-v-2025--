@@ -5852,25 +5852,23 @@ const pet = {
 
 // DOM 元素
 const video = document.getElementById('pet-video-player');
-const accLayer = document.getElementById('accessory-display');
-const msg = document.getElementById('gemini-message-text');
+const thoughtBubble = document.getElementById('pet-speech-bubble');
 const mood = document.getElementById('mood-text');
 
 // 所有動作對應的影片
 const videos = {
-    feed:      ['dogeat.mp4','eatwell.mp4'],
+    feed:      ['dogeat.mp4', 'eatwell.mp4'],
     water:     ['dogdrink.mp4'],
-    pet:       ['haha2.mp4','dogpethead.mp4','dogpettummy.mp4'],
-    bath:      ['dogshower1.mp4','dogshower2.mp4'],
+    pet:       ['haha2.mp4', 'dogpethead.mp4', 'dogpettummy.mp4'],
+    bath:      ['dogshower1.mp4', 'dogshower2.mp4'],
     clean_poo: ['dpgpoo.mp4'],
     heal:      ['dogdoctor.mp4'],
     out:       ['haha2.mp4','T1.mp4','haha1.mp4','spaceelon.mp4','bigtree.mp4','doglongwall.mp4','dogwalk.mp4','dogdisney.mp4','dog101.mp4','dogjapan.mp4','dogitaly.mp4','dogswims.mp4','gotospace.mp4','dogplay1.mp4','dogplay.mp4'],
     watch:     ['T1.mp4','dogcook.mp4','dogsleep.mp4','dogbreak.mp4','dpgplaycups.mp4','dogitsback.mp4','dogwithorangecat.mp4','dogwithtwocats.mp4','dogmouse1.mp4','dogsmart1.mp4'],
-    dress:     ['dogcollar.mp4','newdress1.mp4','newdress.mp4'], //  // 換你實際的換裝影片檔名
+    dress:     ['dogcollar.mp4','newdress1.mp4','newdress.mp4'],
     default:   ['dogbreak.mp4']
 };
 
-// 按鈕顯示文字
 const buttonLabels = {
     feed:      '🍖 餵食<span class="btn-sub">Feed</span>',
     water:     '💧 喝水<span class="btn-sub">Water</span>',
@@ -5883,45 +5881,6 @@ const buttonLabels = {
     dress:     '🎀 裝扮<span class="btn-sub">Dress</span>'
 };
 
-// 依序輪播影片 (第一次點擊必定播放 T1.mp4)
-const actionIndices = {};
-function getNextVideo(action) {
-    const list = videos[action] || videos.default;
-    if (actionIndices[action] === undefined) {
-        actionIndices[action] = 0;
-    }
-    const selected = list[actionIndices[action]];
-    actionIndices[action] = (actionIndices[action] + 1) % list.length;
-    return selected;
-}
-
-// 更新畫面上的進度條與心情
-function updateStatus() {
-    document.getElementById('health-value').textContent = pet.health;
-    document.getElementById('food-value').textContent = pet.food;
-    document.getElementById('water-value').textContent = pet.water;
-    document.getElementById('clean-value').textContent = pet.clean;
-    document.getElementById('love-value').textContent = pet.love;
-
-    document.getElementById('health-bar').value = pet.health;
-    document.getElementById('food-bar').value = pet.food;
-    document.getElementById('water-bar').value = pet.water;
-    document.getElementById('clean-bar').value = pet.clean;
-    document.getElementById('love-bar').value = pet.love;
-
-    // 簡單心情判斷
-    const avg = (pet.health + pet.food + pet.water + pet.clean + pet.love) / 5;
-    if (avg >= 80) mood.textContent = '💖 超開心';
-    else if (avg >= 60) mood.textContent = '😊 開心';
-    else if (avg >= 40) mood.textContent = '😐 普通';
-    else if (avg >= 20) mood.textContent = '⚡ 不開心';
-    else mood.textContent = '😭 哭哭';
-}
-
-const thoughtBubble = document.getElementById('pet-speech-bubble');
-let isActionBusy = false;
-
-// 對話心聲 (即時視覺回饋，0 毫秒反應)
 const thoughtMessages = {
     feed:      '🍖 狗狗正在大口吃飼料！肚子飽飽好滿足，謝謝主人！汪汪！',
     water:     '💧 咕嚕咕嚕喝水水～解渴真舒服！',
@@ -5935,54 +5894,157 @@ const thoughtMessages = {
     default:   '🐶 汪汪！我是你的專屬邊境牧羊犬，點擊下方按鈕和我互動喔！🐾'
 };
 
-// 安全播放機制 (先嘗試開聲音，若瀏覽器政策阻擋，立即無縫降級為靜音播放，保證絕對順暢播放不卡住)
+const actionIndices = {};
+let isActionBusy = false;
+let busyTimeout = null;
+
+// 輪播選片
+function getNextVideo(action) {
+    const list = videos[action] || videos.default;
+    if (actionIndices[action] === undefined) actionIndices[action] = 0;
+    const selected = list[actionIndices[action]];
+    actionIndices[action] = (actionIndices[action] + 1) % list.length;
+    return selected;
+}
+
+// 更新數值與心情
+function updateStatus() {
+    document.getElementById('health-value').textContent = pet.health;
+    document.getElementById('food-value').textContent = pet.food;
+    document.getElementById('water-value').textContent = pet.water;
+    document.getElementById('clean-value').textContent = pet.clean;
+    document.getElementById('love-value').textContent = pet.love;
+
+    document.getElementById('health-bar').value = pet.health;
+    document.getElementById('food-bar').value = pet.food;
+    document.getElementById('water-bar').value = pet.water;
+    document.getElementById('clean-bar').value = pet.clean;
+    document.getElementById('love-bar').value = pet.love;
+
+    const avg = (pet.health + pet.food + pet.water + pet.clean + pet.love) / 5;
+    if (avg >= 80) mood.textContent = '💖 超開心';
+    else if (avg >= 60) mood.textContent = '😊 開心';
+    else if (avg >= 40) mood.textContent = '😐 普通';
+    else if (avg >= 20) mood.textContent = '⚡ 不開心';
+    else mood.textContent = '😭 哭哭';
+}
+
+// 安全播放 (先嘗試有聲，若政策阻擋則自動靜音播放)
 function safePlay(v, requestAudio = true) {
     v.muted = !requestAudio;
-    const playPromise = v.play();
-    if (playPromise !== undefined) {
-        playPromise.catch(() => {
+    const p = v.play();
+    if (p !== undefined) {
+        p.catch(() => {
             v.muted = true;
-            v.play().catch(fatal => {});
+            v.play().catch(() => {});
         });
     }
 }
 
-// 重置回待機影片 (dogbreak.mp4 循環)
+// 鎖定 / 解鎖所有互動按鈕 (防連點卡頓)
+function setButtonsDisabled(disabled) {
+    const panel = document.getElementById('interaction-panel');
+    if (!panel) return;
+    panel.querySelectorAll('button').forEach(btn => {
+        btn.disabled = disabled;
+        btn.style.opacity = disabled ? '0.65' : '1';
+        btn.style.cursor = disabled ? 'not-allowed' : 'pointer';
+    });
+}
+
+// 平滑切換回待機影片 (dogbreak.mp4)
 function resetToStandby() {
+    clearTimeout(busyTimeout);
     if (thoughtBubble) thoughtBubble.textContent = thoughtMessages.default;
+    isActionBusy = false;
+    setButtonsDisabled(false);
+
     video.loop = true;
     video.muted = true;
+
     if (!video.src.endsWith('dogbreak.mp4')) {
         video.src = 'dogbreak.mp4';
+        video.load();
+        let ready = false;
+        const onCanPlay = () => {
+            if (ready) return;
+            ready = true;
+            video.removeEventListener('canplay', onCanPlay);
+            safePlay(video, false);
+        };
+        video.addEventListener('canplay', onCanPlay, { once: true });
+        setTimeout(() => {
+            if (!ready && video.loop) {
+                ready = true;
+                safePlay(video, false);
+            }
+        }, 700);
+    } else {
         safePlay(video, false);
     }
 }
 
-// 主要動作函式 (點擊按鈕立即切換影片)
+// 主要動作函式 (流暢版：強制 load() + 等待 canplay 緩衝完畢後開播)
 function doAction(action) {
     if (isActionBusy) return;
     isActionBusy = true;
-    setTimeout(() => { isActionBusy = false; }, 300);
+    setButtonsDisabled(true);
 
-    // 改變數值
-    if (action === 'feed')       pet.food = Math.min(100, pet.food + 25);
+    // 防卡死安全看門狗：最長 8 秒後強制恢復可點擊狀態
+    clearTimeout(busyTimeout);
+    busyTimeout = setTimeout(() => {
+        if (isActionBusy) {
+            isActionBusy = false;
+            setButtonsDisabled(false);
+        }
+    }, 8000);
+
+    // 更新數值
+    if (action === 'feed')       pet.food  = Math.min(100, pet.food + 25);
     if (action === 'water')      pet.water = Math.min(100, pet.water + 25);
-    if (action === 'pet')        pet.love = Math.min(100, pet.love + 15);
+    if (action === 'pet')        pet.love  = Math.min(100, pet.love + 15);
     if (action === 'bath')       pet.clean = 100;
     if (action === 'clean_poo')  pet.clean = Math.min(100, pet.clean + 40);
     if (action === 'heal')       { pet.health = 100; pet.isSick = false; }
     if (action === 'dress')      pet.accessory = (pet.accessory === 'none' ? 'hat' : 'none');
 
-    // 1. 即時心聲文字切換 (0 毫秒立即回饋)
+    // 1. 即時更新心聲
     if (thoughtBubble) thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
 
-    // 2. 取得下一部動作影片並立即切換播放
+    // 2. 取得影片並強制載入
     const selectedVideo = getNextVideo(action);
     video.loop = false;
+    video.muted = false;
     video.src = selectedVideo;
-    safePlay(video, true);
+    video.load();
 
-    // 3. 更新狀態儀表板
+    // 3. 緩衝就緒後流暢播放 (關鍵流暢優化點)
+    let started = false;
+    const onCanPlay = () => {
+        if (started) return;
+        started = true;
+        video.removeEventListener('canplay', onCanPlay);
+        safePlay(video, true);
+    };
+    video.addEventListener('canplay', onCanPlay, { once: true });
+
+    // 兜底保護：若瀏覽器延遲觸發 canplay，650ms 後直接啟動播放
+    setTimeout(() => {
+        if (!started && isActionBusy) {
+            started = true;
+            safePlay(video, true);
+        }
+    }, 650);
+
+    // 錯誤處理
+    video.onerror = () => {
+        console.warn('影片載入失敗:', selectedVideo);
+        if (thoughtBubble) {
+            thoughtBubble.textContent = '😢 影片暫時載入中，請稍候重試～';
+        }
+        setTimeout(resetToStandby, 1200);
+    };
+
     updateStatus();
 }
 
@@ -5993,7 +6055,6 @@ function createButtons() {
     panel.innerHTML = '';
 
     const actions = ['feed', 'water', 'pet', 'bath', 'clean_poo', 'heal', 'out', 'watch', 'dress'];
-
     actions.forEach(action => {
         const btn = document.createElement('button');
         btn.innerHTML = buttonLabels[action];
@@ -6002,19 +6063,29 @@ function createButtons() {
     });
 }
 
+// 初始化寵物模組
 function initPetModule() {
     createButtons();
     updateStatus();
 
-    // 預設待機影片 (dogbreak.mp4 循環播放，靜音防阻擋)
+    // 預設待機影片
     video.muted = true;
     video.loop = true;
     video.src = 'dogbreak.mp4';
-    safePlay(video, false);
+    video.load();
+    video.addEventListener('canplay', () => safePlay(video, false), { once: true });
 
-    // 動作影片播放完畢後，自動切換回待機循環
+    // 動作影片播完自動回到待機
     video.addEventListener('ended', () => {
         resetToStandby();
+    });
+
+    // 預先載入常用影片 (加快前幾次點擊流暢度)
+    ['dogbreak.mp4', 'dogeat.mp4', 'dogshower1.mp4', 'haha2.mp4', 'dogdrink.mp4', 'dpgpoo.mp4', 'dogdoctor.mp4'].forEach(src => {
+        const preload = document.createElement('video');
+        preload.src = src;
+        preload.preload = 'auto';
+        preload.muted = true;
     });
 }
 

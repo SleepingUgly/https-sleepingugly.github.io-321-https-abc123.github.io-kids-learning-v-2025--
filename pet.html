@@ -648,36 +648,78 @@
     }
 
     let isActionBusy = false;
+    let busyTimeout = null;
 
-    // 安全播放機制 (先嘗試開聲音，若瀏覽器政策阻擋，立即無縫降級為靜音播放，保證絕對順暢播放不卡住)
+    // 安全播放 (先嘗試有聲，若政策阻擋則自動靜音播放)
     function safePlay(v, requestAudio = true) {
         v.muted = !requestAudio;
-        const playPromise = v.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(() => {
+        const p = v.play();
+        if (p !== undefined) {
+            p.catch(() => {
                 v.muted = true;
-                v.play().catch(fatal => {});
+                v.play().catch(() => {});
             });
         }
     }
 
-    // 重置回待機影片 (dogbreak.mp4 循環)
+    // 鎖定 / 解鎖所有互動按鈕 (防連點卡死)
+    function setButtonsDisabled(disabled) {
+        const panel = document.getElementById('interaction-panel');
+        if (!panel) return;
+        panel.querySelectorAll('button').forEach(btn => {
+            btn.disabled = disabled;
+            btn.style.opacity = disabled ? '0.65' : '1';
+            btn.style.cursor = disabled ? 'not-allowed' : 'pointer';
+        });
+    }
+
+    // 回到待機影片 (dogbreak.mp4 平滑切換)
     function resetToStandby() {
+        clearTimeout(busyTimeout);
         stopWaterShowerSound();
         if (thoughtBubble) thoughtBubble.textContent = thoughtMessages.default;
+        isActionBusy = false;
+        setButtonsDisabled(false);
+
         video.loop = true;
         video.muted = true;
+
         if (!video.src.endsWith('dogbreak.mp4')) {
             video.src = 'dogbreak.mp4';
+            video.load();
+            let ready = false;
+            const onCanPlay = () => {
+                if (ready) return;
+                ready = true;
+                video.removeEventListener('canplay', onCanPlay);
+                safePlay(video, false);
+            };
+            video.addEventListener('canplay', onCanPlay, { once: true });
+            setTimeout(() => {
+                if (!ready && video.loop) {
+                    ready = true;
+                    safePlay(video, false);
+                }
+            }, 700);
+        } else {
             safePlay(video, false);
         }
     }
 
-    // 主要動作函式 (點擊按鈕立即切換影片)
+    // 主要動作函式 (流暢版：強制 load() + 等待 canplay 緩衝完畢後開播)
     function doAction(action) {
         if (isActionBusy) return;
         isActionBusy = true;
-        setTimeout(() => { isActionBusy = false; }, 300);
+        setButtonsDisabled(true);
+
+        // 防卡死安全保護：最長 8 秒後強制恢復可點擊狀態
+        clearTimeout(busyTimeout);
+        busyTimeout = setTimeout(() => {
+            if (isActionBusy) {
+                isActionBusy = false;
+                setButtonsDisabled(false);
+            }
+        }, 8000);
 
         // 改變數值
         if (action === 'feed')       pet.food = Math.min(100, pet.food + 25);
@@ -688,7 +730,7 @@
         if (action === 'heal')       { pet.health = 100; pet.isSick = false; }
         if (action === 'dress')      pet.accessory = (pet.accessory === 'none' ? 'hat' : 'none');
 
-        // 洗澡播放淋浴水流聲，其他動作則停止水聲
+        // 洗澡播放淋浴水流聲
         if (action === 'bath') {
             playWaterShowerSound();
         } else {
@@ -698,13 +740,41 @@
         // 1. 即時心聲文字切換
         if (thoughtBubble) thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
 
-        // 2. 播放對應動作影片
+        // 2. 取得影片並強制載入
         const selectedVideo = getNextVideo(action);
         video.loop = false;
+        video.muted = false;
         video.src = selectedVideo;
-        safePlay(video, true);
+        video.load();
 
-        // 3. 更新狀態列
+        // 3. 等待 canplay 緩衝完畢後順暢播放
+        let started = false;
+        const onCanPlay = () => {
+            if (started) return;
+            started = true;
+            video.removeEventListener('canplay', onCanPlay);
+            safePlay(video, true);
+        };
+        video.addEventListener('canplay', onCanPlay, { once: true });
+
+        // 兜底保護：若 650ms 未觸發 canplay 則直接播放
+        setTimeout(() => {
+            if (!started && isActionBusy) {
+                started = true;
+                safePlay(video, true);
+            }
+        }, 650);
+
+        // 錯誤處理
+        video.onerror = () => {
+            console.warn('影片載入失敗:', selectedVideo);
+            if (thoughtBubble) {
+                thoughtBubble.textContent = '😢 影片暫時載入中，請稍候重試～';
+            }
+            setTimeout(resetToStandby, 1200);
+        };
+
+        // 4. 更新狀態列
         updateStatus();
     }
 
@@ -715,7 +785,6 @@
         panel.innerHTML = '';
 
         const actions = ['feed', 'water', 'pet', 'bath', 'clean_poo', 'heal', 'out', 'watch', 'dress'];
-
         actions.forEach(action => {
             const btn = document.createElement('button');
             btn.className = 'btn-pet-action';
@@ -730,15 +799,24 @@
         createButtons();
         updateStatus();
 
-        // 預設載入並循環播放 dogbreak.mp4 (靜音防阻擋)
+        // 預設載入待機影片
         video.muted = true;
         video.loop = true;
         video.src = 'dogbreak.mp4';
-        safePlay(video, false);
+        video.load();
+        video.addEventListener('canplay', () => safePlay(video, false), { once: true });
 
         // 動作影片播放結束後，自動切換回待機循環
         video.addEventListener('ended', () => {
             resetToStandby();
+        });
+
+        // 預先載入常用影片
+        ['dogbreak.mp4', 'dogeat.mp4', 'dogshower1.mp4', 'haha2.mp4', 'dogdrink.mp4', 'dpgpoo.mp4', 'dogdoctor.mp4'].forEach(src => {
+            const preload = document.createElement('video');
+            preload.src = src;
+            preload.preload = 'auto';
+            preload.muted = true;
         });
     });
     </script>
