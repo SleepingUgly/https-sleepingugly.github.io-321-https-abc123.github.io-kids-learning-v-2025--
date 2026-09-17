@@ -320,14 +320,12 @@
             line-height: 1.25;
             user-select: none;
         }
-        .btn-pet-action small,
-        .btn-pet-action .btn-sub {
+        .btn-pet-action small {
             font-size: 14px;
             font-weight: bold;
             opacity: 0.92;
             letter-spacing: 0.5px;
             margin-top: 3px;
-            display: block;
         }
         .btn-pet-action:hover {
             transform: translateY(-3px);
@@ -441,18 +439,26 @@
     </div>
 
     <script>
-    // 寵物狀態
+    // =========================================================================================
+    // =================== [ 🐕 大型電子寵物互動樂園 完整邏輯與影片管理 ] ===================
+    // =========================================================================================
+
+    const video = document.getElementById('pet-video-player');
+    const mood = document.getElementById('mood-text');
+    const thoughtBubble = document.getElementById('pet-thought-bubble');
+
+    // 寵物狀態物件
     const pet = {
-        health: 100, food: 80, water: 80, clean: 100, love: 50,
-        isSick: false, isDirty: false, accessory: 'none'
+        health: 100,
+        food: 80,
+        water: 80,
+        clean: 100,
+        love: 50,
+        accessory: 'none',
+        isSick: false
     };
 
-    // DOM 元素
-    const video = document.getElementById('pet-video-player');
-    const thoughtBubble = document.getElementById('pet-speech-bubble') || document.getElementById('pet-thought-bubble');
-    const mood = document.getElementById('mood-text');
-
-    // 所有動作對應的影片
+    // 所有動作對應的影片清單
     const videos = {
         feed:      ['dogeat.mp4', 'eatwell.mp4'],
         water:     ['dogdrink.mp4'],
@@ -460,35 +466,37 @@
         bath:      ['dogshower1.mp4', 'dogshower2.mp4'],
         clean_poo: ['dpgpoo.mp4'],
         heal:      ['dogdoctor.mp4'],
-        out:       ['haha2.mp4','T1.mp4','haha1.mp4','spaceelon.mp4','bigtree.mp4','doglongwall.mp4','dogwalk.mp4','dogdisney.mp4','dog101.mp4','dogjapan.mp4','dogitaly.mp4','dogswims.mp4','gotospace.mp4','dogplay1.mp4','dogplay.mp4'],
-        watch:     ['T1.mp4','dogcook.mp4','dogsleep.mp4','dogbreak.mp4','dpgplaycups.mp4','dogitsback.mp4','dogwithorangecat.mp4','dogwithtwocats.mp4','dogmouse1.mp4','dogsmart1.mp4'],
-        dress:     ['dogcollar.mp4','newdress1.mp4','newdress.mp4'],
+        out:       ['haha2.mp4', 'T1.mp4', 'haha1.mp4', 'spaceelon.mp4', 'bigtree.mp4', 'doglongwall.mp4', 'dogwalk.mp4', 'dogdisney.mp4', 'dog101.mp4', 'dogjapan.mp4', 'dogitaly.mp4', 'dogswims.mp4', 'gotospace.mp4', 'dogplay1.mp4', 'dogplay.mp4'],
+        watch:     ['T1.mp4', 'dogcook.mp4', 'dogsleep.mp4', 'dogbreak.mp4', 'dpgplaycups.mp4', 'dogitsback.mp4', 'dogwithorangecat.mp4', 'dogwithtwocats.mp4', 'dogmouse1.mp4', 'dogsmart1.mp4'],
+        dress:     ['dogcollar.mp4', 'newdress1.mp4', 'newdress.mp4'],
         default:   ['dogbreak.mp4']
     };
 
+    // 按鈕顯示文字 (特大雙語標籤)
     const buttonLabels = {
-        feed:      '🍖 餵食<span class="btn-sub">Feed</span>',
-        water:     '💧 喝水<span class="btn-sub">Water</span>',
-        pet:       '💕 摸摸<span class="btn-sub">Pet</span>',
-        bath:      '🧼 洗澡<span class="btn-sub">Bath</span>',
-        clean_poo: '💩 清便<span class="btn-sub">Clean</span>',
-        heal:      '💊 看病<span class="btn-sub">Heal</span>',
-        out:       '🌳 散步<span class="btn-sub">Walk</span>',
-        watch:     '📷 偷看<span class="btn-sub">Watch</span>',
-        dress:     '🎀 裝扮<span class="btn-sub">Dress</span>'
+        feed:      '🍖 肚子餓<br><small>hungry</small>',
+        water:     '💧 喝水水<br><small>thirsty</small>',
+        pet:       '🖐️ 摸摸<br><small>pet me</small>',
+        bath:      '🚿 洗澡澡<br><small>shower</small>',
+        clean_poo: '💩 清理便便<br><small>poop</small>',
+        heal:      '🩺 看醫生<br><small>sick</small>',
+        out:       '🌳 出去玩<br><small>go out</small>',
+        watch:     '📹 看監視器<br><small>check camera</small>',
+        dress:     '🎀 換裝扮<br><small>styles</small>'
     };
 
+    // 對話心聲
     const thoughtMessages = {
-        feed:      '🍖 狗狗正在大口吃飼料！肚子飽飽好滿足，謝謝主人！汪汪！',
-        water:     '💧 咕嚕咕嚕喝水水～解渴真舒服！',
+        feed:      '😋 好好吃的飼料！肚子飽飽好滿足，謝謝主人！',
+        water:     '💦 咕嚕咕嚕～喝水水解渴真舒服！',
         pet:       '🥰 摸摸頭最舒服了～我最喜歡主人了！汪汪！',
-        bath:      '🚿 洗泡泡浴香噴噴～我是最乾淨帥氣的小狗！',
-        clean_poo: '✨ 便便清理乾淨了～環境好乾淨好舒服喔！',
-        heal:      '🩺 醫生叔叔檢查完畢～身體健康滿分！',
+        bath:      '🧼 洗泡泡浴香噴噴～我是最乾淨帥氣的狗狗！',
+        clean_poo: '✨ 便便清理乾淨了，環境變得好舒服喔！',
+        heal:      '🩺 醫生叔叔幫我檢查完畢，身體健康滿分！',
         out:       '🏃 耶！出去大草皮跑步玩耍，世界好大好好玩！',
-        watch:     '👀 監視器裡我都在乖乖看家喔，我很乖吧！',
-        dress:     '🎀 換上漂亮新裝扮囉！看看我是不是超級可愛帥氣！',
-        default:   '🐶 汪汪！我是你的專屬邊境牧羊犬，點擊下方按鈕和我互動喔！🐾'
+        watch:     '👀 監視器裡我都在乖乖看家喔，我很棒吧！',
+        dress:     '🎩 換上新裝扮～看看我是不是超級可愛帥氣！',
+        default:   '🐶 汪汪！我是你最忠心的邊境牧羊犬，今天想和我做什麼呢？'
     };
 
     let currentAction = 'default';
@@ -499,7 +507,7 @@
         actionIndices = JSON.parse(localStorage.getItem('pet_action_indices_petpage') || '{}');
     } catch(e) {}
 
-    // 輪播選片
+    // 依序輪播影片 (持久化紀錄進度，每次必定播下一部新影片)
     function getNextVideo(action) {
         const list = videos[action] || videos.default;
         if (actionIndices[action] === undefined || actionIndices[action] >= list.length) {
@@ -514,31 +522,143 @@
         return selected;
     }
 
-    // 更新數值與心情
+    // 更新畫面上的進度條與心情
     function updateStatus() {
-        if (document.getElementById('health-value')) document.getElementById('health-value').textContent = pet.health;
-        if (document.getElementById('food-value')) document.getElementById('food-value').textContent = pet.food;
-        if (document.getElementById('water-value')) document.getElementById('water-value').textContent = pet.water;
-        if (document.getElementById('clean-value')) document.getElementById('clean-value').textContent = pet.clean;
-        if (document.getElementById('love-value')) document.getElementById('love-value').textContent = pet.love;
+        document.getElementById('health-value').textContent = pet.health;
+        document.getElementById('food-value').textContent = pet.food;
+        document.getElementById('water-value').textContent = pet.water;
+        document.getElementById('clean-value').textContent = pet.clean;
+        document.getElementById('love-value').textContent = pet.love;
 
-        if (document.getElementById('health-bar')) document.getElementById('health-bar').value = pet.health;
-        if (document.getElementById('food-bar')) document.getElementById('food-bar').value = pet.food;
-        if (document.getElementById('water-bar')) document.getElementById('water-bar').value = pet.water;
-        if (document.getElementById('clean-bar')) document.getElementById('clean-bar').value = pet.clean;
-        if (document.getElementById('love-bar')) document.getElementById('love-bar').value = pet.love;
+        document.getElementById('health-bar').value = pet.health;
+        document.getElementById('food-bar').value = pet.food;
+        document.getElementById('water-bar').value = pet.water;
+        document.getElementById('clean-bar').value = pet.clean;
+        document.getElementById('love-bar').value = pet.love;
 
+        // 心情判斷
         const avg = (pet.health + pet.food + pet.water + pet.clean + pet.love) / 5;
-        if (mood) {
-            if (avg >= 80) mood.textContent = '💖 超開心';
-            else if (avg >= 60) mood.textContent = '😊 開心';
-            else if (avg >= 40) mood.textContent = '😐 普通';
-            else if (avg >= 20) mood.textContent = '⚡ 不開心';
-            else mood.textContent = '😭 哭哭';
+        if (avg >= 80) mood.textContent = '❤️❤️❤️❤️❤️❤️ 超開心';
+        else if (avg >= 60) mood.textContent = '❤️❤️❤️❤️ 開心';
+        else if (avg >= 40) mood.textContent = '❤️❤️❤️ 普通';
+        else if (avg >= 20) mood.textContent = '⚡⚡ 不開心';
+        else mood.textContent = '⚡⚡⚡⚡⚡ 哭哭';
+    }
+
+    // =========================================================================
+    // 🚿 洗澡水流聲 (Web Audio API 擬真蓮蓬頭淋浴水花聲效)
+    // =========================================================================
+    let audioCtx = null;
+    let showerNodes = null;
+
+    function getAudioContext() {
+        if (!audioCtx) {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioContextClass) {
+                audioCtx = new AudioContextClass();
+            }
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        return audioCtx;
+    }
+
+    function playWaterShowerSound() {
+        stopWaterShowerSound();
+        const ctx = getAudioContext();
+        if (!ctx) return;
+
+        try {
+            // 建立 4 秒的粉紅噪聲緩衝區
+            const bufferSize = ctx.sampleRate * 4;
+            const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+            
+            for (let i = 0; i < bufferSize; i++) {
+                const white = Math.random() * 2 - 1;
+                // 粉紅噪聲濾波 (Pink Noise Filter)
+                b0 = 0.99886 * b0 + white * 0.0555179;
+                b1 = 0.99332 * b1 + white * 0.0750759;
+                b2 = 0.96900 * b2 + white * 0.1538520;
+                b3 = 0.86650 * b3 + white * 0.3104856;
+                b4 = 0.55000 * b4 + white * 0.5329522;
+                b5 = -0.7616 * b5 - white * 0.0168980;
+                output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+                b6 = white * 0.115926;
+            }
+
+            // 循環播放噪聲源
+            const whiteNoise = ctx.createBufferSource();
+            whiteNoise.buffer = noiseBuffer;
+            whiteNoise.loop = true;
+
+            // 低通濾波器 (水流主體厚度)
+            const lowpass = ctx.createBiquadFilter();
+            lowpass.type = 'lowpass';
+            lowpass.frequency.setValueAtTime(1400, ctx.currentTime);
+
+            // 帶通濾波器 (蓮蓬頭細緻水花噴灑聲)
+            const bandpass = ctx.createBiquadFilter();
+            bandpass.type = 'bandpass';
+            bandpass.frequency.setValueAtTime(2600, ctx.currentTime);
+            bandpass.Q.setValueAtTime(1.2, ctx.currentTime);
+
+            // 音量控制
+            const gainNode = ctx.createGain();
+            gainNode.gain.setValueAtTime(0.01, ctx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.32, ctx.currentTime + 0.3); // 平滑淡入
+
+            // LFO 水流波動感 (模擬水花沖擊的自然起伏)
+            const lfo = ctx.createOscillator();
+            lfo.frequency.setValueAtTime(3.0, ctx.currentTime);
+            const lfoGain = ctx.createGain();
+            lfoGain.gain.setValueAtTime(0.06, ctx.currentTime);
+            lfo.connect(lfoGain);
+            lfoGain.connect(gainNode.gain);
+            lfo.start();
+
+            // 連接音訊路由
+            whiteNoise.connect(lowpass);
+            lowpass.connect(bandpass);
+            bandpass.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            whiteNoise.start();
+
+            showerNodes = {
+                source: whiteNoise,
+                lfo: lfo,
+                gain: gainNode
+            };
+        } catch (e) {
+            console.warn('Audio play error:', e);
         }
     }
 
-    // 鎖定 / 解鎖按鈕
+    function stopWaterShowerSound() {
+        if (!showerNodes || !audioCtx) return;
+        try {
+            const curGain = showerNodes.gain;
+            const curSource = showerNodes.source;
+            const curLfo = showerNodes.lfo;
+            showerNodes = null;
+
+            // 平滑淡出 0.3 秒
+            curGain.gain.setValueAtTime(curGain.gain.value, audioCtx.currentTime);
+            curGain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+            setTimeout(() => {
+                try {
+                    curSource.stop();
+                    curLfo.stop();
+                    curSource.disconnect();
+                } catch (err) {}
+            }, 350);
+        } catch (e) {}
+    }
+
+    // 鎖定 / 解鎖所有互動按鈕
     function setButtonsDisabled(disabled) {
         const panel = document.getElementById('interaction-panel');
         if (!panel) return;
@@ -550,28 +670,28 @@
     }
 
     // 安全播放
-    function safePlay(v, withSound = false) {
-        v.muted = !withSound;          // true = 有聲音，false = 靜音
+    function safePlay(v) {
+        v.muted = true;
         v.playsInline = true;
         const p = v.play();
         if (p !== undefined) {
             p.catch(err => {
                 console.warn('Play error:', err);
-                if (withSound) {
-                    v.muted = true;
-                    v.play().catch(() => {});
+                if (currentAction !== 'default') {
+                    resetToStandby();
                 }
             });
         }
     }
 
-    // 回到待機狀態（靜音）
+    // 平滑切換回待機狀態
     function resetToStandby() {
         if (safetyTimeout) {
             clearTimeout(safetyTimeout);
             safetyTimeout = null;
         }
         currentAction = 'default';
+        stopWaterShowerSound();
         if (thoughtBubble) thoughtBubble.textContent = thoughtMessages.default;
 
         video.loop = true;
@@ -580,15 +700,14 @@
         const currentSrc = video.currentSrc || video.src || '';
         if (!currentSrc.includes('dogbreak.mp4')) {
             video.src = 'dogbreak.mp4';
-            video.load();
         }
-        safePlay(video);               // 待機維持靜音
+        safePlay(video);
 
         isActionBusy = false;
         setButtonsDisabled(false);
     }
 
-    // 主要動作函式（按下按鈕 → 有聲音）
+    // 主要動作函式
     function doAction(action) {
         if (isActionBusy) return;
         isActionBusy = true;
@@ -596,7 +715,7 @@
 
         currentAction = action;
 
-        // 更新寵物數值
+        // 手動點擊時增加數值
         if (action === 'feed')       pet.food  = Math.min(100, pet.food + 25);
         if (action === 'water')      pet.water = Math.min(100, pet.water + 25);
         if (action === 'pet')        pet.love  = Math.min(100, pet.love + 15);
@@ -606,6 +725,13 @@
         if (action === 'dress')      pet.accessory = (pet.accessory === 'none' ? 'hat' : 'none');
         updateStatus();
 
+        // 洗澡播放淋浴水流聲
+        if (action === 'bath') {
+            playWaterShowerSound();
+        } else {
+            stopWaterShowerSound();
+        }
+
         // 取得下一個輪播影片
         const selectedVideo = getNextVideo(action);
 
@@ -614,22 +740,22 @@
             thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
         }
 
-        // 切換影片並播放（有聲音）
+        // 切換影片並播放
         video.loop = false;
+        video.muted = true;
         video.src = selectedVideo;
-        video.load();
-        safePlay(video, true);         // ← 按下按鈕有聲音
+        safePlay(video);
 
-        // 安全計時器 20 秒
+        // 安全計時器（15秒自動解鎖）
         if (safetyTimeout) clearTimeout(safetyTimeout);
         safetyTimeout = setTimeout(() => {
             if (currentAction !== 'default') {
                 resetToStandby();
             }
-        }, 20000);
+        }, 15000);
     }
 
-    // 動態產生按鈕
+    // 動態生成 9 顆互動按鈕
     function createButtons() {
         const panel = document.getElementById('interaction-panel');
         if (!panel) return;
@@ -645,35 +771,21 @@
         });
     }
 
-    // 初始化
-    function initPetModule() {
+    // 頁面載入完成後執行
+    document.addEventListener('DOMContentLoaded', () => {
         createButtons();
         updateStatus();
 
-        // 預設待機影片（靜音）
+        // 啟動待機影片播放 (HTML 標籤已預設 src="dogbreak.mp4"，直接呼叫 safePlay 即可)
+        video.muted = true;
         video.loop = true;
-        video.src = 'dogbreak.mp4';
-        video.load();
-        safePlay(video);               // 待機靜音
+        safePlay(video);
 
-        // 播完自動回待機
+        // 影片播完：自動返回待機並解鎖所有按鈕
         video.addEventListener('ended', () => {
             resetToStandby();
         });
-
-        // 發生錯誤時回待機
-        video.addEventListener('error', () => {
-            console.warn('影片播放中斷，自動回到待機狀態');
-            resetToStandby();
-        });
-    }
-
-    // 頁面載入後執行
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initPetModule);
-    } else {
-        initPetModule();
-    }
+    });
     </script>
 </body>
 </html>

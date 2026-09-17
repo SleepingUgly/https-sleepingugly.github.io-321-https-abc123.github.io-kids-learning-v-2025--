@@ -5831,6 +5831,18 @@ window.addEventListener('load', () => {
     );
 })();
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
 <script>
 // 寵物狀態
 const pet = {
@@ -5927,7 +5939,7 @@ function updateStatus() {
     else mood.textContent = '😭 哭哭';
 }
 
-// 鎖定 / 解鎖按鈕
+// 鎖定 / 解鎖所有互動按鈕
 function setButtonsDisabled(disabled) {
     const panel = document.getElementById('interaction-panel');
     if (!panel) return;
@@ -5939,16 +5951,21 @@ function setButtonsDisabled(disabled) {
 }
 
 // 安全播放
-function safePlay(v, withSound = false) {
-    v.muted = !withSound;          // true = 有聲音，false = 靜音
+function safePlay(v) {
+    v.muted = true;
     v.playsInline = true;
     const p = v.play();
     if (p !== undefined) {
-        p.catch(err => console.warn('Play error:', err));
+        p.catch(err => {
+            console.warn('Play error:', err);
+            if (currentAction !== 'default') {
+                resetToStandby();
+            }
+        });
     }
 }
 
-// 回到待機狀態（靜音）
+// 平滑切換回待機狀態
 function resetToStandby() {
     if (safetyTimeout) {
         clearTimeout(safetyTimeout);
@@ -5963,15 +5980,14 @@ function resetToStandby() {
     const currentSrc = video.currentSrc || video.src || '';
     if (!currentSrc.includes('dogbreak.mp4')) {
         video.src = 'dogbreak.mp4';
-        video.load();
     }
-    safePlay(video);               // 待機維持靜音
+    safePlay(video);
 
     isActionBusy = false;
     setButtonsDisabled(false);
 }
 
-// 主要動作函式（按下按鈕 → 有聲音）
+// 主要動作函式
 function doAction(action) {
     if (isActionBusy) return;
     isActionBusy = true;
@@ -5997,22 +6013,22 @@ function doAction(action) {
         thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
     }
 
-    // 切換影片並播放（有聲音）
+    // 切換影片並播放
     video.loop = false;
+    video.muted = true;
     video.src = selectedVideo;
-    video.load();
-    safePlay(video, true);         // ← 按下按鈕有聲音
+    safePlay(video);
 
-    // 安全計時器 20 秒
+    // 安全計時器（15秒自動解鎖）
     if (safetyTimeout) clearTimeout(safetyTimeout);
     safetyTimeout = setTimeout(() => {
         if (currentAction !== 'default') {
             resetToStandby();
         }
-    }, 20000);
+    }, 15000);
 }
 
-// 動態產生按鈕
+// 動態生成 9 顆互動按鈕
 function createButtons() {
     const panel = document.getElementById('interaction-panel');
     if (!panel) return;
@@ -6027,45 +6043,29 @@ function createButtons() {
     });
 }
 
-// 初始化
+// 初始化寵物模組
 function initPetModule() {
     createButtons();
     updateStatus();
 
-    // 預設待機影片（靜音）
+    // 啟動待機影片播放 (HTML 標籤已預設 src="dogbreak.mp4"，直接呼叫 safePlay 即可)
+    video.muted = true;
     video.loop = true;
-    video.src = 'dogbreak.mp4';
-    video.load();
-    safePlay(video);               // 待機靜音
+    safePlay(video);
 
-    // 播完自動回待機
+    // 影片播完：自動返回待機並解鎖所有按鈕
     video.addEventListener('ended', () => {
-        resetToStandby();
-    });
-
-    // 發生錯誤時回待機
-    video.addEventListener('error', () => {
-        console.warn('影片播放中斷，自動回到待機狀態');
         resetToStandby();
     });
 }
 
-// 頁面載入後執行
+// 頁面載入完成後執行
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initPetModule);
 } else {
     initPetModule();
 }
 </script>
-
-
-
-
-
-
-
-
-
 
 <script>
 // =================== [ 📖 認知字詞卡 · 雙語學習專區 (1-150詞) 完整資料庫與控制 ] ===================
