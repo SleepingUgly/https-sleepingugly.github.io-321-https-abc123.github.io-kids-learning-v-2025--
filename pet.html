@@ -669,19 +669,49 @@
         });
     }
 
-    // 安全播放
-    function safePlay(v) {
-        v.muted = true;
-        v.playsInline = true;
-        const p = v.play();
-        if (p !== undefined) {
-            p.catch(err => {
-                console.warn('Play error:', err);
-                if (currentAction !== 'default') {
-                    resetToStandby();
-                }
-            });
+    // 緩衝就緒安全播放（帶聲音與自動降級保護，確保畫面絕對不凍結）
+    function playVideo(src, loop = false, withSound = false) {
+        video.loop = loop;
+        video.muted = !withSound;
+        video.playsInline = true;
+
+        const cur = video.currentSrc || video.src || '';
+        if (cur.endsWith(src) && !video.paused) {
+            return;
         }
+
+        video.oncanplay = null;
+        video.onerror = null;
+        video.src = src;
+
+        const startPlayback = () => {
+            video.oncanplay = null;
+            const p = video.play();
+            if (p !== undefined) {
+                p.catch(err => {
+                    console.warn('Play error, fallback to muted:', err);
+                    if (withSound) {
+                        video.muted = true;
+                        video.play().catch(e => console.warn('Muted play error:', e));
+                    }
+                });
+            }
+        };
+
+        if (video.readyState >= 2) {
+            startPlayback();
+        } else {
+            video.oncanplay = startPlayback;
+        }
+
+        video.onerror = (e) => {
+            video.oncanplay = null;
+            video.onerror = null;
+            console.warn('Video load error on:', src, e);
+            if (currentAction !== 'default') {
+                resetToStandby();
+            }
+        };
     }
 
     // 平滑切換回待機狀態
@@ -694,14 +724,7 @@
         stopWaterShowerSound();
         if (thoughtBubble) thoughtBubble.textContent = thoughtMessages.default;
 
-        video.loop = true;
-        video.muted = true;
-
-        const currentSrc = video.currentSrc || video.src || '';
-        if (!currentSrc.includes('dogbreak.mp4')) {
-            video.src = 'dogbreak.mp4';
-        }
-        safePlay(video);
+        playVideo('dogbreak.mp4', true, false);
 
         isActionBusy = false;
         setButtonsDisabled(false);
@@ -740,19 +763,16 @@
             thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
         }
 
-        // 切換影片並播放
-        video.loop = false;
-        video.muted = true;
-        video.src = selectedVideo;
-        safePlay(video);
+        // 切換影片並播放（按鈕觸發有聲音）
+        playVideo(selectedVideo, false, true);
 
-        // 安全計時器（15秒自動解鎖）
+        // 安全計時器（20秒自動解鎖）
         if (safetyTimeout) clearTimeout(safetyTimeout);
         safetyTimeout = setTimeout(() => {
             if (currentAction !== 'default') {
                 resetToStandby();
             }
-        }, 15000);
+        }, 20000);
     }
 
     // 動態生成 9 顆互動按鈕
@@ -776,10 +796,8 @@
         createButtons();
         updateStatus();
 
-        // 啟動待機影片播放 (HTML 標籤已預設 src="dogbreak.mp4"，直接呼叫 safePlay 即可)
-        video.muted = true;
-        video.loop = true;
-        safePlay(video);
+        // 啟動待機影片播放
+        playVideo('dogbreak.mp4', true, false);
 
         // 影片播完：自動返回待機並解鎖所有按鈕
         video.addEventListener('ended', () => {
