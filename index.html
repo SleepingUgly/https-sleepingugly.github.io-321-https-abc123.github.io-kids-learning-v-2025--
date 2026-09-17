@@ -5953,8 +5953,58 @@ function updateStatus() {
     else mood.textContent = '😭 哭哭';
 }
 
+let isActionBusy = false;
+let watchdogTimer = null;
+
+// 安全播放機制 (先嘗試開聲音，若瀏覽器政策阻擋，立即無縫降級為靜音播放，保證絕對不卡住)
+function safePlay(v, requestAudio = true) {
+    v.muted = !requestAudio;
+    const playPromise = v.play();
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            clearTimeout(watchdogTimer);
+        }).catch(err => {
+            console.warn('Playback with sound prevented, switching to muted fallback:', err);
+            v.muted = true;
+            v.play().then(() => {
+                clearTimeout(watchdogTimer);
+            }).catch(fatal => {
+                console.error('Playback failed:', fatal);
+                resetToStandby();
+            });
+        });
+    }
+}
+
+// 重置回待機影片 (dogbreak.mp4)
+function resetToStandby() {
+    clearTimeout(watchdogTimer);
+    video.loop = true;
+    video.muted = true;
+    if (!video.src.includes('dogbreak.mp4')) {
+        video.src = 'dogbreak.mp4';
+        video.load();
+        safePlay(video, false);
+    }
+}
+
+// 逾時安全看門狗 (若影片載入超過 7 秒未播放，自動恢復待機，絕不黑畫面卡死)
+function startWatchdog() {
+    clearTimeout(watchdogTimer);
+    watchdogTimer = setTimeout(() => {
+        if (video.readyState < 2) {
+            console.warn('Video load timeout, resetting to standby');
+            resetToStandby();
+        }
+    }, 7000);
+}
+
 // 主要動作函式
 function doAction(action) {
+    if (isActionBusy) return;
+    isActionBusy = true;
+    setTimeout(() => { isActionBusy = false; }, 400);
+
     // 改變數值
     if (action === 'feed')       pet.food = Math.min(100, pet.food + 25);
     if (action === 'water')      pet.water = Math.min(100, pet.water + 25);
@@ -5964,12 +6014,14 @@ function doAction(action) {
     if (action === 'heal')       { pet.health = 100; pet.isSick = false; }
     if (action === 'dress')      pet.accessory = (pet.accessory === 'none' ? 'hat' : 'none'); // 範例切換
 
-    // 播放對應影片 (解除靜音)
+    // 啟動超時防卡保護
+    startWatchdog();
+
+    // 播放對應影片 (解除靜音，若受阻擋則自動靜音播放)
     video.loop = false;
-    video.muted = false;
-    video.volume = 1.0;
     video.src = getNextVideo(action);
-    video.play().catch(() => {});
+    video.load();
+    safePlay(video, true);
 
     // 更新狀態列
     updateStatus();
@@ -5997,14 +6049,20 @@ document.addEventListener('DOMContentLoaded', () => {
     video.muted = true;
     video.src = 'dogbreak.mp4';
     video.loop = true;
-    video.play().catch(() => {});
+    safePlay(video, false);
+
+    video.addEventListener('playing', () => {
+        clearTimeout(watchdogTimer);
+    });
+
+    video.addEventListener('error', (e) => {
+        console.warn('Video playback error, recovering to standby:', e);
+        resetToStandby();
+    });
     
     // 影片結束後自動播放待機動畫 (dogbreak.mp4 循環不留空白，待機時靜音)
     video.addEventListener('ended', () => {
-        video.muted = true;
-        video.src = 'dogbreak.mp4';
-        video.loop = true;
-        video.play().catch(() => {});
+        resetToStandby();
     });
 });
 
