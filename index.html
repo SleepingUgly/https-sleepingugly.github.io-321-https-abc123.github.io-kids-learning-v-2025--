@@ -5895,12 +5895,14 @@ const thoughtMessages = {
 };
 
 let currentAction = 'default';
+let isActionBusy = false;
+let safetyTimeout = null;
 let actionIndices = {};
 try {
     actionIndices = JSON.parse(localStorage.getItem('pet_action_indices') || '{}');
 } catch(e) {}
 
-// 輪播選片 (自動持久化輪播進度，確保每次必定播下一部新影片)
+// 輪播選片 (自動輪流播放清單中的每一部影片)
 function getNextVideo(action) {
     const list = videos[action] || videos.default;
     if (actionIndices[action] === undefined || actionIndices[action] >= list.length) {
@@ -5912,7 +5914,7 @@ function getNextVideo(action) {
     try {
         localStorage.setItem('pet_action_indices', JSON.stringify(actionIndices));
     } catch(e) {}
-    return { src: selected, index: curIdx + 1, total: list.length };
+    return selected;
 }
 
 // 更新數值與心情
@@ -5937,7 +5939,18 @@ function updateStatus() {
     else mood.textContent = '😭 哭哭';
 }
 
-// 安全播放 (使用靜音播放，符合所有瀏覽器政策，保證任何裝置點擊必定立即流暢動起來)
+// 鎖定 / 解鎖所有互動按鈕 (播放中鎖定，防止連點塞車與卡頓)
+function setButtonsDisabled(disabled) {
+    const panel = document.getElementById('interaction-panel');
+    if (!panel) return;
+    panel.querySelectorAll('button').forEach(btn => {
+        btn.disabled = disabled;
+        btn.style.opacity = disabled ? '0.5' : '1';
+        btn.style.cursor = disabled ? 'not-allowed' : 'pointer';
+    });
+}
+
+// 安全播放 (靜音符合所有瀏覽器政策，保證即時秒播)
 function safePlay(v) {
     v.muted = true;
     const p = v.play();
@@ -5946,80 +5959,65 @@ function safePlay(v) {
     }
 }
 
-// 鎖定 / 解鎖所有互動按鈕 (防手震抖動，保留極速流暢切換)
-function setButtonsDisabled(disabled) {
-    const panel = document.getElementById('interaction-panel');
-    if (!panel) return;
-    panel.querySelectorAll('button').forEach(btn => {
-        btn.disabled = disabled;
-        btn.style.opacity = disabled ? '0.6' : '1';
-    });
-}
-
-let actionDebounceTimer = null;
-
-// 平滑切換回待機影片 (dogbreak.mp4)
+// 平滑切換回待機狀態 (播放完畢解鎖按鈕)
 function resetToStandby() {
+    if (safetyTimeout) {
+        clearTimeout(safetyTimeout);
+        safetyTimeout = null;
+    }
     currentAction = 'default';
     if (thoughtBubble) thoughtBubble.textContent = thoughtMessages.default;
-    setButtonsDisabled(false);
-
+    
     video.loop = true;
     video.muted = true;
-
     if (!video.src.endsWith('dogbreak.mp4')) {
         video.src = 'dogbreak.mp4';
-        safePlay(video);
-    } else {
-        safePlay(video);
     }
+    safePlay(video);
+
+    isActionBusy = false;
+    setButtonsDisabled(false);
 }
 
-// 主要動作函式 (支援點擊切換與連續自動輪播，驚喜隱藏總集數)
-function doAction(action, isAutoNext = false) {
-    if (!isAutoNext) {
-        if (actionDebounceTimer) return;
-        actionDebounceTimer = setTimeout(() => { actionDebounceTimer = null; }, 350);
-    }
+// 主要動作函式 (點擊後鎖定按鈕，順暢播放選定影片，播完自動解鎖)
+function doAction(action) {
+    if (isActionBusy) return;
+    isActionBusy = true;
+    setButtonsDisabled(true);
 
     currentAction = action;
 
-    // 手動點擊時增加數值
-    if (!isAutoNext) {
-        if (action === 'feed')       pet.food  = Math.min(100, pet.food + 25);
-        if (action === 'water')      pet.water = Math.min(100, pet.water + 25);
-        if (action === 'pet')        pet.love  = Math.min(100, pet.love + 15);
-        if (action === 'bath')       pet.clean = 100;
-        if (action === 'clean_poo')  pet.clean = Math.min(100, pet.clean + 40);
-        if (action === 'heal')       { pet.health = 100; pet.isSick = false; }
-        if (action === 'dress')      pet.accessory = (pet.accessory === 'none' ? 'hat' : 'none');
-        updateStatus();
-    }
+    // 更新寵物數值
+    if (action === 'feed')       pet.food  = Math.min(100, pet.food + 25);
+    if (action === 'water')      pet.water = Math.min(100, pet.water + 25);
+    if (action === 'pet')        pet.love  = Math.min(100, pet.love + 15);
+    if (action === 'bath')       pet.clean = 100;
+    if (action === 'clean_poo')  pet.clean = Math.min(100, pet.clean + 40);
+    if (action === 'heal')       { pet.health = 100; pet.isSick = false; }
+    if (action === 'dress')      pet.accessory = (pet.accessory === 'none' ? 'hat' : 'none');
+    updateStatus();
 
-    // 取得下一部輪播影片
-    const vidInfo = getNextVideo(action);
-    const selectedVideo = vidInfo.src;
+    // 取得下一個輪播影片 (零預載塞車，即點即載)
+    const selectedVideo = getNextVideo(action);
 
-    // 1. 即時心聲文字切換 (隱藏集數數字，保留滿滿驚喜感)
+    // 顯示對應的心聲對話 (保持驚喜感)
     if (thoughtBubble) {
         thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
     }
 
-    // 2. 切換播放影片 (靜音保證 100% 秒開播動，絕不被瀏覽器政策卡住)
+    // 切換影片並播放
     video.loop = false;
     video.muted = true;
     video.src = selectedVideo;
     safePlay(video);
 
-    // 3. 錯誤自動修復：若某影片載入失敗，自動跳播下一部，絕不黑畫面卡死
-    video.onerror = () => {
-        console.warn('影片切換重試:', selectedVideo);
-        if (currentAction === 'out' || currentAction === 'watch' || currentAction === 'dress') {
-            setTimeout(() => doAction(currentAction, true), 800);
-        } else {
-            setTimeout(resetToStandby, 800);
+    // 安全計時器：防呆機制，若影片超過 20 秒未觸發結束事件，自動解鎖並回待機
+    if (safetyTimeout) clearTimeout(safetyTimeout);
+    safetyTimeout = setTimeout(() => {
+        if (currentAction !== 'default') {
+            resetToStandby();
         }
-    };
+    }, 20000);
 }
 
 // 動態生成 9 顆互動按鈕
@@ -6046,24 +6044,17 @@ function initPetModule() {
     video.muted = true;
     video.loop = true;
     video.src = 'dogbreak.mp4';
-    video.load();
-    video.addEventListener('canplay', () => safePlay(video, false), { once: true });
+    safePlay(video);
 
-    // 動作影片播完自動處理：散步、偷看、換裝自動順播下一部；其餘回到待機
+    // 影片播完：自動返回待機並解鎖所有按鈕
     video.addEventListener('ended', () => {
-        if (currentAction === 'out' || currentAction === 'watch' || currentAction === 'dress') {
-            doAction(currentAction, true);
-        } else {
-            resetToStandby();
-        }
+        resetToStandby();
     });
 
-    // 預先載入常用影片
-    ['dogbreak.mp4', 'dogeat.mp4', 'dogshower1.mp4', 'haha2.mp4', 'dogdrink.mp4', 'dpgpoo.mp4', 'dogdoctor.mp4'].forEach(src => {
-        const preload = document.createElement('video');
-        preload.src = src;
-        preload.preload = 'auto';
-        preload.muted = true;
+    // 遇到異常時平滑回待機，不陷入卡頓重試
+    video.addEventListener('error', () => {
+        console.warn('影片播放中斷，自動回到待機狀態');
+        resetToStandby();
     });
 }
 
