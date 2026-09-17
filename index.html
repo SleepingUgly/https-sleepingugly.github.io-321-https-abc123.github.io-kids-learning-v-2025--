@@ -5939,7 +5939,7 @@ function updateStatus() {
     else mood.textContent = '😭 哭哭';
 }
 
-// 鎖定 / 解鎖所有互動按鈕
+// 鎖定 / 解鎖按鈕
 function setButtonsDisabled(disabled) {
     const panel = document.getElementById('interaction-panel');
     if (!panel) return;
@@ -5956,16 +5956,11 @@ function safePlay(v) {
     v.playsInline = true;
     const p = v.play();
     if (p !== undefined) {
-        p.catch(err => {
-            console.warn('Play error:', err);
-            if (currentAction !== 'default') {
-                resetToStandby();
-            }
-        });
+        p.catch(err => console.warn('Play error:', err));
     }
 }
 
-// 平滑切換回待機狀態
+// 回到待機狀態
 function resetToStandby() {
     if (safetyTimeout) {
         clearTimeout(safetyTimeout);
@@ -5980,6 +5975,7 @@ function resetToStandby() {
     const currentSrc = video.currentSrc || video.src || '';
     if (!currentSrc.includes('dogbreak.mp4')) {
         video.src = 'dogbreak.mp4';
+        video.load();
     }
     safePlay(video);
 
@@ -5995,7 +5991,7 @@ function doAction(action) {
 
     currentAction = action;
 
-    // 更新寵物數值
+    // 更新數值
     if (action === 'feed')       pet.food  = Math.min(100, pet.food + 25);
     if (action === 'water')      pet.water = Math.min(100, pet.water + 25);
     if (action === 'pet')        pet.love  = Math.min(100, pet.love + 15);
@@ -6005,30 +6001,29 @@ function doAction(action) {
     if (action === 'dress')      pet.accessory = (pet.accessory === 'none' ? 'hat' : 'none');
     updateStatus();
 
-    // 取得下一個輪播影片
     const selectedVideo = getNextVideo(action);
 
-    // 顯示對應的心聲對話
     if (thoughtBubble) {
         thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
     }
 
-    // 切換影片並播放
+    // 切換影片（重點修正）
     video.loop = false;
     video.muted = true;
     video.src = selectedVideo;
+    video.load();               // ← 必須加這行
     safePlay(video);
 
-    // 安全計時器（15秒自動解鎖）
+    // 安全計時器 20 秒
     if (safetyTimeout) clearTimeout(safetyTimeout);
     safetyTimeout = setTimeout(() => {
         if (currentAction !== 'default') {
             resetToStandby();
         }
-    }, 15000);
+    }, 20000);
 }
 
-// 動態生成 9 顆互動按鈕
+// 動態產生按鈕
 function createButtons() {
     const panel = document.getElementById('interaction-panel');
     if (!panel) return;
@@ -6043,23 +6038,31 @@ function createButtons() {
     });
 }
 
-// 初始化寵物模組
+// 初始化
 function initPetModule() {
     createButtons();
     updateStatus();
 
-    // 啟動待機影片播放 (HTML 標籤已預設 src="dogbreak.mp4"，直接呼叫 safePlay 即可)
+    // 預設待機影片
     video.muted = true;
     video.loop = true;
+    video.src = 'dogbreak.mp4';
+    video.load();               // ← 必須加這行
     safePlay(video);
 
-    // 影片播完：自動返回待機並解鎖所有按鈕
+    // 播完自動回待機
     video.addEventListener('ended', () => {
+        resetToStandby();
+    });
+
+    // 發生錯誤時回待機
+    video.addEventListener('error', () => {
+        console.warn('影片播放中斷，自動回到待機狀態');
         resetToStandby();
     });
 }
 
-// 頁面載入完成後執行
+// 頁面載入後執行
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initPetModule);
 } else {
