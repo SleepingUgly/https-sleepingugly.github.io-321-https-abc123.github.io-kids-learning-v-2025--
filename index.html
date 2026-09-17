@@ -5950,9 +5950,8 @@ function setButtonsDisabled(disabled) {
     });
 }
 
-// 安全播放
 function safePlay(v, withSound = false) {
-    v.muted = !withSound;          // 這行最重要！
+    v.muted = !withSound;
     v.playsInline = true;
     const p = v.play();
     if (p !== undefined) {
@@ -5983,7 +5982,6 @@ function resetToStandby() {
     setButtonsDisabled(false);
 }
 
-// 主要動作函式
 function doAction(action) {
     if (isActionBusy) return;
     isActionBusy = true;
@@ -5991,7 +5989,7 @@ function doAction(action) {
 
     currentAction = action;
 
-    // 更新數值
+    // 更新寵物數值
     if (action === 'feed')       pet.food  = Math.min(100, pet.food + 25);
     if (action === 'water')      pet.water = Math.min(100, pet.water + 25);
     if (action === 'pet')        pet.love  = Math.min(100, pet.love + 15);
@@ -6001,12 +5999,28 @@ function doAction(action) {
     if (action === 'dress')      pet.accessory = (pet.accessory === 'none' ? 'hat' : 'none');
     updateStatus();
 
+    // 取得下一個輪播影片
     const selectedVideo = getNextVideo(action);
 
+    // 顯示對應的心聲對話
     if (thoughtBubble) {
         thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
     }
 
+    // 切換影片並播放（有聲音）
+    video.loop = false;
+    video.src = selectedVideo;
+    video.load();
+    safePlay(video, true);       // true = 有聲音
+
+    // 安全計時器 20 秒
+    if (safetyTimeout) clearTimeout(safetyTimeout);
+    safetyTimeout = setTimeout(() => {
+        if (currentAction !== 'default') {
+            resetToStandby();
+        }
+    }, 20000);
+}
  // 切換影片並播放
 video.loop = false;
 video.src = selectedVideo;
