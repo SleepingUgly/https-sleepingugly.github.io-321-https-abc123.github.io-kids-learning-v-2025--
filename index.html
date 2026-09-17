@@ -1531,36 +1531,6 @@
         box-shadow: 0 2px 5px rgba(0,0,0,0.04);
         transition: all 0.2s ease;
     }
-    .video-loading-overlay {
-        position: absolute;
-        inset: 0;
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background: rgba(254, 249, 231, 0.88);
-        backdrop-filter: blur(4px);
-        z-index: 10;
-        pointer-events: none;
-        transition: opacity 0.25s ease;
-    }
-    .video-loading-overlay.active {
-        display: flex;
-    }
-    .loading-paw {
-        font-size: 38px;
-        animation: bouncePaw 0.75s infinite alternate ease-in-out;
-    }
-    @keyframes bouncePaw {
-        from { transform: translateY(0) scale(1); }
-        to { transform: translateY(-10px) scale(1.15); }
-    }
-    .loading-text {
-        font-size: 14.5px;
-        font-weight: 900;
-        color: #8e44ad;
-        margin-top: 6px;
-    }
     .pet-display {
         width: 100% !important;
         max-width: 100% !important;
@@ -3029,10 +2999,6 @@
             </div>
 
             <div id="video-overlay" class="video-overlay">
-                <div id="video-loading" class="video-loading-overlay">
-                    <div class="loading-paw">🐾</div>
-                    <div class="loading-text">狗狗正在準備中... 🐶</div>
-                </div>
                 <video id="pet-video-player" autoplay muted playsinline preload="auto"></video>
                 <div id="accessory-display" class="accessory"></div>
             </div>
@@ -5953,9 +5919,7 @@ function updateStatus() {
 }
 
 const thoughtBubble = document.getElementById('pet-speech-bubble');
-const videoLoading = document.getElementById('video-loading');
 let isActionBusy = false;
-let watchdogTimer = null;
 
 // 對話心聲 (即時視覺回饋，0 毫秒反應)
 const thoughtMessages = {
@@ -5971,65 +5935,34 @@ const thoughtMessages = {
     default:   '🐶 汪汪！我是你的專屬邊境牧羊犬，點擊下方按鈕和我互動喔！🐾'
 };
 
-function showLoading() {
-    if (videoLoading) videoLoading.classList.add('active');
-}
-function hideLoading() {
-    if (videoLoading) videoLoading.classList.remove('active');
-}
-
-// 安全播放機制 (先嘗試開聲音，若瀏覽器政策阻擋，立即無縫降級為靜音播放，保證絕對不卡住)
+// 安全播放機制 (先嘗試開聲音，若瀏覽器政策阻擋，立即無縫降級為靜音播放，保證絕對順暢播放不卡住)
 function safePlay(v, requestAudio = true) {
     v.muted = !requestAudio;
     const playPromise = v.play();
     if (playPromise !== undefined) {
-        playPromise.then(() => {
-            hideLoading();
-            clearTimeout(watchdogTimer);
-        }).catch(err => {
-            console.warn('Playback with sound prevented, switching to muted fallback:', err);
+        playPromise.catch(() => {
             v.muted = true;
-            v.play().then(() => {
-                hideLoading();
-                clearTimeout(watchdogTimer);
-            }).catch(fatal => {
-                console.error('Playback failed completely:', fatal);
-                hideLoading();
-                resetToStandby();
-            });
+            v.play().catch(fatal => {});
         });
     }
 }
 
-// 重置回待機影片 (dogbreak.mp4)
+// 重置回待機影片 (dogbreak.mp4 循環)
 function resetToStandby() {
-    clearTimeout(watchdogTimer);
-    hideLoading();
     if (thoughtBubble) thoughtBubble.textContent = thoughtMessages.default;
     video.loop = true;
     video.muted = true;
-    if (!video.src.includes('dogbreak.mp4')) {
+    if (!video.src.endsWith('dogbreak.mp4')) {
         video.src = 'dogbreak.mp4';
         safePlay(video, false);
     }
 }
 
-// 逾時安全看門狗 (若影片載入超過 7 秒未播放，自動恢復待機，絕不黑畫面卡死)
-function startWatchdog() {
-    clearTimeout(watchdogTimer);
-    watchdogTimer = setTimeout(() => {
-        if (video.readyState < 2) {
-            console.warn('Video load timeout, resetting to standby');
-            resetToStandby();
-        }
-    }, 7000);
-}
-
-// 主要動作函式
+// 主要動作函式 (點擊按鈕立即切換影片)
 function doAction(action) {
     if (isActionBusy) return;
     isActionBusy = true;
-    setTimeout(() => { isActionBusy = false; }, 350);
+    setTimeout(() => { isActionBusy = false; }, 300);
 
     // 改變數值
     if (action === 'feed')       pet.food = Math.min(100, pet.food + 25);
@@ -6040,28 +5973,24 @@ function doAction(action) {
     if (action === 'heal')       { pet.health = 100; pet.isSick = false; }
     if (action === 'dress')      pet.accessory = (pet.accessory === 'none' ? 'hat' : 'none');
 
-    // 1. 即時心聲文字切換 (0毫秒立即有反應)
+    // 1. 即時心聲文字切換 (0 毫秒立即回饋)
     if (thoughtBubble) thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
 
-    // 2. 顯示可愛肉球載入中動畫並啟動防卡死安全看門狗
-    showLoading();
-    startWatchdog();
-
-    // 3. 取得下一部動作影片並切換播放 (解除靜音，若受瀏覽器限制則自動順暢靜音播放)
+    // 2. 取得下一部動作影片並立即切換播放
     const selectedVideo = getNextVideo(action);
     video.loop = false;
     video.src = selectedVideo;
     safePlay(video, true);
 
-    // 4. 更新狀態儀表板
+    // 3. 更新狀態儀表板
     updateStatus();
 }
 
-// 動態生成 9 顆按鈕
+// 動態生成 9 顆互動按鈕
 function createButtons() {
     const panel = document.getElementById('interaction-panel');
     if (!panel) return;
-    panel.innerHTML = ''; // 清空
+    panel.innerHTML = '';
 
     const actions = ['feed', 'water', 'pet', 'bath', 'clean_poo', 'heal', 'out', 'watch', 'dress'];
 
@@ -6077,50 +6006,27 @@ function initPetModule() {
     createButtons();
     updateStatus();
 
-    // 預設待機影片 (dogbreak.mp4 循環，靜音防阻擋)
+    // 預設待機影片 (dogbreak.mp4 循環播放，靜音防阻擋)
     video.muted = true;
-    video.src = 'dogbreak.mp4';
     video.loop = true;
+    video.src = 'dogbreak.mp4';
     safePlay(video, false);
 
-    video.addEventListener('playing', () => {
-        hideLoading();
-        clearTimeout(watchdogTimer);
-    });
-
-    video.addEventListener('canplay', () => {
-        hideLoading();
-    });
-
-    video.addEventListener('waiting', () => {
-        showLoading();
-    });
-
-    video.addEventListener('error', (e) => {
-        console.warn('Video playback error, recovering to standby:', e);
-        resetToStandby();
-    });
-    
-    // 影片結束後自動播放待機動畫 (dogbreak.mp4 循環不留空白)
+    // 動作影片播放完畢後，自動切換回待機循環
     video.addEventListener('ended', () => {
         resetToStandby();
     });
 }
 
-// 頁面載入完成後執行 (相容已就緒與載入中兩種情況)
+// 頁面載入完成後執行
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initPetModule);
 } else {
     initPetModule();
 }
-
-
-
-
 </script>
 
 <script>
-// =========================================================================================
 // =================== [ 📖 認知字詞卡 · 雙語學習專區 (1-150詞) 完整資料庫與控制 ] ===================
 // =========================================================================================
 

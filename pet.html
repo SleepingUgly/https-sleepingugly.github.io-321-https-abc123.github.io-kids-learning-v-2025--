@@ -167,38 +167,6 @@
             background: transparent;
         }
 
-        .video-loading-overlay {
-            position: absolute;
-            inset: 0;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 240, 245, 0.88);
-            backdrop-filter: blur(4px);
-            z-index: 10;
-            pointer-events: none;
-            transition: opacity 0.25s ease;
-        }
-        .video-loading-overlay.active {
-            display: flex;
-        }
-        .loading-paw {
-            font-size: 46px;
-            animation: bouncePaw 0.75s infinite alternate ease-in-out;
-        }
-        @keyframes bouncePaw {
-            from { transform: translateY(0) scale(1); }
-            to { transform: translateY(-14px) scale(1.15); }
-        }
-        .loading-text {
-            font-size: 19px;
-            font-weight: 900;
-            color: #8e44ad;
-            margin-top: 10px;
-            letter-spacing: 0.5px;
-        }
-
         /* 右側：狀態儀表板 + 放大的 9 顆互動按鈕 */
         .pet-right-card {
             background: #ffffff;
@@ -397,10 +365,6 @@
 
             <!-- 大型視訊播放器 (加高至 560px) -->
             <div class="pet-video-box">
-                <div id="video-loading" class="video-loading-overlay">
-                    <div class="loading-paw">🐾</div>
-                    <div class="loading-text">狗狗正在準備中... 🐶</div>
-                </div>
                 <video id="pet-video-player" autoplay muted playsinline preload="auto"></video>
             </div>
         </div>
@@ -683,68 +647,37 @@
         } catch (e) {}
     }
 
-    const videoLoading = document.getElementById('video-loading');
     let isActionBusy = false;
-    let watchdogTimer = null;
 
-    function showLoading() {
-        if (videoLoading) videoLoading.classList.add('active');
-    }
-    function hideLoading() {
-        if (videoLoading) videoLoading.classList.remove('active');
-    }
-
-    // 安全播放機制 (先嘗試開聲音，若瀏覽器政策阻擋，立即無縫降級為靜音播放，保證絕對不卡住)
+    // 安全播放機制 (先嘗試開聲音，若瀏覽器政策阻擋，立即無縫降級為靜音播放，保證絕對順暢播放不卡住)
     function safePlay(v, requestAudio = true) {
         v.muted = !requestAudio;
         const playPromise = v.play();
         if (playPromise !== undefined) {
-            playPromise.then(() => {
-                hideLoading();
-            }).catch(err => {
-                console.warn('Playback with sound prevented, switching to muted fallback:', err);
+            playPromise.catch(() => {
                 v.muted = true;
-                v.play().then(() => {
-                    hideLoading();
-                }).catch(fatal => {
-                    console.error('Playback failed:', fatal);
-                    hideLoading();
-                    resetToStandby();
-                });
+                v.play().catch(fatal => {});
             });
         }
     }
 
-    // 重置回待機影片 (dogbreak.mp4)
+    // 重置回待機影片 (dogbreak.mp4 循環)
     function resetToStandby() {
-        clearTimeout(watchdogTimer);
         stopWaterShowerSound();
-        hideLoading();
         if (thoughtBubble) thoughtBubble.textContent = thoughtMessages.default;
         video.loop = true;
         video.muted = true;
-        if (!video.src.includes('dogbreak.mp4')) {
+        if (!video.src.endsWith('dogbreak.mp4')) {
             video.src = 'dogbreak.mp4';
             safePlay(video, false);
         }
     }
 
-    // 逾時安全看門狗 (若影片載入超過 7 秒未播放，自動恢復待機，絕不黑畫面卡死)
-    function startWatchdog() {
-        clearTimeout(watchdogTimer);
-        watchdogTimer = setTimeout(() => {
-            if (video.readyState < 2) {
-                console.warn('Video load timeout, resetting to standby');
-                resetToStandby();
-            }
-        }, 7000);
-    }
-
-    // 主要動作函式 (已移除真人語音朗讀，洗澡加入水流聲)
+    // 主要動作函式 (點擊按鈕立即切換影片)
     function doAction(action) {
         if (isActionBusy) return;
         isActionBusy = true;
-        setTimeout(() => { isActionBusy = false; }, 400);
+        setTimeout(() => { isActionBusy = false; }, 300);
 
         // 改變數值
         if (action === 'feed')       pet.food = Math.min(100, pet.food + 25);
@@ -762,24 +695,20 @@
             stopWaterShowerSound();
         }
 
-        // 顯示載入提示並啟動超時防卡保護
-        showLoading();
-        startWatchdog();
+        // 1. 即時心聲文字切換
+        if (thoughtBubble) thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
 
-        // 播放對應事件影片 (單次播放，嘗試播放原檔音效，若阻擋則自動靜音播放)
+        // 2. 播放對應動作影片
         const selectedVideo = getNextVideo(action);
         video.loop = false;
         video.src = selectedVideo;
         safePlay(video, true);
 
-        // 更新心聲對話氣泡
-        if (thoughtBubble) thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
-
-        // 更新狀態列
+        // 3. 更新狀態列
         updateStatus();
     }
 
-    // 動態生成 9 顆放大按鈕
+    // 動態生成 9 顆互動按鈕
     function createButtons() {
         const panel = document.getElementById('interaction-panel');
         if (!panel) return;
@@ -801,31 +730,13 @@
         createButtons();
         updateStatus();
 
-        // 預設載入並循環播放 dogbreak.mp4，確保畫面隨時保持動態不留白 (待機時靜音)
+        // 預設載入並循環播放 dogbreak.mp4 (靜音防阻擋)
         video.muted = true;
-        video.src = 'dogbreak.mp4';
         video.loop = true;
+        video.src = 'dogbreak.mp4';
         safePlay(video, false);
 
-        video.addEventListener('playing', () => {
-            hideLoading();
-            clearTimeout(watchdogTimer);
-        });
-
-        video.addEventListener('canplay', () => {
-            hideLoading();
-        });
-
-        video.addEventListener('waiting', () => {
-            showLoading();
-        });
-
-        video.addEventListener('error', (e) => {
-            console.warn('Video playback error, recovering to standby:', e);
-            resetToStandby();
-        });
-
-        // 任何互動事件影片播放結束後，自動無縫切換回 dogbreak.mp4 並持續循環播放
+        // 動作影片播放結束後，自動切換回待機循環
         video.addEventListener('ended', () => {
             resetToStandby();
         });
