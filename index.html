@@ -5952,7 +5952,7 @@ function setButtonsDisabled(disabled) {
 
 // 安全播放
 function safePlay(v, withSound = false) {
-    v.muted = !withSound;          // true = 靜音，false = 有聲音
+    v.muted = !withSound;          // 這行最重要！
     v.playsInline = true;
     const p = v.play();
     if (p !== undefined) {
@@ -6007,19 +6007,19 @@ function doAction(action) {
         thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
     }
 
-    // 切換影片（重點修正）
-   // 切換影片並播放
+ // 切換影片並播放
 video.loop = false;
 video.src = selectedVideo;
 video.load();
-safePlay(video, true);       // ← 改成 true，按下按鈕就會有聲音
+safePlay(video, true);       // 按下按鈕 → 有聲音
 
-    // 安全計時器 20 秒
- video.loop = false;
-video.src = selectedVideo;
-video.load();
-safePlay(video, true);       // ← 這裡改成 true，就會有聲音
-// 動態產生按鈕
+// 安全計時器 20 秒
+if (safetyTimeout) clearTimeout(safetyTimeout);
+safetyTimeout = setTimeout(() => {
+    if (currentAction !== 'default') {
+        resetToStandby();
+    }
+}, 20000);
     
 function createButtons() {
     const panel = document.getElementById('interaction-panel');
