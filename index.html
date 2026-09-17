@@ -5940,10 +5940,25 @@ function safePlay(v, requestAudio = true) {
     }
 }
 
+// 鎖定 / 解鎖所有互動按鈕 (直到影片播完才解鎖，保證流暢不卡頓)
+function setButtonsDisabled(disabled) {
+    const panel = document.getElementById('interaction-panel');
+    if (!panel) return;
+    panel.querySelectorAll('button').forEach(btn => {
+        btn.disabled = disabled;
+        btn.style.opacity = disabled ? '0.55' : '1';
+        btn.style.cursor = disabled ? 'not-allowed' : 'pointer';
+    });
+}
+
+let actionLockTimer = null;
+
 // 平滑切換回待機影片 (dogbreak.mp4)
 function resetToStandby() {
+    clearTimeout(actionLockTimer);
     if (thoughtBubble) thoughtBubble.textContent = thoughtMessages.default;
     isActionBusy = false;
+    setButtonsDisabled(false); // 影片播完，立即解鎖所有按鈕！
 
     video.loop = true;
     video.muted = true;
@@ -5970,11 +5985,19 @@ function resetToStandby() {
     }
 }
 
-// 主要動作函式 (點擊立即切換下一部，不鎖死按鈕，防抖動 300ms)
+// 主要動作函式 (點擊後立即鎖定按鈕，直到影片播完才解鎖)
 function doAction(action) {
     if (isActionBusy) return;
     isActionBusy = true;
-    setTimeout(() => { isActionBusy = false; }, 300);
+    setButtonsDisabled(true); // 鎖定所有按鈕，防連點卡死！
+
+    // 安全超時保護：最長 12 秒後強制解鎖恢復，防備任何意外
+    clearTimeout(actionLockTimer);
+    actionLockTimer = setTimeout(() => {
+        if (isActionBusy) {
+            resetToStandby();
+        }
+    }, 12000);
 
     // 更新數值
     if (action === 'feed')       pet.food  = Math.min(100, pet.food + 25);
