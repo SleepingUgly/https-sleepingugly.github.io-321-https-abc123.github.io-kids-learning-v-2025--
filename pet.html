@@ -365,7 +365,7 @@
 
             <!-- 大型視訊播放器 (加高至 560px) -->
             <div class="pet-video-box">
-                <video id="pet-video-player" autoplay muted playsinline preload="auto"></video>
+                <video id="pet-video-player" src="dogbreak.mp4" autoplay muted loop playsinline preload="auto"></video>
             </div>
         </div>
 
@@ -658,23 +658,28 @@
         } catch (e) {}
     }
 
-    // 鎖定 / 解鎖所有互動按鈕 (播放中鎖定，防止連點塞車與卡頓)
+    // 鎖定 / 解鎖所有互動按鈕 (播放中鎖定，防止連點干擾；播完即時解鎖)
     function setButtonsDisabled(disabled) {
         const panel = document.getElementById('interaction-panel');
         if (!panel) return;
         panel.querySelectorAll('button').forEach(btn => {
             btn.disabled = disabled;
-            btn.style.opacity = disabled ? '0.5' : '1';
+            btn.style.opacity = disabled ? '0.6' : '1';
             btn.style.cursor = disabled ? 'not-allowed' : 'pointer';
         });
     }
 
-    // 安全播放 (靜音符合所有瀏覽器政策，保證即時秒播)
+    // 安全播放 (靜音符合所有瀏覽器政策，保證即時秒播動起來)
     function safePlay(v) {
         v.muted = true;
         const p = v.play();
         if (p !== undefined) {
-            p.catch(err => console.warn('Play error:', err));
+            p.catch(err => {
+                console.warn('Play caught:', err);
+                if (currentAction !== 'default') {
+                    resetToStandby();
+                }
+            });
         }
     }
 
@@ -738,13 +743,13 @@
         video.src = selectedVideo;
         safePlay(video);
 
-        // 安全計時器：防呆機制，若影片超過 20 秒未觸發結束事件，自動解鎖並回待機
+        // 安全計時器：防呆機制，若影片超過 12 秒未觸發結束事件，自動解鎖並回待機
         if (safetyTimeout) clearTimeout(safetyTimeout);
         safetyTimeout = setTimeout(() => {
             if (currentAction !== 'default') {
                 resetToStandby();
             }
-        }, 20000);
+        }, 12000);
     }
 
     // 動態生成 9 顆互動按鈕
@@ -768,20 +773,13 @@
         createButtons();
         updateStatus();
 
-        // 預設待機影片
+        // 啟動待機影片播放
         video.muted = true;
         video.loop = true;
-        video.src = 'dogbreak.mp4';
         safePlay(video);
 
         // 影片播完：自動返回待機並解鎖所有按鈕
         video.addEventListener('ended', () => {
-            resetToStandby();
-        });
-
-        // 遇到異常時平滑回待機，不陷入卡頓重試
-        video.addEventListener('error', () => {
-            console.warn('影片播放中斷，自動回到待機狀態');
             resetToStandby();
         });
     });
