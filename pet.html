@@ -669,13 +669,15 @@
         });
     }
 
-    // 安全播放 (靜音符合所有瀏覽器政策，保證即時秒播動起來)
+    // 安全播放
     function safePlay(v) {
         v.muted = true;
+        v.playsInline = true;          // 手機/全平台保證支援
         const p = v.play();
         if (p !== undefined) {
             p.catch(err => {
-                console.warn('Play caught:', err);
+                console.warn('播放失敗:', err);
+                // 播放失敗時直接回待機，避免卡死
                 if (currentAction !== 'default') {
                     resetToStandby();
                 }
@@ -683,7 +685,7 @@
         }
     }
 
-    // 回到待機狀態 (播放完畢平滑切換，解鎖按鈕)
+    // 平滑切換回待機狀態
     function resetToStandby() {
         if (safetyTimeout) {
             clearTimeout(safetyTimeout);
@@ -695,8 +697,12 @@
 
         video.loop = true;
         video.muted = true;
-        if (!video.src.endsWith('dogbreak.mp4')) {
+
+        // 正確判斷目前是否已經是待機影片
+        const currentSrc = video.currentSrc || video.src || '';
+        if (!currentSrc.includes('dogbreak.mp4')) {
             video.src = 'dogbreak.mp4';
+            video.load();               // ← 關鍵！一定要加
         }
         safePlay(video);
 
@@ -704,7 +710,7 @@
         setButtonsDisabled(false);
     }
 
-    // 主要動作函式 (點擊後鎖定按鈕，順暢播放選定影片，播完自動解鎖)
+    // 主要動作函式
     function doAction(action) {
         if (isActionBusy) return;
         isActionBusy = true;
@@ -729,21 +735,20 @@
             stopWaterShowerSound();
         }
 
-        // 取得下一個輪播影片 (零預載塞車，即點即載)
         const selectedVideo = getNextVideo(action);
 
-        // 顯示對應的心聲對話 (保持驚喜感)
         if (thoughtBubble) {
             thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
         }
 
-        // 切換影片並播放
+        // 切換影片並播放（重點修正）
         video.loop = false;
         video.muted = true;
         video.src = selectedVideo;
+        video.load();                   // ← 一定要加這行
         safePlay(video);
 
-        // 安全計時器：防呆機制，若影片超過 12 秒未觸發結束事件，自動解鎖並回待機
+        // 安全計時器
         if (safetyTimeout) clearTimeout(safetyTimeout);
         safetyTimeout = setTimeout(() => {
             if (currentAction !== 'default') {
