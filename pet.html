@@ -648,7 +648,6 @@
     }
 
     let isActionBusy = false;
-    let busyTimeout = null;
 
     // 安全播放 (先嘗試有聲，若政策阻擋則自動靜音播放)
     function safePlay(v, requestAudio = true) {
@@ -662,24 +661,11 @@
         }
     }
 
-    // 鎖定 / 解鎖所有互動按鈕 (防連點卡死)
-    function setButtonsDisabled(disabled) {
-        const panel = document.getElementById('interaction-panel');
-        if (!panel) return;
-        panel.querySelectorAll('button').forEach(btn => {
-            btn.disabled = disabled;
-            btn.style.opacity = disabled ? '0.65' : '1';
-            btn.style.cursor = disabled ? 'not-allowed' : 'pointer';
-        });
-    }
-
     // 回到待機影片 (dogbreak.mp4 平滑切換)
     function resetToStandby() {
-        clearTimeout(busyTimeout);
         stopWaterShowerSound();
         if (thoughtBubble) thoughtBubble.textContent = thoughtMessages.default;
         isActionBusy = false;
-        setButtonsDisabled(false);
 
         video.loop = true;
         video.muted = true;
@@ -700,31 +686,22 @@
                     ready = true;
                     safePlay(video, false);
                 }
-            }, 700);
+            }, 500);
         } else {
             safePlay(video, false);
         }
     }
 
-    // 主要動作函式 (流暢版：強制 load() + 等待 canplay 緩衝完畢後開播)
+    // 主要動作函式 (點擊立即切換下一部，不鎖死按鈕，防抖動 300ms)
     function doAction(action) {
         if (isActionBusy) return;
         isActionBusy = true;
-        setButtonsDisabled(true);
-
-        // 防卡死安全保護：最長 8 秒後強制恢復可點擊狀態
-        clearTimeout(busyTimeout);
-        busyTimeout = setTimeout(() => {
-            if (isActionBusy) {
-                isActionBusy = false;
-                setButtonsDisabled(false);
-            }
-        }, 8000);
+        setTimeout(() => { isActionBusy = false; }, 300);
 
         // 改變數值
-        if (action === 'feed')       pet.food = Math.min(100, pet.food + 25);
+        if (action === 'feed')       pet.food  = Math.min(100, pet.food + 25);
         if (action === 'water')      pet.water = Math.min(100, pet.water + 25);
-        if (action === 'pet')        pet.love = Math.min(100, pet.love + 15);
+        if (action === 'pet')        pet.love  = Math.min(100, pet.love + 15);
         if (action === 'bath')       pet.clean = 100;
         if (action === 'clean_poo')  pet.clean = Math.min(100, pet.clean + 40);
         if (action === 'heal')       { pet.health = 100; pet.isSick = false; }
@@ -757,21 +734,18 @@
         };
         video.addEventListener('canplay', onCanPlay, { once: true });
 
-        // 兜底保護：若 650ms 未觸發 canplay 則直接播放
+        // 兜底保護：400ms 後直接播放
         setTimeout(() => {
-            if (!started && isActionBusy) {
+            if (!started) {
                 started = true;
                 safePlay(video, true);
             }
-        }, 650);
+        }, 400);
 
         // 錯誤處理
         video.onerror = () => {
             console.warn('影片載入失敗:', selectedVideo);
-            if (thoughtBubble) {
-                thoughtBubble.textContent = '😢 影片暫時載入中，請稍候重試～';
-            }
-            setTimeout(resetToStandby, 1200);
+            setTimeout(resetToStandby, 1000);
         };
 
         // 4. 更新狀態列
