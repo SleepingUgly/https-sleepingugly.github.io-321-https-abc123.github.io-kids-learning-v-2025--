@@ -725,7 +725,6 @@
         video.muted = true;
         if (!video.src.includes('dogbreak.mp4')) {
             video.src = 'dogbreak.mp4';
-            video.load();
             safePlay(video, false);
         }
     }
@@ -771,7 +770,6 @@
         const selectedVideo = getNextVideo(action);
         video.loop = false;
         video.src = selectedVideo;
-        video.load();
         safePlay(video, true);
 
         // 更新心聲對話氣泡

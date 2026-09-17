@@ -1515,6 +1515,52 @@
         display: block !important;
         border-radius: 8px !important;
     }
+    .pet-speech-bubble {
+        width: 100%;
+        background: linear-gradient(135deg, #fff9e6, #fff3cd);
+        border: 2px solid #dab514;
+        border-radius: 12px;
+        padding: 7px 10px;
+        font-size: 13.5px;
+        font-weight: 800;
+        color: #634a00;
+        text-align: center;
+        line-height: 1.35;
+        box-sizing: border-box;
+        margin-bottom: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+        transition: all 0.2s ease;
+    }
+    .video-loading-overlay {
+        position: absolute;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(254, 249, 231, 0.88);
+        backdrop-filter: blur(4px);
+        z-index: 10;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+    }
+    .video-loading-overlay.active {
+        display: flex;
+    }
+    .loading-paw {
+        font-size: 38px;
+        animation: bouncePaw 0.75s infinite alternate ease-in-out;
+    }
+    @keyframes bouncePaw {
+        from { transform: translateY(0) scale(1); }
+        to { transform: translateY(-10px) scale(1.15); }
+    }
+    .loading-text {
+        font-size: 14.5px;
+        font-weight: 900;
+        color: #8e44ad;
+        margin-top: 6px;
+    }
     .pet-display {
         width: 100% !important;
         max-width: 100% !important;
@@ -2978,8 +3024,16 @@
         <div class="pet-container">
             <div class="pet-header">🐶 療癒電子小狗 · Virtual Pet 🐾</div>
 
+            <div id="pet-speech-bubble" class="pet-speech-bubble">
+                🐶 汪汪！我是你的專屬邊境牧羊犬，點擊下方按鈕和我互動喔！🐾
+            </div>
+
             <div id="video-overlay" class="video-overlay">
-                <video id="pet-video-player" autoplay muted playsinline></video>
+                <div id="video-loading" class="video-loading-overlay">
+                    <div class="loading-paw">🐾</div>
+                    <div class="loading-text">狗狗正在準備中... 🐶</div>
+                </div>
+                <video id="pet-video-player" autoplay muted playsinline preload="auto"></video>
                 <div id="accessory-display" class="accessory"></div>
             </div>
 
@@ -5595,62 +5649,7 @@ console.log('%c美景輪播已啟動～今天也要被可愛動物治癒喔❤�
 
     // 啟動監聽器
     document.addEventListener('DOMContentLoaded', function() {
-        initLanguageQuiz();
-        initEnglishQuiz();
-        initPlaygroundMiniGames();
-    });
-</script>
-
-
-<script>
-    // 1. 取得所有的元素 (Audio, 按鈕, 滑桿)
-    const audioPlayer = document.getElementById('myAudioPlayer');
-    const playBtn = document.getElementById('play-btn');
-    const songTitle = document.getElementById('song-title');
-    const volumeSlider = document.getElementById('volume-slider');
-
-    let isPlaying = false;
-    
-    // ----------------------------------------------------
-    // A. 處理播放/暫停按鈕
-    // ----------------------------------------------------
-    playBtn.addEventListener('click', () => {
-        if (isPlaying) {
-            // 如果正在播放，就暫停
-            audioPlayer.pause();
-            playBtn.textContent = '播放';
-            songTitle.textContent = "已暫停";
-            isPlaying = false;
-        } else {
-            // 如果已暫停，就播放
-            audioPlayer.play();
-            playBtn.textContent = '暫停';
-            songTitle.textContent = "正在播放: gameocean.mp3";
-            isPlaying = true;
-        }
-    });
-
-    // ----------------------------------------------------
-    // B. 處理音量滑桿
-    // ----------------------------------------------------
-    // 初始設定音量
-    audioPlayer.volume = volumeSlider.value / 100;
-
-    // 監聽滑桿的變動事件
-    volumeSlider.addEventListener('input', () => {
-        // 將滑桿值 (0-100) 轉換為 Audio.volume 的範圍 (0.0-1.0)
-        audioPlayer.volume = volumeSlider.value / 100;
-    });
-
-    // ----------------------------------------------------
-    // C. (可選) 處理音樂載入失敗的情況
-    // ----------------------------------------------------
-    audioPlayer.addEventListener('error', (e) => {
-        console.error("音樂載入錯誤:", e);
-        songTitle.textContent = "音樂載入失敗，請檢查 /static/gameocean.mp3 路徑。";
-        // 如果音樂路徑錯誤，isPlaying 設為 false
-        isPlaying = false;
-        playBtn.textContent = '播放';
+        if (typeof initPlaygroundMiniGames === 'function') initPlaygroundMiniGames();
     });
 </script>
 <script>
@@ -5953,8 +5952,31 @@ function updateStatus() {
     else mood.textContent = '😭 哭哭';
 }
 
+const thoughtBubble = document.getElementById('pet-speech-bubble');
+const videoLoading = document.getElementById('video-loading');
 let isActionBusy = false;
 let watchdogTimer = null;
+
+// 對話心聲 (即時視覺回饋，0 毫秒反應)
+const thoughtMessages = {
+    feed:      '🍖 狗狗正在大口吃飼料！肚子飽飽好滿足，謝謝主人！汪汪！',
+    water:     '💧 咕嚕咕嚕喝水水～解渴真舒服！',
+    pet:       '🥰 摸摸頭最舒服了～我最喜歡主人了！汪汪！',
+    bath:      '🚿 洗泡泡浴香噴噴～我是最乾淨帥氣的小狗！',
+    clean_poo: '✨ 便便清理乾淨了～環境好乾淨好舒服喔！',
+    heal:      '🩺 醫生叔叔檢查完畢～身體健康滿分！',
+    out:       '🏃 耶！出去大草皮跑步玩耍，世界好大好好玩！',
+    watch:     '👀 監視器裡我都在乖乖看家喔，我很乖吧！',
+    dress:     '🎀 換上漂亮新裝扮囉！看看我是不是超級可愛帥氣！',
+    default:   '🐶 汪汪！我是你的專屬邊境牧羊犬，點擊下方按鈕和我互動喔！🐾'
+};
+
+function showLoading() {
+    if (videoLoading) videoLoading.classList.add('active');
+}
+function hideLoading() {
+    if (videoLoading) videoLoading.classList.remove('active');
+}
 
 // 安全播放機制 (先嘗試開聲音，若瀏覽器政策阻擋，立即無縫降級為靜音播放，保證絕對不卡住)
 function safePlay(v, requestAudio = true) {
@@ -5962,14 +5984,17 @@ function safePlay(v, requestAudio = true) {
     const playPromise = v.play();
     if (playPromise !== undefined) {
         playPromise.then(() => {
+            hideLoading();
             clearTimeout(watchdogTimer);
         }).catch(err => {
             console.warn('Playback with sound prevented, switching to muted fallback:', err);
             v.muted = true;
             v.play().then(() => {
+                hideLoading();
                 clearTimeout(watchdogTimer);
             }).catch(fatal => {
-                console.error('Playback failed:', fatal);
+                console.error('Playback failed completely:', fatal);
+                hideLoading();
                 resetToStandby();
             });
         });
@@ -5979,11 +6004,12 @@ function safePlay(v, requestAudio = true) {
 // 重置回待機影片 (dogbreak.mp4)
 function resetToStandby() {
     clearTimeout(watchdogTimer);
+    hideLoading();
+    if (thoughtBubble) thoughtBubble.textContent = thoughtMessages.default;
     video.loop = true;
     video.muted = true;
     if (!video.src.includes('dogbreak.mp4')) {
         video.src = 'dogbreak.mp4';
-        video.load();
         safePlay(video, false);
     }
 }
@@ -6003,7 +6029,7 @@ function startWatchdog() {
 function doAction(action) {
     if (isActionBusy) return;
     isActionBusy = true;
-    setTimeout(() => { isActionBusy = false; }, 400);
+    setTimeout(() => { isActionBusy = false; }, 350);
 
     // 改變數值
     if (action === 'feed')       pet.food = Math.min(100, pet.food + 25);
@@ -6012,24 +6038,29 @@ function doAction(action) {
     if (action === 'bath')       pet.clean = 100;
     if (action === 'clean_poo')  pet.clean = Math.min(100, pet.clean + 40);
     if (action === 'heal')       { pet.health = 100; pet.isSick = false; }
-    if (action === 'dress')      pet.accessory = (pet.accessory === 'none' ? 'hat' : 'none'); // 範例切換
+    if (action === 'dress')      pet.accessory = (pet.accessory === 'none' ? 'hat' : 'none');
 
-    // 啟動超時防卡保護
+    // 1. 即時心聲文字切換 (0毫秒立即有反應)
+    if (thoughtBubble) thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
+
+    // 2. 顯示可愛肉球載入中動畫並啟動防卡死安全看門狗
+    showLoading();
     startWatchdog();
 
-    // 播放對應影片 (解除靜音，若受阻擋則自動靜音播放)
+    // 3. 取得下一部動作影片並切換播放 (解除靜音，若受瀏覽器限制則自動順暢靜音播放)
+    const selectedVideo = getNextVideo(action);
     video.loop = false;
-    video.src = getNextVideo(action);
-    video.load();
+    video.src = selectedVideo;
     safePlay(video, true);
 
-    // 更新狀態列
+    // 4. 更新狀態儀表板
     updateStatus();
 }
 
 // 動態生成 9 顆按鈕
 function createButtons() {
     const panel = document.getElementById('interaction-panel');
+    if (!panel) return;
     panel.innerHTML = ''; // 清空
 
     const actions = ['feed', 'water', 'pet', 'bath', 'clean_poo', 'heal', 'out', 'watch', 'dress'];
@@ -6042,17 +6073,27 @@ function createButtons() {
     });
 }
 
-// 頁面載入完成後執行
-document.addEventListener('DOMContentLoaded', () => {
+function initPetModule() {
     createButtons();
-    updateStatus();                    // 初次更新數字
+    updateStatus();
+
+    // 預設待機影片 (dogbreak.mp4 循環，靜音防阻擋)
     video.muted = true;
     video.src = 'dogbreak.mp4';
     video.loop = true;
     safePlay(video, false);
 
     video.addEventListener('playing', () => {
+        hideLoading();
         clearTimeout(watchdogTimer);
+    });
+
+    video.addEventListener('canplay', () => {
+        hideLoading();
+    });
+
+    video.addEventListener('waiting', () => {
+        showLoading();
     });
 
     video.addEventListener('error', (e) => {
@@ -6060,11 +6101,18 @@ document.addEventListener('DOMContentLoaded', () => {
         resetToStandby();
     });
     
-    // 影片結束後自動播放待機動畫 (dogbreak.mp4 循環不留空白，待機時靜音)
+    // 影片結束後自動播放待機動畫 (dogbreak.mp4 循環不留空白)
     video.addEventListener('ended', () => {
         resetToStandby();
     });
-});
+}
+
+// 頁面載入完成後執行 (相容已就緒與載入中兩種情況)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPetModule);
+} else {
+    initPetModule();
+}
 
 
 
