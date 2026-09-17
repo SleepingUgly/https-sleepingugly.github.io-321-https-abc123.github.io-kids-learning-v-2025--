@@ -568,6 +568,9 @@
         stopWaterShowerSound();
         const ctx = getAudioContext();
         if (!ctx) return;
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
 
         try {
             // 建立 4 秒的粉紅噪聲緩衝區
@@ -605,10 +608,10 @@
             bandpass.frequency.setValueAtTime(2600, ctx.currentTime);
             bandpass.Q.setValueAtTime(1.2, ctx.currentTime);
 
-            // 音量控制
+            // 音量控制 (充足音量，洗澡水花聲清晰響亮)
             const gainNode = ctx.createGain();
-            gainNode.gain.setValueAtTime(0.01, ctx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.32, ctx.currentTime + 0.3); // 平滑淡入
+            gainNode.gain.setValueAtTime(0.05, ctx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.85, ctx.currentTime + 0.2); // 平滑淡入至 85% 音量
 
             // LFO 水流波動感 (模擬水花沖擊的自然起伏)
             const lfo = ctx.createOscillator();
@@ -669,43 +672,35 @@
         });
     }
 
-    // 緩衝就緒安全播放（帶聲音與自動降級保護，確保畫面絕對不凍結）
+    // 立即有聲播放（手勢內觸發，確保瀏覽器授權放出聲音）
     function playVideo(src, loop = false, withSound = false) {
         video.loop = loop;
-        video.muted = !withSound;
         video.playsInline = true;
+        video.muted = !withSound;
+        if (withSound) {
+            video.volume = 1.0;
+        }
 
         const cur = video.currentSrc || video.src || '';
         if (cur.endsWith(src) && !video.paused) {
             return;
         }
 
-        video.oncanplay = null;
-        video.onerror = null;
         video.src = src;
 
-        const startPlayback = () => {
-            video.oncanplay = null;
-            const p = video.play();
-            if (p !== undefined) {
-                p.catch(err => {
-                    console.warn('Play error, fallback to muted:', err);
-                    if (withSound) {
-                        video.muted = true;
-                        video.play().catch(e => console.warn('Muted play error:', e));
-                    }
-                });
-            }
-        };
-
-        if (video.readyState >= 2) {
-            startPlayback();
-        } else {
-            video.oncanplay = startPlayback;
+        const p = video.play();
+        if (p !== undefined) {
+            p.catch(err => {
+                console.warn('Play error:', err);
+                // 萬一瀏覽器阻擋有聲播放，自動轉為靜音繼續播放
+                if (!video.muted) {
+                    video.muted = true;
+                    video.play().catch(e => console.warn('Muted play error:', e));
+                }
+            });
         }
 
         video.onerror = (e) => {
-            video.oncanplay = null;
             video.onerror = null;
             console.warn('Video load error on:', src, e);
             if (currentAction !== 'default') {

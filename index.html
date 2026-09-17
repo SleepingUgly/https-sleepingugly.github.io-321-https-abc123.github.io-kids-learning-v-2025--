@@ -5950,16 +5950,21 @@ function setButtonsDisabled(disabled) {
     });
 }
 
-// 安全播放
-function safePlay(v) {
-    v.muted = true;
+// 安全播放（帶聲音與自動降級防卡保護）
+function safePlay(v, withSound = false) {
     v.playsInline = true;
+    v.muted = !withSound;
+    if (withSound) {
+        v.volume = 1.0;
+    }
     const p = v.play();
     if (p !== undefined) {
         p.catch(err => {
             console.warn('Play error:', err);
-            if (currentAction !== 'default') {
-                resetToStandby();
+            // 萬一瀏覽器阻擋有聲播放，自動轉為靜音繼續播放
+            if (!v.muted) {
+                v.muted = true;
+                v.play().catch(e => console.warn('Muted fallback error:', e));
             }
         });
     }
@@ -5981,7 +5986,7 @@ function resetToStandby() {
     if (!currentSrc.includes('dogbreak.mp4')) {
         video.src = 'dogbreak.mp4';
     }
-    safePlay(video);
+    safePlay(video, false);
 
     isActionBusy = false;
     setButtonsDisabled(false);
@@ -6013,11 +6018,10 @@ function doAction(action) {
         thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
     }
 
-    // 切換影片並播放
+    // 切換影片並播放（按鈕觸發有聲音）
     video.loop = false;
-    video.muted = true;
     video.src = selectedVideo;
-    safePlay(video);
+    safePlay(video, true);
 
     // 安全計時器（15秒自動解鎖）
     if (safetyTimeout) clearTimeout(safetyTimeout);
