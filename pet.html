@@ -658,13 +658,13 @@
         } catch (e) {}
     }
 
-    // 鎖定 / 解鎖所有互動按鈕 (播放中鎖定，防止連點干擾；播完即時解鎖)
+    // 鎖定 / 解鎖所有互動按鈕
     function setButtonsDisabled(disabled) {
         const panel = document.getElementById('interaction-panel');
         if (!panel) return;
         panel.querySelectorAll('button').forEach(btn => {
             btn.disabled = disabled;
-            btn.style.opacity = disabled ? '0.6' : '1';
+            btn.style.opacity = disabled ? '0.5' : '1';
             btn.style.cursor = disabled ? 'not-allowed' : 'pointer';
         });
     }
@@ -672,15 +672,11 @@
     // 安全播放
     function safePlay(v) {
         v.muted = true;
-        v.playsInline = true;          // 手機/全平台保證支援
+        v.playsInline = true;
         const p = v.play();
         if (p !== undefined) {
             p.catch(err => {
-                console.warn('播放失敗:', err);
-                // 播放失敗時直接回待機，避免卡死
-                if (currentAction !== 'default') {
-                    resetToStandby();
-                }
+                console.warn('Play error:', err);
             });
         }
     }
@@ -698,11 +694,10 @@
         video.loop = true;
         video.muted = true;
 
-        // 正確判斷目前是否已經是待機影片
         const currentSrc = video.currentSrc || video.src || '';
         if (!currentSrc.includes('dogbreak.mp4')) {
             video.src = 'dogbreak.mp4';
-            video.load();               // ← 關鍵！一定要加
+            video.load();               // 重要
         }
         safePlay(video);
 
@@ -735,8 +730,10 @@
             stopWaterShowerSound();
         }
 
+        // 取得下一個輪播影片
         const selectedVideo = getNextVideo(action);
 
+        // 顯示對應的心聲對話
         if (thoughtBubble) {
             thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
         }
@@ -745,16 +742,16 @@
         video.loop = false;
         video.muted = true;
         video.src = selectedVideo;
-        video.load();                   // ← 一定要加這行
+        video.load();                   // 重要！一定要加
         safePlay(video);
 
-        // 安全計時器
+        // 安全計時器（20秒）
         if (safetyTimeout) clearTimeout(safetyTimeout);
         safetyTimeout = setTimeout(() => {
             if (currentAction !== 'default') {
                 resetToStandby();
             }
-        }, 12000);
+        }, 20000);
     }
 
     // 動態生成 9 顆互動按鈕
@@ -778,13 +775,21 @@
         createButtons();
         updateStatus();
 
-        // 啟動待機影片播放
+        // 預設待機影片
         video.muted = true;
         video.loop = true;
+        video.src = 'dogbreak.mp4';
+        video.load();                   // 重要
         safePlay(video);
 
         // 影片播完：自動返回待機並解鎖所有按鈕
         video.addEventListener('ended', () => {
+            resetToStandby();
+        });
+
+        // 遇到異常時平滑回待機
+        video.addEventListener('error', () => {
+            console.warn('影片播放中斷，自動回到待機狀態');
             resetToStandby();
         });
     });
