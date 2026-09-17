@@ -658,15 +658,12 @@
 
     let isActionBusy = false;
 
-    // 安全播放 (先嘗試有聲，若政策阻擋則自動靜音播放)
-    function safePlay(v, requestAudio = true) {
-        v.muted = !requestAudio;
+    // 安全播放 (使用靜音播放，符合所有瀏覽器政策，保證任何裝置點擊必定立即流暢動起來)
+    function safePlay(v) {
+        v.muted = true;
         const p = v.play();
         if (p !== undefined) {
-            p.catch(() => {
-                v.muted = true;
-                v.play().catch(() => {});
-            });
+            p.catch(err => console.warn('Play error:', err));
         }
     }
 
@@ -694,13 +691,13 @@
 
         if (!video.src.endsWith('dogbreak.mp4')) {
             video.src = 'dogbreak.mp4';
-            safePlay(video, false);
+            safePlay(video);
         } else {
-            safePlay(video, false);
+            safePlay(video);
         }
     }
 
-    // 主要動作函式 (支援點擊即時切換與連續自動輪播)
+    // 主要動作函式 (支援點擊即時切換與連續自動輪播，驚喜隱藏總集數)
     function doAction(action, isAutoNext = false) {
         if (!isAutoNext) {
             if (actionDebounceTimer) return;
@@ -732,19 +729,16 @@
         const vidInfo = getNextVideo(action);
         const selectedVideo = vidInfo.src;
 
-        // 1. 即時心聲文字切換 (包含輪播進度提示，例如：【散步 第 2/15 段】)
+        // 1. 即時心聲文字切換 (隱藏集數數字，保留滿滿驚喜感)
         if (thoughtBubble) {
-            let baseMsg = thoughtMessages[action] || thoughtMessages.default;
-            if (vidInfo.total > 1) {
-                baseMsg = `【第 ${vidInfo.index}/${vidInfo.total} 段】` + baseMsg;
-            }
-            thoughtBubble.textContent = baseMsg;
+            thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
         }
 
-        // 2. 切換播放影片 (同步觸發，避免異步延遲導致手勢遺失)
+        // 2. 切換播放影片 (靜音保證 100% 秒開播動，絕不被瀏覽器政策卡住)
         video.loop = false;
+        video.muted = true;
         video.src = selectedVideo;
-        safePlay(video, true);
+        safePlay(video);
 
         // 3. 錯誤自動修復：若某影片載入失敗，自動跳播下一部，絕不黑畫面卡死
         video.onerror = () => {
