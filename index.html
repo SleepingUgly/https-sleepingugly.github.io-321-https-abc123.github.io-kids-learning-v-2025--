@@ -6038,7 +6038,8 @@ window.addEventListener('load', () => {
         updateStatus();
 
         if (video) {
-            video.muted = false; // 開啟聲音！PC 點擊按鈕後直接播放影片原聲
+            video.muted = false;
+            video.volume = 1.0; // 確保音量拉到最大 100%
             const targetSrc = getRandomVideo(action);
             if (video.src.indexOf(targetSrc) === -1) {
                 video.src = targetSrc;
