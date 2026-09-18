@@ -5638,22 +5638,26 @@ let currentMaze = 1;             // 當前關卡號碼
 function initCanvas() {
     const img = document.getElementById('maze-img');
     canvas = document.getElementById('draw-canvas');
+    if (!canvas || !img) return;
     ctx = canvas.getContext('2d');
 
-    // 讓 canvas 跟圖片大小完全一樣
-    canvas.width = img.clientWidth;
-    canvas.height = img.clientHeight;
+    const w = img.clientWidth || img.width || 300;
+    const h = img.clientHeight || img.height || 450;
+    canvas.width = w;
+    canvas.height = h;
     canvas.style.position = 'absolute';
-    canvas.style.top = 0;
-    canvas.style.left = 0;
-    
-    // 讓 canvas 一直可以接收事件 (實現小畫家拖曳的關鍵)
+    canvas.style.top = '0px';
+    canvas.style.left = '0px';
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    canvas.style.zIndex = '5';
     canvas.style.pointerEvents = 'auto'; 
 
-    // 清空畫布並設定畫筆樣式
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // 設定畫筆樣式
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = lineWidth;
 }
 
 // 預先載入鄰近關卡的圖片（常駐快取，讓按下一張時瞬間顯示，不延遲）
@@ -5689,29 +5693,18 @@ function loadMaze(num) {
 
     const targetSrc = `maze${num}.jpg`;
 
-    // 3. 設定圖片載入完成後的回呼函式
-    const onImageReady = () => {
-        img.style.opacity = '1';
+    img.onload = () => {
         initCanvas();
         clearPath();
         preloadNearbyMazes(num);
     };
 
-    // 若已經載入完成，直接初始化
-    if (img.src.endsWith(targetSrc) && img.complete && img.naturalWidth > 0) {
-        onImageReady();
-        return;
-    }
-
-    img.style.transition = 'opacity 0.15s ease';
-    img.style.opacity = '0.7';
-
-    img.onload = onImageReady;
     img.src = targetSrc;
 
-    // 如果快取已有且立即完成
     if (img.complete && img.naturalWidth > 0) {
-        onImageReady();
+        initCanvas();
+        clearPath();
+        preloadNearbyMazes(num);
     }
 }
 
@@ -5725,41 +5718,41 @@ function prevMaze() {
     loadMaze(currentMaze - 1);
 }
 
+// 安全取得座標（支援滑鼠與觸控）
+function getCanvasCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+    const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
+    return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+    };
+}
+
 // 開始畫線 (綁定在 canvas 上)
 function startDraw(e) {
-    // 確保只在滑鼠左鍵按下時開始繪圖
-    if (e.buttons !== 1 && e.type !== 'touchstart') return; 
+    if (e.type === 'mousedown' && e.button !== 0) return;
+    e.preventDefault();
 
     drawing = true;
-    
-    // 取得相對於 canvas 的座標
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX || e.touches[0].clientX;
-    const y = e.clientY || e.touches[0].clientY;
+    const pos = getCanvasCoords(e);
     
     ctx.beginPath();
-    ctx.moveTo(x - rect.left, y - rect.top);
-
-    // 防止觸控事件滾動頁面
-    if (e.type === 'touchstart' || e.type === 'touchmove') e.preventDefault();
+    ctx.moveTo(pos.x, pos.y);
 }
 
 // 畫線中
 function draw(e) {
     if (!drawing) return;
+    e.preventDefault();
     
-    // 取得相對於 canvas 的座標
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX || e.touches[0].clientX;
-    const y = e.clientY || e.touches[0].clientY;
+    const pos = getCanvasCoords(e);
     
     ctx.globalCompositeOperation = 'source-over';
     ctx.strokeStyle = lineColor;
     ctx.lineWidth = lineWidth;
-    ctx.lineTo(x - rect.left, y - rect.top);
+    ctx.lineTo(pos.x, pos.y);
     ctx.stroke();
-
-    if (e.type === 'touchmove') e.preventDefault();
 }
 
 // 結束畫線
@@ -6002,6 +5995,7 @@ window.addEventListener('load', () => {
         video.muted = true;
         video.playsInline = true;
         video.src = src;
+        video.load();
 
         const p = video.play();
         if (p !== undefined) {
@@ -6030,6 +6024,7 @@ window.addEventListener('load', () => {
         const currentSrc = video.currentSrc || video.src || '';
         if (!currentSrc.includes('dogbreak.mp4')) {
             video.src = 'dogbreak.mp4';
+            video.load();
         }
         if (video.paused) {
             video.play().catch(() => {});
@@ -6121,18 +6116,6 @@ window.addEventListener('load', () => {
                 video.play().catch(() => {});
             }
         }, { once: true });
-
-        // 🌟 核心提速：背景靜默預載常用影片至瀏覽器快取，點擊時 0 秒秒開！
-        const prefetchList = ['dogeat.mp4', 'dogdrink.mp4', 'haha2.mp4', 'dogshower1.mp4', 'dpgpoo.mp4', 'dogdoctor.mp4', 'haha1.mp4', 'T1.mp4', 'dogcollar.mp4'];
-        setTimeout(() => {
-            prefetchList.forEach(file => {
-                const link = document.createElement('link');
-                link.rel = 'prefetch';
-                link.as = 'video';
-                link.href = file;
-                document.head.appendChild(link);
-            });
-        }, 1000);
     }
 
     if (document.readyState === 'loading') {
