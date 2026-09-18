@@ -5973,7 +5973,7 @@ window.addEventListener('load', () => {
         // 不鎖定任何按鈕
     }
 
-    // 極速播放：純靜音秒播，現代瀏覽器 100% 綠燈放行、零延遲
+    // 安全播放函式
     function safePlay(v) {
         v.muted = true;
         v.playsInline = true;
@@ -5987,34 +5987,48 @@ window.addEventListener('load', () => {
         }
     }
 
-    // 切換動作影片並播放
-       // 切換動作影片並播放（專為 GitHub 網際網路優化：絕不卡死、順播）
+    // 改進版：切換動作影片並播放（加入錯誤處理，避免卡死）
     function playActionVideo(src) {
-        if (!src) return;
+        if (!src) {
+            resetToStandby();
+            return;
+        }
+
+        // 清除舊事件，避免堆積
+        video.oncanplay = null;
+        video.onerror = null;
+        video.onended = null;
 
         video.loop = false;
         video.muted = true;
         video.playsInline = true;
+        video.preload = 'auto';
 
-        // 當遠端影片緩衝好第一格畫面時，立刻無縫播放
+        // 成功載入後播放
         const onCanPlay = () => {
             video.removeEventListener('canplay', onCanPlay);
-            video.play().catch(err => {
-                video.muted = true;
-                video.play().catch(() => {});
-            });
+            safePlay(video);
+        };
+
+        // 載入失敗就直接回待機（避免卡死）
+        const onError = () => {
+            console.warn('影片載入失敗：', src);
+            video.removeEventListener('error', onError);
+            resetToStandby();
         };
 
         video.addEventListener('canplay', onCanPlay, { once: true });
+        video.addEventListener('error', onError, { once: true });
+
         video.src = src;
 
-        // 如果影片已在記憶體中，直接播
+        // 如果已經在記憶體中，直接播
         if (video.readyState >= 2) {
-            video.play().catch(() => {});
+            safePlay(video);
         }
     }
 
-    // 回到待機狀態
+    // 改進版：回到待機狀態
     function resetToStandby() {
         if (safetyTimeout) {
             clearTimeout(safetyTimeout);
@@ -6024,26 +6038,31 @@ window.addEventListener('load', () => {
         currentAction = 'default';
         if (thoughtBubble) thoughtBubble.textContent = thoughtMessages.default;
 
+        // 清除舊事件
+        video.oncanplay = null;
+        video.onerror = null;
+
         video.loop = true;
         video.muted = true;
         video.playsInline = true;
+        video.preload = 'auto';
 
+        const standbySrc = 'dogbreak.mp4';
         const currentSrc = video.currentSrc || video.src || '';
+
         if (!currentSrc.includes('dogbreak.mp4')) {
+            video.src = standbySrc;
             video.addEventListener('canplay', () => {
-                video.play().catch(() => {});
+                safePlay(video);
             }, { once: true });
-            video.src = 'dogbreak.mp4';
-            if (video.readyState >= 2) {
-                video.play().catch(() => {});
-            }
         } else if (video.paused) {
-            video.play().catch(() => {});
+            safePlay(video);
         }
 
         isActionBusy = false;
     }
-    // 主要動作函式
+
+    // 改進版：主要動作函式
     function doAction(action) {
         if (isActionBusy) return;
         isActionBusy = true;
@@ -6069,18 +6088,18 @@ window.addEventListener('load', () => {
 
         playActionVideo(selectedVideo);
 
-        // 短暫防連點 250 毫秒，立即解鎖！
+        // 防連點時間（網路慢時比較穩）
         setTimeout(() => {
             isActionBusy = false;
-        }, 250);
+        }, 400);
 
-        // 安全計時器：25 秒（若影片異常結束也能安全回待機）
+        // 安全計時器：35 秒（網路慢時給更多時間）
         if (safetyTimeout) clearTimeout(safetyTimeout);
         safetyTimeout = setTimeout(() => {
             if (currentAction !== 'default') {
                 resetToStandby();
             }
-        }, 25000);
+        }, 35000);
     }
 
     // 動態產生按鈕
@@ -6106,13 +6125,14 @@ window.addEventListener('load', () => {
         video.loop = true;
         video.muted = true;
         video.playsInline = true;
+        video.preload = 'auto';
 
         const currentSrc = video.currentSrc || video.src || '';
         if (!currentSrc.includes('dogbreak.mp4')) {
             video.src = 'dogbreak.mp4';
         }
         if (video.paused) {
-            video.play().catch(() => {});
+            safePlay(video);
         }
 
         // 動作影片播完自動回到待機狀態
@@ -6123,7 +6143,7 @@ window.addEventListener('load', () => {
         // 首次觸碰/點擊任意處喚醒
         document.addEventListener('pointerdown', () => {
             if (video && video.paused && currentAction === 'default') {
-                video.play().catch(() => {});
+                safePlay(video);
             }
         }, { once: true });
     }
@@ -6134,7 +6154,6 @@ window.addEventListener('load', () => {
         initPetModule();
     }
 </script>
-
 <script>
 // =================== [ 📖 認知字詞卡 · 雙語學習專區 (1-150詞) 完整資料庫與控制 ] ===================
 // =========================================================================================
