@@ -5842,13 +5842,14 @@ window.addEventListener('load', () => {
     document.addEventListener('mousedown', e => {
         if (e.detail > 1) e.preventDefault();
     }, { capture: true, passive: false });
-
-    // 5. 絕殺：任何選取到的文字立刻清空 (保留)
-    setInterval(() => {
-        if (window.getSelection && window.getSelection().toString()) {
-            window.getSelection().empty();
+// 5. 絕殺：任何選取到的文字立刻清空 (保留)
+// 5. 改為事件觸發：只有在使用者嘗試選取時才清空，不浪費效能
+    document.addEventListener('selectionchange', () => {
+        const sel = window.getSelection();
+        if (sel && sel.toString()) {
+            sel.empty();
         }
-    }, 50);
+    });
 
     // 6. 粉紅彩蛋
     console.log(
