@@ -5948,6 +5948,8 @@ window.addEventListener('load', () => {
 
     // 更新狀態數值
     function updateStatus() {
+        if (!document.getElementById('health-value')) return;
+
         document.getElementById('health-value').textContent = pet.health;
         document.getElementById('food-value').textContent = pet.food;
         document.getElementById('water-value').textContent = pet.water;
@@ -5961,21 +5963,18 @@ window.addEventListener('load', () => {
         document.getElementById('love-bar').value = pet.love;
 
         const avg = (pet.health + pet.food + pet.water + pet.clean + pet.love) / 5;
-        if (avg >= 80) mood.textContent = '💖 超開心';
-        else if (avg >= 60) mood.textContent = '😊 開心';
-        else if (avg >= 40) mood.textContent = '😐 普通';
-        else if (avg >= 20) mood.textContent = '⚡ 不開心';
-        else mood.textContent = '😭 哭哭';
+        if (mood) {
+            if (avg >= 80) mood.textContent = '💖 超開心';
+            else if (avg >= 60) mood.textContent = '😊 開心';
+            else if (avg >= 40) mood.textContent = '😐 普通';
+            else if (avg >= 20) mood.textContent = '⚡ 不開心';
+            else mood.textContent = '😭 哭哭';
+        }
     }
 
-    // 按鈕控制（保持隨時可點，不鎖死、不反灰）
-    function setButtonsDisabled(disabled) {
-        // 不鎖定任何按鈕
-    }
-
-    // 安全播放函式
-       // 安全播放函式
+    // 安全播放
     function safePlay(v) {
+        if (!v) return;
         v.muted = true;
         v.playsInline = true;
         const p = v.play();
@@ -5988,14 +5987,13 @@ window.addEventListener('load', () => {
         }
     }
 
-    // 改進版：切換動作影片並播放（加入錯誤處理，避免卡死）
+    // 播放動作影片
     function playActionVideo(src) {
-        if (!src) {
+        if (!src || !video) {
             resetToStandby();
             return;
         }
 
-        // 清除舊事件，避免堆積（不要清 onended）
         video.oncanplay = null;
         video.onerror = null;
 
@@ -6004,13 +6002,11 @@ window.addEventListener('load', () => {
         video.playsInline = true;
         video.preload = 'auto';
 
-        // 成功載入後播放
         const onCanPlay = () => {
             video.removeEventListener('canplay', onCanPlay);
             safePlay(video);
         };
 
-        // 載入失敗就直接回待機（避免卡死）
         const onError = () => {
             console.warn('影片載入失敗：', src);
             video.removeEventListener('error', onError);
@@ -6022,13 +6018,12 @@ window.addEventListener('load', () => {
 
         video.src = src;
 
-        // 如果已經在記憶體中，直接播
         if (video.readyState >= 2) {
             safePlay(video);
         }
     }
 
-    // 改進版：回到待機狀態
+    // 回到待機
     function resetToStandby() {
         if (safetyTimeout) {
             clearTimeout(safetyTimeout);
@@ -6038,7 +6033,11 @@ window.addEventListener('load', () => {
         currentAction = 'default';
         if (thoughtBubble) thoughtBubble.textContent = thoughtMessages.default;
 
-        // 清除舊事件
+        if (!video) {
+            isActionBusy = false;
+            return;
+        }
+
         video.oncanplay = null;
         video.onerror = null;
 
@@ -6059,7 +6058,7 @@ window.addEventListener('load', () => {
             safePlay(video);
         }
 
-        // 重新確保播完會回待機
+        // 重新綁定播完回待機
         video.onended = () => {
             resetToStandby();
         };
@@ -6067,7 +6066,7 @@ window.addEventListener('load', () => {
         isActionBusy = false;
     }
 
-    // 改進版：主要動作函式
+    // 主要動作
     function doAction(action) {
         if (isActionBusy) return;
         isActionBusy = true;
@@ -6084,7 +6083,6 @@ window.addEventListener('load', () => {
 
         updateStatus();
 
-        // 依序輪播取得下一部影片
         const selectedVideo = getNextVideo(action);
 
         if (thoughtBubble) {
@@ -6093,12 +6091,10 @@ window.addEventListener('load', () => {
 
         playActionVideo(selectedVideo);
 
-        // 防連點時間（網路慢時比較穩）
         setTimeout(() => {
             isActionBusy = false;
         }, 400);
 
-        // 安全計時器：35 秒（網路慢時給更多時間）
         if (safetyTimeout) clearTimeout(safetyTimeout);
         safetyTimeout = setTimeout(() => {
             if (currentAction !== 'default') {
@@ -6107,7 +6103,7 @@ window.addEventListener('load', () => {
         }, 35000);
     }
 
-    // 動態產生按鈕
+    // 產生按鈕
     function createButtons() {
         const panel = document.getElementById('interaction-panel');
         if (!panel) return;
@@ -6127,6 +6123,11 @@ window.addEventListener('load', () => {
         createButtons();
         updateStatus();
 
+        if (!video) {
+            console.error('找不到 pet-video-player 元素');
+            return;
+        }
+
         video.loop = true;
         video.muted = true;
         video.playsInline = true;
@@ -6140,12 +6141,10 @@ window.addEventListener('load', () => {
             safePlay(video);
         }
 
-        // 動作影片播完自動回到待機狀態
         video.onended = () => {
             resetToStandby();
         };
 
-        // 首次觸碰/點擊任意處喚醒
         document.addEventListener('pointerdown', () => {
             if (video && video.paused && currentAction === 'default') {
                 safePlay(video);
