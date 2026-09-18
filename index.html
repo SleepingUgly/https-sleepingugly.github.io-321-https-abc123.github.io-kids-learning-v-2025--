@@ -2544,7 +2544,283 @@
     color: #e67e22;
     min-width: 32px;
 }
+
+/* ==================== 📅 雙語日期與星期認知卡片 ==================== */
+.date-learning-card {
+    background: #ffffff !important;
+    border: 3px solid #ffb8b8 !important;
+    border-radius: 20px !important;
+    padding: 16px 14px !important;
+    box-shadow: 0 4px 14px rgba(255, 107, 129, 0.12) !important;
+    margin-bottom: 20px !important;
+    box-sizing: border-box;
+    width: 100%;
+}
+.date-lang-toggle-bar {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.date-lang-btn {
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 900;
+    border: 2px solid #ff7675;
+    background: #ffffff;
+    color: #d63031;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.date-lang-btn.active {
+    background: linear-gradient(135deg, #ff7675, #d63031);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(214, 48, 49, 0.3);
+}
+.date-card-header {
+    text-align: center;
+    margin-bottom: 10px;
+}
+.date-card-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: #d63031;
+    margin: 0 0 2px;
+    letter-spacing: 0.5px;
+}
+.date-card-subtitle {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #e17055;
+    background: #fff0eb;
+    padding: 2px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    border: 1px solid #ffd8cc;
+}
+.date-day-tip {
+    font-size: 11px;
+    font-weight: bold;
+    color: #8c531b;
+    text-align: center;
+    margin: -6px 0 10px 0;
+    background: #fff8eb;
+    padding: 5px 8px;
+    border-radius: 8px;
+    border: 1px dashed #f39c12;
+    line-height: 1.4;
+}
+.date-speak-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    vertical-align: middle;
+    margin-left: 6px;
+    transition: transform 0.1s;
+}
+.date-speak-btn:hover {
+    transform: scale(1.25);
+}
+.date-target-banner {
+    background: linear-gradient(135deg, #fff9e6, #fff3cd);
+    border: 1.5px dashed #f39c12;
+    border-radius: 12px;
+    padding: 6px 10px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 900;
+    color: #b7791f;
+    margin-bottom: 12px;
+}
+/* 放置目標槽 (月 / 日 / 星期) */
+.date-slots-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+.date-slot-box {
+    flex: 1;
+    background: #fafafa;
+    border: 2px dashed #b2bec3;
+    border-radius: 14px;
+    padding: 8px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 72px;
+    transition: all 0.2s;
+    user-select: none;
+    position: relative;
+}
+.date-slot-box.drag-over {
+    border-color: #0984e3;
+    background: #e1f5fe;
+    transform: scale(1.03);
+}
+.date-slot-box.filled {
+    border-style: solid;
+    border-color: #2ed573;
+    background: #f0fff4;
+}
+.slot-filled-val {
+    font-size: 22px;
+    font-weight: 900;
+    color: #2d3436;
+    line-height: 1;
+}
+.slot-placeholder-hint {
+    font-size: 11px;
+    font-weight: bold;
+    color: #b2bec3;
+}
+.slot-label-zh {
+    font-size: 12px;
+    font-weight: 900;
+    color: #636e72;
+    margin-top: 4px;
+}
+.slot-label-en {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #b2bec3;
+    text-transform: uppercase;
+}
+
+/* 0-12 數字積木盤 */
+.date-numbers-title {
+    font-size: 13px;
+    font-weight: 900;
+    color: #2d3436;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.date-number-tiles-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+}
+.num-tile-btn {
+    height: 38px;
+    background: #6c5ce7;
+    border: 1px solid #5b4cc4;
+    border-radius: 10px;
+    color: #ffffff;
+    cursor: grab;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 0 #4834d4;
+    transition: transform 0.1s, background 0.1s;
+    user-select: none;
+}
+.num-tile-btn:hover {
+    background: #a29bfe;
+    transform: translateY(-2px);
+}
+.num-tile-btn:active {
+    transform: translateY(2px);
+    box-shadow: none;
+    cursor: grabbing;
+}
+.num-tile-zh {
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1;
+}
+.num-tile-en {
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #dfe6e9;
+    line-height: 1;
+    margin-top: 1px;
+}
+
+/* 星期積木盤 (一到日) */
+.weekday-tiles-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+    margin-bottom: 12px;
+}
+.week-tile-btn {
+    height: 34px;
+    background: #00cec9;
+    border: 1px solid #00b894;
+    border-radius: 8px;
+    color: #ffffff;
+    cursor: grab;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 0 #009879;
+    transition: transform 0.1s;
+    user-select: none;
+}
+.week-tile-btn:hover {
+    background: #81ecec;
+    transform: translateY(-2px);
+}
+.week-tile-zh {
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1;
+}
+.week-tile-en {
+    font-size: 8px;
+    font-weight: 700;
+    color: #f1f2f6;
+    line-height: 1;
+    margin-top: 1px;
+}
+
+/* 控制列 (檢查/重設) */
+.date-actions-row {
+    display: flex;
+    gap: 8px;
+}
+.date-btn-check {
+    flex: 2;
+    padding: 8px;
+    background: linear-gradient(135deg, #00b894, #00cec9);
+    border: none;
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0, 184, 148, 0.3);
+}
+.date-btn-reset {
+    flex: 1;
+    padding: 8px;
+    background: #dfe6e9;
+    border: none;
+    border-radius: 10px;
+    color: #2d3436;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.date-feedback-banner {
+    margin-top: 8px;
+    padding: 8px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 900;
+    display: none;
+}
 </style></head>
+
 
 
 <body>
@@ -2555,6 +2831,83 @@
 <div class="main-layout">
 
 <div class="converter-wrapper">
+    <!-- ==================== 📅 雙語日期與星期認知拖拉互動卡 ==================== -->
+    <div class="container date-learning-card">
+        <!-- 雙語切換按鈕 -->
+        <div class="date-lang-toggle-bar">
+            <button type="button" class="date-lang-btn active" id="date-lang-zh" onclick="setDateWidgetLang('zh')">🇹🇼 中文模式</button>
+            <button type="button" class="date-lang-btn" id="date-lang-en" onclick="setDateWidgetLang('en')">🇺🇸 English Mode</button>
+        </div>
+
+        <div class="date-card-header">
+            <h2 class="date-card-title" id="date-card-title">📅 今天是幾月幾號？</h2>
+            <div class="date-card-subtitle" id="date-card-subtitle">What's the Date & Day Today?</div>
+        </div>
+
+        <div class="date-target-banner" id="date-target-banner">
+            <span id="target-date-prefix">🎯 請排出今天：</span>
+            <span id="target-date-display" style="color: #c0392b; font-size: 14px;">載入中...</span>
+            <button type="button" class="date-speak-btn" onclick="speakTodayTarget()" title="聆聽發音 · Listen">🔊</button>
+        </div>
+
+        <!-- 3 個目標放置槽 (月 / 日 / 星期) -->
+        <div class="date-slots-container">
+            <!-- 1. 月份槽 -->
+            <div class="date-slot-box" id="slot-month" ondragover="handleDateDragOver(event)" ondragleave="handleDateDragLeave(event)" ondrop="handleDateDrop(event, 'month')" onclick="clearDateSlot('month')">
+                <span class="slot-placeholder-hint" id="hint-month">拖入數字</span>
+                <span class="slot-filled-val" id="val-month"></span>
+                <span class="slot-label-zh" id="label-month-zh">月</span>
+                <span class="slot-label-en" id="label-month-en">Month</span>
+            </div>
+
+            <!-- 2. 日期槽 (支援 1-31，可單點或連點組合兩位數) -->
+            <div class="date-slot-box" id="slot-day" ondragover="handleDateDragOver(event)" ondragleave="handleDateDragLeave(event)" ondrop="handleDateDrop(event, 'day')" onclick="clearDateSlot('day')">
+                <span class="slot-placeholder-hint" id="hint-day">拖入數字</span>
+                <span class="slot-filled-val" id="val-day"></span>
+                <span class="slot-label-zh" id="label-day-zh">日</span>
+                <span class="slot-label-en" id="label-day-en">Day</span>
+            </div>
+
+            <!-- 3. 星期槽 -->
+            <div class="date-slot-box" id="slot-weekday" ondragover="handleDateDragOver(event)" ondragleave="handleDateDragLeave(event)" ondrop="handleDateDrop(event, 'weekday')" onclick="clearDateSlot('weekday')">
+                <span class="slot-placeholder-hint" id="hint-weekday">拖入星期</span>
+                <span class="slot-filled-val" id="val-weekday"></span>
+                <span class="slot-label-zh" id="label-weekday-zh">星期</span>
+                <span class="slot-label-en" id="label-weekday-en">Weekday</span>
+            </div>
+        </div>
+
+        <div class="date-day-tip" id="date-day-tip">
+            💡 提示：日期超過 12 號時，可依序點選或拖入兩位數（如先選 1 再選 9 組合為 19 號；點擊槽位可清除重新填入）
+        </div>
+
+        <!-- 0-12 數字積木盤 -->
+        <div class="date-numbers-title">
+            <span id="date-numbers-heading">🔢 數字積木 (拖拉或點擊)</span>
+            <span style="font-size: 10px; color: #888;" id="date-numbers-subheading">Numbers 0-12</span>
+        </div>
+        <div class="date-number-tiles-grid" id="date-number-tiles">
+            <!-- 由 JS 動態生成 0-12 積木，兼具拖曳 drag 與點擊 click 雙模式 -->
+        </div>
+
+        <!-- 星期積木盤 (一到日) -->
+        <div class="date-numbers-title">
+            <span id="date-weekdays-heading">🌟 星期積木</span>
+            <span style="font-size: 10px; color: #888;" id="date-weekdays-subheading">Days of the Week</span>
+        </div>
+        <div class="weekday-tiles-grid" id="weekday-tiles">
+            <!-- 由 JS 動態生成 星期一到星期日 積木 -->
+        </div>
+
+        <!-- 檢查與重設按鈕 -->
+        <div class="date-actions-row">
+            <button class="date-btn-check" id="date-btn-check" type="button" onclick="checkDateAnswer()">✨ 檢查答案 · Check</button>
+            <button class="date-btn-reset" id="date-btn-reset" type="button" onclick="resetDateSlots()">🔄 重置 · Reset</button>
+        </div>
+
+        <div class="date-feedback-banner" id="date-feedback-banner"></div>
+    </div>
+
     <div class="container weight-converter-card">
         <div class="weight-card-header">
             <h2 class="weight-card-title">⚖️ 體重單位轉換</h2>
@@ -5825,8 +6178,8 @@ window.addEventListener('load', () => {
 
     // 4. 徹底封死選取與複製 (保留，這是防拷貝的核心)
     const blockSelect = e => {
-        // 關鍵：如果點擊的是迷宮容器內的元素，就允許選取/拖曳 (保留迷宮特殊放行)
-        if (e.target.closest('#maze-container')) {
+        // 關鍵：如果點擊的是迷宮容器內的元素或日期積木拖曳區，就允許選取/拖曳
+        if (e.target.closest('#maze-container, .date-learning-card')) {
             return true;
         }
 
@@ -5864,19 +6217,442 @@ window.addEventListener('load', () => {
 })();
 </script>
 
+<script>
+// ==================== [ 📅 雙語日期與星期認知互動遊戲控制邏輯 ] ====================
+(function() {
+    let dateWidgetLang = 'zh'; // 'zh' 或 'en'
 
+    // 0-12 雙語數字清單
+    const numList = [
+        { val: 0, en: 'Zero' }, { val: 1, en: 'One' }, { val: 2, en: 'Two' },
+        { val: 3, en: 'Three' }, { val: 4, en: 'Four' }, { val: 5, en: 'Five' },
+        { val: 6, en: 'Six' }, { val: 7, en: 'Seven' }, { val: 8, en: 'Eight' },
+        { val: 9, en: 'Nine' }, { val: 10, en: 'Ten' }, { val: 11, en: 'Eleven' },
+        { val: 12, en: 'Twelve' }
+    ];
 
+    // 星期雙語清單
+    const weekList = [
+        { zh: '星期一', shortZh: '一', en: 'Mon', fullEn: 'Monday', val: 1 },
+        { zh: '星期二', shortZh: '二', en: 'Tue', fullEn: 'Tuesday', val: 2 },
+        { zh: '星期三', shortZh: '三', en: 'Wed', fullEn: 'Wednesday', val: 3 },
+        { zh: '星期四', shortZh: '四', en: 'Thu', fullEn: 'Thursday', val: 4 },
+        { zh: '星期五', shortZh: '五', en: 'Fri', fullEn: 'Friday', val: 5 },
+        { zh: '星期六', shortZh: '六', en: 'Sat', fullEn: 'Saturday', val: 6 },
+        { zh: '星期日', shortZh: '日', en: 'Sun', fullEn: 'Sunday', val: 0 }
+    ];
 
+    const monthNamesEn = {
+        1: 'January', 2: 'February', 3: 'March', 4: 'April',
+        5: 'May', 6: 'June', 7: 'July', 8: 'August',
+        9: 'September', 10: 'October', 11: 'November', 12: 'December'
+    };
+    const monthShortEn = {
+        1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr',
+        5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Aug',
+        9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'
+    };
 
+    function getOrdinalSuffix(n) {
+        const s = ['th', 'st', 'nd', 'rd'];
+        const v = n % 100;
+        return s[(v - 20) % 10] || s[v] || s[0];
+    }
 
+    // 當前槽位狀態
+    const currentSlots = {
+        month: null,
+        day: null,
+        weekday: null
+    };
 
+    // 取得今天真實日期
+    const now = new Date();
+    const todayTarget = {
+        month: now.getMonth() + 1, // 1-12
+        day: now.getDate(),        // 1-31
+        weekday: now.getDay()      // 0-6
+    };
 
+    // 音效合成
+    function playDateSound(type) {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            if (ctx.state === 'suspended') ctx.resume();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            const t = ctx.currentTime;
+            if (type === 'click') {
+                osc.frequency.setValueAtTime(580, t);
+                gain.gain.setValueAtTime(0.12, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.07);
+                osc.start(t);
+                osc.stop(t + 0.07);
+            } else if (type === 'correct') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, t);
+                osc.frequency.setValueAtTime(659.25, t + 0.08);
+                osc.frequency.setValueAtTime(783.99, t + 0.16);
+                osc.frequency.setValueAtTime(1046.50, t + 0.24);
+                gain.gain.setValueAtTime(0.2, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.45);
+                osc.start(t);
+                osc.stop(t + 0.45);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(280, t);
+                osc.frequency.linearRampToValueAtTime(180, t + 0.25);
+                gain.gain.setValueAtTime(0.15, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
+                osc.start(t);
+                osc.stop(t + 0.25);
+            }
+        } catch(e) {}
+    }
 
+    // 雙語切換
+    window.setDateWidgetLang = function(lang) {
+        dateWidgetLang = lang;
+        const btnZh = document.getElementById('date-lang-zh');
+        const btnEn = document.getElementById('date-lang-en');
+        if (btnZh) btnZh.classList.toggle('active', lang === 'zh');
+        if (btnEn) btnEn.classList.toggle('active', lang === 'en');
 
+        const titleEl = document.getElementById('date-card-title');
+        const subTitleEl = document.getElementById('date-card-subtitle');
+        const prefixEl = document.getElementById('target-date-prefix');
+        const tipEl = document.getElementById('date-day-tip');
+        const numHead = document.getElementById('date-numbers-heading');
+        const numSub = document.getElementById('date-numbers-subheading');
+        const weekHead = document.getElementById('date-weekdays-heading');
+        const weekSub = document.getElementById('date-weekdays-subheading');
+        const btnCheck = document.getElementById('date-btn-check');
+        const btnReset = document.getElementById('date-btn-reset');
 
+        const lblMonthZh = document.getElementById('label-month-zh');
+        const lblMonthEn = document.getElementById('label-month-en');
+        const lblDayZh = document.getElementById('label-day-zh');
+        const lblDayEn = document.getElementById('label-day-en');
+        const lblWeekZh = document.getElementById('label-weekday-zh');
+        const lblWeekEn = document.getElementById('label-weekday-en');
+
+        if (lang === 'en') {
+            if (titleEl) titleEl.textContent = "📅 What's the Date & Day Today?";
+            if (subTitleEl) subTitleEl.textContent = "今天是幾月幾號？ · Bilingual Calendar Game";
+            if (prefixEl) prefixEl.textContent = "🎯 Today's Target: ";
+            if (tipEl) tipEl.innerHTML = "💡 <b>Tip:</b> For days 13-31, combine 2 digits (e.g. click 1 then 9 to make 19; click any slot to clear it)";
+            if (numHead) numHead.textContent = "🔢 Number Tiles (0-12)";
+            if (numSub) numSub.textContent = "Drag or click into slots";
+            if (weekHead) weekHead.textContent = "🌟 Days of the Week";
+            if (weekSub) weekSub.textContent = "Monday to Sunday";
+            if (btnCheck) btnCheck.textContent = "✨ Check Answer · 檢查答案";
+            if (btnReset) btnReset.textContent = "🔄 Reset · 重置";
+
+            if (lblMonthZh) lblMonthZh.textContent = "Month";
+            if (lblMonthEn) lblMonthEn.textContent = "月份 (1-12)";
+            if (lblDayZh) lblDayZh.textContent = "Day";
+            if (lblDayEn) lblDayEn.textContent = "日期 (1-31)";
+            if (lblWeekZh) lblWeekZh.textContent = "Weekday";
+            if (lblWeekEn) lblWeekEn.textContent = "星期 (Day of Week)";
+        } else {
+            if (titleEl) titleEl.textContent = "📅 今天是幾月幾號？";
+            if (subTitleEl) subTitleEl.textContent = "What's the Date & Day Today?";
+            if (prefixEl) prefixEl.textContent = "🎯 請排出今天：";
+            if (tipEl) tipEl.innerHTML = "💡 <b>提示：</b>日期超過 12 號時，可依序點選或拖入兩位數（如先選 1 再選 9 組合為 19 號；點擊槽位可重設）";
+            if (numHead) numHead.textContent = "🔢 數字積木 (拖拉或點擊)";
+            if (numSub) numSub.textContent = "Numbers 0-12";
+            if (weekHead) weekHead.textContent = "🌟 星期積木";
+            if (weekSub) weekSub.textContent = "Days of the Week";
+            if (btnCheck) btnCheck.textContent = "✨ 檢查答案 · Check";
+            if (btnReset) btnReset.textContent = "🔄 重置 · Reset";
+
+            if (lblMonthZh) lblMonthZh.textContent = "月";
+            if (lblMonthEn) lblMonthEn.textContent = "Month";
+            if (lblDayZh) lblDayZh.textContent = "日";
+            if (lblDayEn) lblDayEn.textContent = "Day";
+            if (lblWeekZh) lblWeekZh.textContent = "星期";
+            if (lblWeekEn) lblWeekEn.textContent = "Weekday";
+        }
+
+        renderTargetBanner();
+        updateSlotUI('month');
+        updateSlotUI('day');
+        updateSlotUI('weekday');
+    };
+
+    // 渲染目標提示
+    function renderTargetBanner() {
+        const display = document.getElementById('target-date-display');
+        if (!display) return;
+        const weekObj = weekList.find(w => w.val === todayTarget.weekday) || weekList[0];
+        if (dateWidgetLang === 'en') {
+            display.innerHTML = `<strong>${monthNamesEn[todayTarget.month]} ${todayTarget.day}${getOrdinalSuffix(todayTarget.day)} (${weekObj.fullEn})</strong>`;
+        } else {
+            display.innerHTML = `<strong>${todayTarget.month}月 ${todayTarget.day}日 (${weekObj.zh})</strong> <span style="font-size:11px;color:#888;">${weekObj.fullEn}</span>`;
+        }
+    }
+
+    // 發音聆聽
+    window.speakTodayTarget = function() {
+        if (!('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel();
+        const weekObj = weekList.find(w => w.val === todayTarget.weekday) || weekList[0];
+        let text = '';
+        let voiceLang = 'zh-TW';
+        if (dateWidgetLang === 'en') {
+            text = `Today is ${monthNamesEn[todayTarget.month]} ${todayTarget.day}${getOrdinalSuffix(todayTarget.day)}, ${weekObj.fullEn}.`;
+            voiceLang = 'en-US';
+        } else {
+            text = `今天是${todayTarget.month}月${todayTarget.day}日，${weekObj.zh}。`;
+            voiceLang = 'zh-TW';
+        }
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = voiceLang;
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    };
+
+    // 渲染 0-12 數字積木盤
+    function renderNumberTiles() {
+        const container = document.getElementById('date-number-tiles');
+        if (!container) return;
+        container.innerHTML = '';
+
+        numList.forEach(item => {
+            const btn = document.createElement('div');
+            btn.className = 'num-tile-btn';
+            btn.draggable = true;
+            btn.innerHTML = `<span class="num-tile-zh">${item.val}</span><span class="num-tile-en">${item.en}</span>`;
+
+            // 拖曳開始
+            btn.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'number', val: item.val }));
+            });
+
+            // 點擊填入（智慧判定：月 -> 日 -> 日組合）
+            btn.addEventListener('click', () => {
+                if (currentSlots.month === null) {
+                    fillSlot('month', item.val);
+                } else if (currentSlots.day === null) {
+                    handleDayInput(item.val);
+                } else if (currentSlots.day < 10 && item.val < 10 && (currentSlots.day * 10 + item.val) <= 31) {
+                    handleDayInput(item.val);
+                } else if (currentSlots.weekday === null) {
+                    // 若星期還沒填，提醒或更新日
+                    handleDayInput(item.val);
+                } else {
+                    handleDayInput(item.val);
+                }
+            });
+
+            container.appendChild(btn);
+        });
+    }
+
+    // 處理日期欄位的組合輸入（支援 0-12 盤組合出 13-31）
+    function handleDayInput(val) {
+        if (currentSlots.day !== null && currentSlots.day < 10 && val < 10) {
+            const combo = currentSlots.day * 10 + val;
+            if (combo <= 31 && combo >= 1) {
+                fillSlot('day', combo);
+                return;
+            }
+        }
+        fillSlot('day', val);
+    }
+
+    // 渲染 星期積木盤
+    function renderWeekdayTiles() {
+        const container = document.getElementById('weekday-tiles');
+        if (!container) return;
+        container.innerHTML = '';
+
+        weekList.forEach(item => {
+            const btn = document.createElement('div');
+            btn.className = 'week-tile-btn';
+            btn.draggable = true;
+            btn.innerHTML = `<span class="week-tile-zh">${item.shortZh}</span><span class="week-tile-en">${item.en}</span>`;
+
+            // 拖曳開始
+            btn.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'weekday', val: item.val }));
+            });
+
+            // 點擊填入
+            btn.addEventListener('click', () => {
+                fillSlot('weekday', item.val);
+            });
+
+            container.appendChild(btn);
+        });
+    }
+
+    // 填入槽位
+    function fillSlot(slotType, val) {
+        currentSlots[slotType] = val;
+        updateSlotUI(slotType);
+        playDateSound('click');
+    }
+
+    // 更新槽位 UI 顯示
+    function updateSlotUI(slotType) {
+        const box = document.getElementById(`slot-${slotType}`);
+        const valEl = document.getElementById(`val-${slotType}`);
+        const hintEl = document.getElementById(`hint-${slotType}`);
+        if (!box || !valEl) return;
+
+        const val = currentSlots[slotType];
+        if (val === null || val === undefined) {
+            valEl.textContent = '';
+            if (hintEl) {
+                hintEl.style.display = 'block';
+                hintEl.textContent = (slotType === 'weekday')
+                    ? (dateWidgetLang === 'en' ? 'Drag Day' : '拖入星期')
+                    : (dateWidgetLang === 'en' ? 'Drag Number' : '拖入數字');
+            }
+            box.classList.remove('filled');
+            return;
+        }
+
+        if (hintEl) hintEl.style.display = 'none';
+        box.classList.add('filled');
+
+        if (slotType === 'month') {
+            if (dateWidgetLang === 'en') {
+                valEl.textContent = monthShortEn[val] ? `${monthShortEn[val]} (${val})` : val;
+            } else {
+                valEl.textContent = `${val}月`;
+            }
+        } else if (slotType === 'day') {
+            if (dateWidgetLang === 'en') {
+                valEl.textContent = `${val}${getOrdinalSuffix(val)}`;
+            } else {
+                valEl.textContent = `${val}日`;
+            }
+        } else if (slotType === 'weekday') {
+            const w = weekList.find(item => item.val === val) || weekList[0];
+            if (dateWidgetLang === 'en') {
+                valEl.textContent = w.en;
+            } else {
+                valEl.textContent = w.shortZh;
+            }
+        }
+    }
+
+    // 暴露全域拖曳事件給 HTML 標籤
+    window.handleDateDragOver = function(e) {
+        e.preventDefault();
+        e.currentTarget.classList.add('drag-over');
+    };
+
+    window.handleDateDragLeave = function(e) {
+        e.currentTarget.classList.remove('drag-over');
+    };
+
+    window.handleDateDrop = function(e, slotType) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+        try {
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            if (slotType === 'weekday' && data.type === 'weekday') {
+                fillSlot('weekday', data.val);
+            } else if (slotType === 'month' && data.type === 'number') {
+                fillSlot('month', data.val);
+            } else if (slotType === 'day' && data.type === 'number') {
+                handleDayInput(data.val);
+            }
+        } catch(err) {}
+    };
+
+    // 清除個別槽位
+    window.clearDateSlot = function(slotType) {
+        currentSlots[slotType] = null;
+        updateSlotUI(slotType);
+        playDateSound('click');
+    };
+
+    // 重置所有槽位
+    window.resetDateSlots = function() {
+        ['month', 'day', 'weekday'].forEach(s => {
+            currentSlots[s] = null;
+            updateSlotUI(s);
+        });
+        const fb = document.getElementById('date-feedback-banner');
+        if (fb) fb.style.display = 'none';
+        playDateSound('click');
+    };
+
+    // 檢查答案
+    window.checkDateAnswer = function() {
+        const fb = document.getElementById('date-feedback-banner');
+        if (!fb) return;
+
+        if (currentSlots.month === null || currentSlots.day === null || currentSlots.weekday === null) {
+            fb.style.display = 'block';
+            fb.style.background = '#fff3cd';
+            fb.style.color = '#856404';
+            fb.style.border = '1.5px solid #ffeeba';
+            fb.innerHTML = (dateWidgetLang === 'en')
+                ? '⚠️ Please fill in all slots (Month, Day, and Weekday)!'
+                : '⚠️ 還沒填完整喔！請把月、日、星期都放上去～';
+            playDateSound('wrong');
+            return;
+        }
+
+        const isMonthOk = Number(currentSlots.month) === todayTarget.month;
+        const isDayOk = Number(currentSlots.day) === todayTarget.day;
+        const isWeekOk = Number(currentSlots.weekday) === todayTarget.weekday;
+
+        fb.style.display = 'block';
+        if (isMonthOk && isDayOk && isWeekOk) {
+            fb.style.background = '#d4edda';
+            fb.style.color = '#155724';
+            fb.style.border = '1.5px solid #c3e6cb';
+            fb.innerHTML = (dateWidgetLang === 'en')
+                ? '🎉 Awesome! You got today\'s date right! 🌟'
+                : '🎉 太棒了！答對了！You got it right! 🌟';
+            playDateSound('correct');
+
+            // 歡呼語音
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const weekObj = weekList.find(w => w.val === todayTarget.weekday) || weekList[0];
+                const cheerText = (dateWidgetLang === 'en')
+                    ? `Awesome! Today is ${monthNamesEn[todayTarget.month]} ${todayTarget.day}${getOrdinalSuffix(todayTarget.day)}, ${weekObj.fullEn}!`
+                    : `太棒了！今天是${todayTarget.month}月${todayTarget.day}日，${weekObj.zh}！`;
+                const cheerUtter = new SpeechSynthesisUtterance(cheerText);
+                cheerUtter.lang = (dateWidgetLang === 'en') ? 'en-US' : 'zh-TW';
+                cheerUtter.rate = 0.9;
+                window.speechSynthesis.speak(cheerUtter);
+            }
+        } else {
+            fb.style.background = '#f8d7da';
+            fb.style.color = '#721c24';
+            fb.style.border = '1.5px solid #f5c6cb';
+            fb.innerHTML = (dateWidgetLang === 'en')
+                ? '💡 Almost there! Check today\'s date at the top and try again~ Keep going!'
+                : '💡 差一點點喔！再看一下上方提示調整看看～ Keep trying!';
+            playDateSound('wrong');
+        }
+    };
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        renderTargetBanner();
+        renderNumberTiles();
+        renderWeekdayTiles();
+        updateSlotUI('month');
+        updateSlotUI('day');
+        updateSlotUI('weekday');
+    });
+})();
+</script>
 
 <script>
     // 寵物狀態
+
     const pet = {
         health: 100, food: 80, water: 80, clean: 100, love: 50,
         isSick: false, isDirty: false, accessory: 'none'
