@@ -6072,6 +6072,22 @@ window.addEventListener('load', () => {
             video.src = getRandomVideo('default');
             video.play().catch(e => console.log('自動播放阻擋:', e));
         }
+
+        // 背景靜默預載 9 大常用動作影片（讓點擊瞬間從快取秒出，消滅延遲）
+        const preloadList = [
+            'dogeat.mp4', 'dogdrink.mp4', 'dogpethead.mp4',
+            'dogshower1.mp4', 'dpgpoo.mp4', 'dogdoctor.mp4',
+            'dogwalk.mp4', 'dogcook.mp4', 'dogcollar.mp4'
+        ];
+        setTimeout(() => {
+            preloadList.forEach(src => {
+                const link = document.createElement('link');
+                link.rel = 'preload';
+                link.as = 'video';
+                link.href = src;
+                document.head.appendChild(link);
+            });
+        }, 1500); // 頁面載入 1.5 秒後、趁使用者看畫面時默默在背景下載進快取
     }
 
     if (document.readyState === 'loading') {
