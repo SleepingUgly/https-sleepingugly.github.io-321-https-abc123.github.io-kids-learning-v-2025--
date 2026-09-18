@@ -5988,22 +5988,29 @@ window.addEventListener('load', () => {
     }
 
     // 切換動作影片並播放
+       // 切換動作影片並播放（專為 GitHub 網際網路優化：絕不卡死、順播）
     function playActionVideo(src) {
         if (!src) return;
 
         video.loop = false;
         video.muted = true;
         video.playsInline = true;
-        video.src = src;
-        video.load();
 
-        const p = video.play();
-        if (p !== undefined) {
-            p.catch(err => {
-                console.warn('Play error:', err);
+        // 當遠端影片緩衝好第一格畫面時，立刻無縫播放
+        const onCanPlay = () => {
+            video.removeEventListener('canplay', onCanPlay);
+            video.play().catch(err => {
                 video.muted = true;
                 video.play().catch(() => {});
             });
+        };
+
+        video.addEventListener('canplay', onCanPlay, { once: true });
+        video.src = src;
+
+        // 如果影片已在記憶體中，直接播
+        if (video.readyState >= 2) {
+            video.play().catch(() => {});
         }
     }
 
@@ -6023,16 +6030,19 @@ window.addEventListener('load', () => {
 
         const currentSrc = video.currentSrc || video.src || '';
         if (!currentSrc.includes('dogbreak.mp4')) {
+            video.addEventListener('canplay', () => {
+                video.play().catch(() => {});
+            }, { once: true });
             video.src = 'dogbreak.mp4';
-            video.load();
-        }
-        if (video.paused) {
+            if (video.readyState >= 2) {
+                video.play().catch(() => {});
+            }
+        } else if (video.paused) {
             video.play().catch(() => {});
         }
 
         isActionBusy = false;
     }
-
     // 主要動作函式
     function doAction(action) {
         if (isActionBusy) return;
