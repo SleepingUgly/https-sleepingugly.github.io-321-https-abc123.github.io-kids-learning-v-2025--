@@ -6038,8 +6038,10 @@ window.addEventListener('load', () => {
         updateStatus();
 
         if (video) {
-            video.src = getRandomVideo(action);
-            video.currentTime = 0;
+            const targetSrc = getRandomVideo(action);
+            if (video.src.indexOf(targetSrc) === -1) {
+                video.src = targetSrc;
+            }
             video.play().catch(e => console.log('播放被阻擋:', e));
         }
     }
@@ -6065,6 +6067,9 @@ window.addEventListener('load', () => {
         };
     }
 
+    // 真正能秒進瀏覽器記憶體的預載快取器
+    const preloadedVideoElements = {};
+
     function initPet() {
         createButtons();
         updateStatus();
@@ -6073,21 +6078,17 @@ window.addEventListener('load', () => {
             video.play().catch(e => console.log('自動播放阻擋:', e));
         }
 
-        // 背景靜默預載 9 大常用動作影片（讓點擊瞬間從快取秒出，消滅延遲）
-        const preloadList = [
-            'dogeat.mp4', 'dogdrink.mp4', 'dogpethead.mp4',
-            'dogshower1.mp4', 'dpgpoo.mp4', 'dogdoctor.mp4',
-            'dogwalk.mp4', 'dogcook.mp4', 'dogcollar.mp4'
-        ];
+        // 頁面載入 1 秒後，用虛擬 Video 元素在記憶體中快速快取第一波核心動作影片
         setTimeout(() => {
-            preloadList.forEach(src => {
-                const link = document.createElement('link');
-                link.rel = 'preload';
-                link.as = 'video';
-                link.href = src;
-                document.head.appendChild(link);
+            const quickList = ['dogeat.mp4', 'dogdrink.mp4', 'dogpethead.mp4', 'dogshower1.mp4', 'dpgpoo.mp4', 'dogdoctor.mp4', 'dogwalk.mp4', 'dogcook.mp4', 'dogcollar.mp4'];
+            quickList.forEach(src => {
+                const v = document.createElement('video');
+                v.preload = 'auto';
+                v.muted = true;
+                v.src = src;
+                preloadedVideoElements[src] = v;
             });
-        }, 1500); // 頁面載入 1.5 秒後、趁使用者看畫面時默默在背景下載進快取
+        }, 1000);
     }
 
     if (document.readyState === 'loading') {
