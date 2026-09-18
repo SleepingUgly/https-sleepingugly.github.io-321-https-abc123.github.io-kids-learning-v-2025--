@@ -2281,15 +2281,17 @@
     margin: 6px 0 14px 0;
 }
 .nav-btn {
-    padding: 6px 20px;
+    padding: 6px 16px;
     border-radius: 50px;
     border: none;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: bold;
     color: #ffffff;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     transform: none !important;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 #prev-btn {
     background-color: #cccccc;
@@ -2625,12 +2627,13 @@
     <p>請鍵盤按ctrl + 把迷宮區變大</p>
     <p>滑鼠拖曳就能畫出線條</p>
 
-    <div style="margin-bottom:10px;margin-top:15px ;">
-        <button onclick="prevMaze()" class="nav-btn" id="prev-btn">上一張</button>
-        <span id="maze-status" style="margin:0 15px; font-size:1.2em; font-weight:bold; color:#ff8c00;">關卡 1/100</span>
-        <button onclick="nextMaze()" class="nav-btn" id="next-btn">下一張</button>
-
-        <button onclick="clearPath()" class="clear-btn">清除畫線</button>
+    <div style="margin-bottom:12px; margin-top:15px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: nowrap; white-space: nowrap; width: 100%;">
+            <button onclick="prevMaze()" class="nav-btn" id="prev-btn">上一張</button>
+            <span id="maze-status" style="font-size: 18px; font-weight: 900; color: #ff8c00; white-space: nowrap;">關卡 1/100</span>
+            <button onclick="nextMaze()" class="nav-btn" id="next-btn">下一張</button>
+        </div>
+        <button onclick="clearPath()" class="clear-btn" style="margin: 2px auto 0;">清除畫線</button>
     </div>
 
     <div id="maze-container" style="position:relative;display:inline-block;box-shadow:0 0 15px rgba(238, 125, 125, 0.856);border-radius:12px;overflow:hidden;">
