@@ -5897,26 +5897,12 @@ window.addEventListener('load', () => {
     let isActionBusy = false;
     let safetyTimeout = null;
     let actionIndices = {};
-    const videoCache = new Map();
 
     try {
         actionIndices = JSON.parse(localStorage.getItem('pet_action_indices') || '{}');
     } catch (e) {}
 
-    function preloadVideo(src) {
-        if (!src || videoCache.has(src)) return videoCache.get(src);
-
-        const preload = document.createElement('video');
-        preload.preload = 'auto';
-        preload.muted = true;
-        preload.playsInline = true;
-        preload.src = src;
-        preload.load();
-
-        videoCache.set(src, preload);
-        return preload;
-    }
-
+    // 輪播選片
     function getNextVideo(action) {
         const list = videos[action] || videos.default;
         if (actionIndices[action] === undefined || actionIndices[action] >= list.length) {
@@ -5933,6 +5919,7 @@ window.addEventListener('load', () => {
         return selected;
     }
 
+    // 更新狀態數值
     function updateStatus() {
         document.getElementById('health-value').textContent = pet.health;
         document.getElementById('food-value').textContent = pet.food;
@@ -5954,55 +5941,37 @@ window.addEventListener('load', () => {
         else mood.textContent = '😭 哭哭';
     }
 
+    // 按鈕控制（保持隨時可點，不鎖死、不反灰）
     function setButtonsDisabled(disabled) {
-        const panel = document.getElementById('interaction-panel');
-        if (!panel) return;
-        panel.querySelectorAll('button').forEach(btn => {
-            btn.disabled = disabled;
-            btn.style.opacity = disabled ? '0.6' : '1';
-            btn.style.cursor = disabled ? 'not-allowed' : 'pointer';
-        });
+        // 不鎖定任何按鈕
     }
 
-    function safePlay(v, withSound = false) {
-        v.muted = !withSound;
+    // 極速播放：純靜音秒播，現代瀏覽器 100% 綠燈放行、零延遲
+    function safePlay(v) {
+        v.muted = true;
         v.playsInline = true;
-
-        const play = () => {
-            const p = v.play();
-            if (p && p.catch) {
-                p.catch(err => console.warn('Play error:', err));
-            }
-        };
-
-        if (v.readyState >= 3) {
-            play();
-        } else {
-            v.addEventListener('canplay', play, { once: true });
+        const p = v.play();
+        if (p !== undefined) {
+            p.catch(err => console.warn('Play error:', err));
         }
     }
 
+    // 切換動作影片（不強制 load，不 pause，直接指派 src 秒播）
     function playActionVideo(src) {
         if (!src) return;
 
         const currentSrc = video.currentSrc || video.src || '';
-        if (currentSrc && currentSrc.endsWith(src) && !video.paused) {
+        if (currentSrc.endsWith(src) && !video.paused) {
             return;
         }
 
-        video.pause();
         video.loop = false;
+        video.muted = true;
         video.src = src;
-        video.load();
-        safePlay(video, true);
-
-        const list = videos[currentAction] || videos.default;
-        const nextIndex = actionIndices[currentAction] ?? 0;
-        if (list[nextIndex]) {
-            preloadVideo(list[nextIndex]);
-        }
+        safePlay(video);
     }
 
+    // 回到待機狀態
     function resetToStandby() {
         if (safetyTimeout) {
             clearTimeout(safetyTimeout);
@@ -6018,20 +5987,16 @@ window.addEventListener('load', () => {
         const currentSrc = video.currentSrc || video.src || '';
         if (!currentSrc.includes('dogbreak.mp4')) {
             video.src = 'dogbreak.mp4';
-            video.load();
         }
 
-        safePlay(video, false);
-
+        safePlay(video);
         isActionBusy = false;
-        setButtonsDisabled(false);
     }
 
+    // 主要動作函式
     function doAction(action) {
         if (isActionBusy) return;
-
         isActionBusy = true;
-        setButtonsDisabled(true);
 
         currentAction = action;
 
@@ -6053,19 +6018,21 @@ window.addEventListener('load', () => {
 
         playActionVideo(selectedVideo);
 
+        // 只短暫防手抖 300 毫秒，之後立刻解鎖，隨時想按其他動作都能馬上切換！
+        setTimeout(() => {
+            isActionBusy = false;
+        }, 300);
+
+        // 安全計時器（縮短為 5 秒，影片播完或超時自動回待機）
         if (safetyTimeout) clearTimeout(safetyTimeout);
         safetyTimeout = setTimeout(() => {
             if (currentAction !== 'default') {
                 resetToStandby();
             }
-        },20000);
-
-        setTimeout(() => {
-            isActionBusy = false;
-            setButtonsDisabled(false);
-        }, 250);
+        }, 5000);
     }
 
+    // 動態產生按鈕
     function createButtons() {
         const panel = document.getElementById('interaction-panel');
         if (!panel) return;
@@ -6080,21 +6047,15 @@ window.addEventListener('load', () => {
         });
     }
 
+    // 初始化
     function initPetModule() {
         createButtons();
         updateStatus();
 
         video.loop = true;
         video.muted = true;
-        video.preload = 'auto';
         video.src = 'dogbreak.mp4';
-        video.load();
-        safePlay(video, false);
-
-        preloadVideo('dogbreak.mp4');
-        preloadVideo('dogeat.mp4');
-        preloadVideo('dogdrink.mp4');
-        preloadVideo('dogpethead.mp4');
+        safePlay(video);
 
         video.addEventListener('ended', () => {
             resetToStandby();

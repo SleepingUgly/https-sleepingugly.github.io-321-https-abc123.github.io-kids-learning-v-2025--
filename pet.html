@@ -545,141 +545,16 @@
         else mood.textContent = '⚡⚡⚡⚡⚡ 哭哭';
     }
 
-    // =========================================================================
-    // 🚿 洗澡水流聲 (Web Audio API 擬真蓮蓬頭淋浴水花聲效)
-    // =========================================================================
-    let audioCtx = null;
-    let showerNodes = null;
-
-    function getAudioContext() {
-        if (!audioCtx) {
-            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-            if (AudioContextClass) {
-                audioCtx = new AudioContextClass();
-            }
-        }
-        if (audioCtx && audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-        return audioCtx;
-    }
-
-    function playWaterShowerSound() {
-        stopWaterShowerSound();
-        const ctx = getAudioContext();
-        if (!ctx) return;
-        if (ctx.state === 'suspended') {
-            ctx.resume();
-        }
-
-        try {
-            // 建立 4 秒的粉紅噪聲緩衝區
-            const bufferSize = ctx.sampleRate * 4;
-            const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-            const output = noiseBuffer.getChannelData(0);
-            let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-            
-            for (let i = 0; i < bufferSize; i++) {
-                const white = Math.random() * 2 - 1;
-                // 粉紅噪聲濾波 (Pink Noise Filter)
-                b0 = 0.99886 * b0 + white * 0.0555179;
-                b1 = 0.99332 * b1 + white * 0.0750759;
-                b2 = 0.96900 * b2 + white * 0.1538520;
-                b3 = 0.86650 * b3 + white * 0.3104856;
-                b4 = 0.55000 * b4 + white * 0.5329522;
-                b5 = -0.7616 * b5 - white * 0.0168980;
-                output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
-                b6 = white * 0.115926;
-            }
-
-            // 循環播放噪聲源
-            const whiteNoise = ctx.createBufferSource();
-            whiteNoise.buffer = noiseBuffer;
-            whiteNoise.loop = true;
-
-            // 低通濾波器 (水流主體厚度)
-            const lowpass = ctx.createBiquadFilter();
-            lowpass.type = 'lowpass';
-            lowpass.frequency.setValueAtTime(1400, ctx.currentTime);
-
-            // 帶通濾波器 (蓮蓬頭細緻水花噴灑聲)
-            const bandpass = ctx.createBiquadFilter();
-            bandpass.type = 'bandpass';
-            bandpass.frequency.setValueAtTime(2600, ctx.currentTime);
-            bandpass.Q.setValueAtTime(1.2, ctx.currentTime);
-
-            // 音量控制 (充足音量，洗澡水花聲清晰響亮)
-            const gainNode = ctx.createGain();
-            gainNode.gain.setValueAtTime(0.05, ctx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.85, ctx.currentTime + 0.2); // 平滑淡入至 85% 音量
-
-            // LFO 水流波動感 (模擬水花沖擊的自然起伏)
-            const lfo = ctx.createOscillator();
-            lfo.frequency.setValueAtTime(3.0, ctx.currentTime);
-            const lfoGain = ctx.createGain();
-            lfoGain.gain.setValueAtTime(0.06, ctx.currentTime);
-            lfo.connect(lfoGain);
-            lfoGain.connect(gainNode.gain);
-            lfo.start();
-
-            // 連接音訊路由
-            whiteNoise.connect(lowpass);
-            lowpass.connect(bandpass);
-            bandpass.connect(gainNode);
-            gainNode.connect(ctx.destination);
-
-            whiteNoise.start();
-
-            showerNodes = {
-                source: whiteNoise,
-                lfo: lfo,
-                gain: gainNode
-            };
-        } catch (e) {
-            console.warn('Audio play error:', e);
-        }
-    }
-
-    function stopWaterShowerSound() {
-        if (!showerNodes || !audioCtx) return;
-        try {
-            const curGain = showerNodes.gain;
-            const curSource = showerNodes.source;
-            const curLfo = showerNodes.lfo;
-            showerNodes = null;
-
-            // 平滑淡出 0.3 秒
-            curGain.gain.setValueAtTime(curGain.gain.value, audioCtx.currentTime);
-            curGain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-            setTimeout(() => {
-                try {
-                    curSource.stop();
-                    curLfo.stop();
-                    curSource.disconnect();
-                } catch (err) {}
-            }, 350);
-        } catch (e) {}
-    }
-
-    // 鎖定 / 解鎖所有互動按鈕
+    // 保持按鈕永遠可點擊，不鎖死
     function setButtonsDisabled(disabled) {
-        const panel = document.getElementById('interaction-panel');
-        if (!panel) return;
-        panel.querySelectorAll('button').forEach(btn => {
-            btn.disabled = disabled;
-            btn.style.opacity = disabled ? '0.5' : '1';
-            btn.style.cursor = disabled ? 'not-allowed' : 'pointer';
-        });
+        // 不鎖定任何按鈕
     }
 
-    // 立即有聲播放（手勢內觸發，確保瀏覽器授權放出聲音）
-    function playVideo(src, loop = false, withSound = false) {
+    // 純靜音秒播
+    function playVideo(src, loop = false) {
         video.loop = loop;
         video.playsInline = true;
-        video.muted = !withSound;
-        if (withSound) {
-            video.volume = 1.0;
-        }
+        video.muted = true;
 
         const cur = video.currentSrc || video.src || '';
         if (cur.endsWith(src) && !video.paused) {
@@ -690,19 +565,10 @@
 
         const p = video.play();
         if (p !== undefined) {
-            p.catch(err => {
-                console.warn('Play error:', err);
-                // 萬一瀏覽器阻擋有聲播放，自動轉為靜音繼續播放
-                if (!video.muted) {
-                    video.muted = true;
-                    video.play().catch(e => console.warn('Muted play error:', e));
-                }
-            });
+            p.catch(err => console.warn('Play error:', err));
         }
 
-        video.onerror = (e) => {
-            video.onerror = null;
-            console.warn('Video load error on:', src, e);
+        video.onerror = () => {
             if (currentAction !== 'default') {
                 resetToStandby();
             }
@@ -716,20 +582,16 @@
             safetyTimeout = null;
         }
         currentAction = 'default';
-        stopWaterShowerSound();
         if (thoughtBubble) thoughtBubble.textContent = thoughtMessages.default;
 
-        playVideo('dogbreak.mp4', true, false);
-
+        playVideo('dogbreak.mp4', true);
         isActionBusy = false;
-        setButtonsDisabled(false);
     }
 
     // 主要動作函式
     function doAction(action) {
         if (isActionBusy) return;
         isActionBusy = true;
-        setButtonsDisabled(true);
 
         currentAction = action;
 
@@ -743,13 +605,6 @@
         if (action === 'dress')      pet.accessory = (pet.accessory === 'none' ? 'hat' : 'none');
         updateStatus();
 
-        // 洗澡播放淋浴水流聲
-        if (action === 'bath') {
-            playWaterShowerSound();
-        } else {
-            stopWaterShowerSound();
-        }
-
         // 取得下一個輪播影片
         const selectedVideo = getNextVideo(action);
 
@@ -758,16 +613,21 @@
             thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
         }
 
-        // 切換影片並播放（按鈕觸發有聲音）
-        playVideo(selectedVideo, false, true);
+        // 切換影片並播放（靜音）
+        playVideo(selectedVideo, false);
 
-        // 安全計時器（20秒自動解鎖）
+        // 300ms 短暫防連點
+        setTimeout(() => {
+            isActionBusy = false;
+        }, 300);
+
+        // 安全計時器（5秒自動回待機）
         if (safetyTimeout) clearTimeout(safetyTimeout);
         safetyTimeout = setTimeout(() => {
             if (currentAction !== 'default') {
                 resetToStandby();
             }
-        }, 20000);
+        }, 5000);
     }
 
     // 動態生成 9 顆互動按鈕
