@@ -1513,6 +1513,8 @@
         object-fit: cover !important;
         display: block !important;
         border-radius: 8px !important;
+        transform: translateZ(0); /* 啟用硬體 GPU 加速，徹底解決卡頓 */
+        will-change: transform;
     }
     .pet-speech-bubble {
         width: 100%;
@@ -2998,7 +3000,7 @@
             </div>
 
             <div id="video-overlay" class="video-overlay">
-                <video id="pet-video-player" src="dogbreak.mp4" autoplay muted loop playsinline preload="auto"></video>
+                <video id="pet-video-player" src="dogbreak.mp4" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>
                 <div id="accessory-display" class="accessory"></div>
             </div>
 
@@ -5952,11 +5954,15 @@ window.addEventListener('load', () => {
         v.playsInline = true;
         const p = v.play();
         if (p !== undefined) {
-            p.catch(err => console.warn('Play error:', err));
+            p.catch(err => {
+                console.warn('Play error:', err);
+                v.muted = true;
+                v.play().catch(() => {});
+            });
         }
     }
 
-    // 切換動作影片（不強制 load，不 pause，直接指派 src 秒播）
+    // 切換動作影片（直接指派 src 秒播）
     function playActionVideo(src) {
         if (!src) return;
 
@@ -5967,6 +5973,7 @@ window.addEventListener('load', () => {
 
         video.loop = false;
         video.muted = true;
+        video.playsInline = true;
         video.src = src;
         safePlay(video);
     }
@@ -5987,9 +5994,11 @@ window.addEventListener('load', () => {
         const currentSrc = video.currentSrc || video.src || '';
         if (!currentSrc.includes('dogbreak.mp4')) {
             video.src = 'dogbreak.mp4';
+            safePlay(video);
+        } else if (video.paused) {
+            safePlay(video);
         }
 
-        safePlay(video);
         isActionBusy = false;
     }
 
@@ -6018,12 +6027,12 @@ window.addEventListener('load', () => {
 
         playActionVideo(selectedVideo);
 
-        // 只短暫防手抖 300 毫秒，之後立刻解鎖，隨時想按其他動作都能馬上切換！
+        // 短暫防連點 250 毫秒，立即解鎖！
         setTimeout(() => {
             isActionBusy = false;
-        }, 300);
+        }, 250);
 
-        // 安全計時器（縮短為 5 秒，影片播完或超時自動回待機）
+        // 安全計時器（5 秒後若未正常結束自動回待機）
         if (safetyTimeout) clearTimeout(safetyTimeout);
         safetyTimeout = setTimeout(() => {
             if (currentAction !== 'default') {
@@ -6054,17 +6063,34 @@ window.addEventListener('load', () => {
 
         video.loop = true;
         video.muted = true;
-        video.src = 'dogbreak.mp4';
-        safePlay(video);
+        video.playsInline = true;
 
+        // 如果影片尚未起播才觸發 safePlay，不打斷現有串流
+        const currentSrc = video.currentSrc || video.src || '';
+        if (!currentSrc.includes('dogbreak.mp4')) {
+            video.src = 'dogbreak.mp4';
+        }
+        if (video.paused) {
+            safePlay(video);
+        }
+
+        // 播完自動回待機
         video.addEventListener('ended', () => {
             resetToStandby();
         });
 
+        // 發生錯誤時回待機
         video.addEventListener('error', () => {
             console.warn('影片播放中斷，自動回到待機狀態');
             resetToStandby();
         });
+
+        // 首次觸碰/點擊任意處喚醒（針對極端瀏覽器背景自動播放攔截）
+        document.addEventListener('pointerdown', () => {
+            if (video && video.paused && currentAction === 'default') {
+                video.play().catch(() => {});
+            }
+        }, { once: true });
     }
 
     if (document.readyState === 'loading') {
