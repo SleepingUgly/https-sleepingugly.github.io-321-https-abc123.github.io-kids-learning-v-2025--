@@ -1501,17 +1501,16 @@
         overflow: hidden !important;
         border-radius: 12px !important;
         border: 2px solid #dab514 !important;
-        background: url('petinthelivingroom1b.jpg') center/cover no-repeat !important;
         background-color: #fae5b8 !important;
         box-sizing: border-box !important;
         margin-bottom: 8px !important;
     }
-    #pet-video-player {
+    #pet-video-player,
+    #pet-standby-image {
         width: 100% !important;
         max-width: 100% !important;
         height: 100% !important;
         object-fit: cover !important;
-        display: block !important;
         border-radius: 8px !important;
         transform: translateZ(0);
     }
@@ -6906,7 +6905,6 @@ window.addEventListener('load', () => {
             video.volume = isPetMuted ? 0 : 1.0;
             const targetSrc = getRandomVideo(action);
             video.src = targetSrc;
-            video.currentTime = 0;
             video.play().catch(e => console.log('播放被阻擋:', e));
         }
     }

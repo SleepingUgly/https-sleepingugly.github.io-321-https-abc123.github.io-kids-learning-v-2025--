@@ -692,7 +692,6 @@
             video.volume = isPetMuted ? 0 : 1.0;
             const targetSrc = getRandomVideo(action);
             video.src = targetSrc;
-            video.currentTime = 0;
             video.play().catch(e => console.log('播放被阻擋:', e));
         }
     }
