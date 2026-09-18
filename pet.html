@@ -621,13 +621,13 @@
             isActionBusy = false;
         }, 300);
 
-        // 安全計時器（5秒自動回待機）
+        // 安全計時器（25秒自動回待機）
         if (safetyTimeout) clearTimeout(safetyTimeout);
         safetyTimeout = setTimeout(() => {
             if (currentAction !== 'default') {
                 resetToStandby();
             }
-        }, 5000);
+        }, 25000);
     }
 
     // 動態生成 9 顆互動按鈕
