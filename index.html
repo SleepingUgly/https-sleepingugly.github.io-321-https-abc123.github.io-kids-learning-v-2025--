@@ -6030,9 +6030,21 @@ window.addEventListener('load', () => {
         updateStatus();
 
         if (video) {
-            video.src = getRandomVideo(action);
-            video.currentTime = 0;
-            video.play().catch(e => console.log('播放受阻:', e));
+            const nextSrc = getRandomVideo(action);
+            video.loop = false; // 動作影片不循環，播完才能觸發 onended 回到待機
+            video.muted = true;
+            video.playsInline = true;
+
+            const onCanPlay = () => {
+                video.removeEventListener('canplay', onCanPlay);
+                video.play().catch(e => console.log('播放受阻:', e));
+            };
+            video.addEventListener('canplay', onCanPlay, { once: true });
+
+            video.src = nextSrc;
+            if (video.readyState >= 2) {
+                video.play().catch(e => console.log('播放受阻:', e));
+            }
         }
     }
 
@@ -6052,6 +6064,7 @@ window.addEventListener('load', () => {
 
     if (video) {
         video.onended = () => {
+            video.loop = true; // 待機影片循環播放
             video.src = getRandomVideo('default');
             video.play().catch(e => console.log('循環播放受阻:', e));
         };
@@ -6061,6 +6074,9 @@ window.addEventListener('load', () => {
         createButtons();
         updateStatus();
         if (video) {
+            video.loop = true;
+            video.muted = true;
+            video.playsInline = true;
             video.src = getRandomVideo('default');
             video.play().catch(e => console.log('自動播放受阻:', e));
         }
