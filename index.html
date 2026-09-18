@@ -1259,6 +1259,151 @@
         text-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
 
+    /* ========================================================== */
+    /* 🌐 國際地球村 · 全站多國語言伸縮抽屜 (Global Language Drawer) */
+    /* ========================================================== */
+    .lang-drawer-container {
+        width: 100%;
+        margin-bottom: 14px;
+        background: #ffffff;
+        border: 2.5px solid #dab514;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+    .lang-drawer-toggle {
+        width: 100%;
+        padding: 9px 10px;
+        background: linear-gradient(135deg, #fff9e6 0%, #ffecb3 100%);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-align: left;
+        outline: none;
+        user-select: none;
+        transition: background 0.2s ease;
+        box-sizing: border-box;
+    }
+    .lang-drawer-toggle:hover {
+        background: linear-gradient(135deg, #ffecb3 0%, #ffe082 100%);
+    }
+    .lang-toggle-left {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+    .lang-toggle-header {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 13.5px;
+        font-weight: 900;
+        color: #433527;
+        line-height: 1.2;
+    }
+    .lang-current-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        font-weight: 900;
+        color: #b7791f;
+        background: #ffffff;
+        padding: 2px 7px;
+        border-radius: 20px;
+        border: 1px solid #ecc94b;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        width: fit-content;
+    }
+    .lang-toggle-arrow {
+        font-size: 11px;
+        font-weight: 900;
+        color: #744210;
+        background: #ffffff;
+        padding: 4px 8px;
+        border-radius: 10px;
+        border: 1px solid #cbd5e0;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+    .lang-drawer-body {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, padding 0.3s ease;
+        background: #ffffff;
+        padding: 0 8px;
+        box-sizing: border-box;
+    }
+    .lang-drawer-container.open .lang-drawer-body {
+        max-height: 380px;
+        opacity: 1;
+        padding: 10px 8px 12px;
+        border-top: 1.5px dashed #ecc94b;
+    }
+    .lang-drawer-container.open .lang-toggle-arrow {
+        transform: rotate(180deg);
+        background: #feebc8;
+        color: #c05621;
+        border-color: #f6ad55;
+    }
+
+    /* 9 國語言按鈕網格 (3 欄排列，自適應) */
+    .lang-grid-panel {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+    .lang-btn {
+        padding: 7px 3px;
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 9px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        transition: all 0.15s ease;
+        outline: none;
+        user-select: none;
+        min-height: 52px;
+    }
+    .lang-btn:hover {
+        background: #fffaf0;
+        border-color: #dd6b20;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 6px rgba(221, 107, 32, 0.2);
+    }
+    .lang-btn.active {
+        background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%) !important;
+        border: 2px solid #dd6b20 !important;
+        box-shadow: 0 2px 8px rgba(221, 107, 32, 0.3) !important;
+    }
+    .lang-btn .flag-icon {
+        font-size: 19px;
+        line-height: 1;
+    }
+    .lang-btn .lang-name {
+        font-size: 12px;
+        font-weight: 900;
+        color: #2d3748;
+        line-height: 1.1;
+        text-align: center;
+    }
+    .lang-btn.active .lang-name {
+        color: #c05621;
+    }
+    .lang-btn .lang-sub {
+        font-size: 9.5px;
+        color: #718096;
+        line-height: 1;
+    }
+
     /* 1. 溫暖閱讀 · 每日小故事 (圖一 經典焦糖黃 + 左側金黃標題線) */
     .reading-module {
         background-color: #eeb677 !important;
@@ -3343,6 +3488,73 @@
 </div>
   <div class="guardian-hub">
     <h2 class="hub-title">乙太通訊中心</h2>
+
+    <!-- ==================== 🌐 國際地球村 · 全站多國語言伸縮抽屜 (Global Language Drawer) ==================== -->
+    <div class="lang-drawer-container" id="global-lang-drawer-wrapper">
+        <button class="lang-drawer-toggle" id="lang-drawer-toggle-btn" onclick="toggleLangDrawer()" type="button" aria-expanded="false" title="點擊展開/收合多國語言選單 · Click to Choose Language">
+            <div class="lang-toggle-left">
+                <div class="lang-toggle-header">
+                    <span>🌐 國際地球村 · 語言切換</span>
+                </div>
+                <div class="lang-current-pill" id="lang-current-badge">
+                    <span>🇹🇼</span> <span>繁體中文</span>
+                </div>
+            </div>
+            <div class="lang-toggle-arrow" id="lang-toggle-arrow">
+                ▼ 選擇國家
+            </div>
+        </button>
+        <div class="lang-drawer-body" id="lang-drawer-body">
+            <div class="lang-grid-panel" id="lang-grid-panel">
+                <button class="lang-btn active" id="lbtn-zh-TW" onclick="setGlobalLanguage('zh-TW')">
+                    <span class="flag-icon">🇹🇼</span>
+                    <span class="lang-name">繁體中文</span>
+                    <small class="lang-sub">Traditional</small>
+                </button>
+                <button class="lang-btn" id="lbtn-zh-CN" onclick="setGlobalLanguage('zh-CN')">
+                    <span class="flag-icon">🇨🇳</span>
+                    <span class="lang-name">简体中文</span>
+                    <small class="lang-sub">Simplified</small>
+                </button>
+                <button class="lang-btn" id="lbtn-en" onclick="setGlobalLanguage('en')">
+                    <span class="flag-icon">🇺🇸</span>
+                    <span class="lang-name">English</span>
+                    <small class="lang-sub">英語</small>
+                </button>
+                <button class="lang-btn" id="lbtn-ja" onclick="setGlobalLanguage('ja')">
+                    <span class="flag-icon">🇯🇵</span>
+                    <span class="lang-name">日本語</span>
+                    <small class="lang-sub">にほんご</small>
+                </button>
+                <button class="lang-btn" id="lbtn-ko" onclick="setGlobalLanguage('ko')">
+                    <span class="flag-icon">🇰🇷</span>
+                    <span class="lang-name">한국어</span>
+                    <small class="lang-sub">韓語</small>
+                </button>
+                <button class="lang-btn" id="lbtn-fr" onclick="setGlobalLanguage('fr')">
+                    <span class="flag-icon">🇫🇷</span>
+                    <span class="lang-name">Français</span>
+                    <small class="lang-sub">法語</small>
+                </button>
+                <button class="lang-btn" id="lbtn-es" onclick="setGlobalLanguage('es')">
+                    <span class="flag-icon">🇪🇸</span>
+                    <span class="lang-name">Español</span>
+                    <small class="lang-sub">西語</small>
+                </button>
+                <button class="lang-btn" id="lbtn-de" onclick="setGlobalLanguage('de')">
+                    <span class="flag-icon">🇩🇪</span>
+                    <span class="lang-name">Deutsch</span>
+                    <small class="lang-sub">德語</small>
+                </button>
+                <button class="lang-btn" id="lbtn-ar" onclick="setGlobalLanguage('ar')">
+                    <span class="flag-icon">🇸🇦</span>
+                    <span class="lang-name">العربية</span>
+                    <small class="lang-sub">阿拉伯語</small>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 100篇小故事 -->
     <div class="module reading-module">
         <div class="reading-header">
@@ -4472,23 +4684,443 @@
     "Through underground mycorrhizal networks, forest trees share nutrients and support neighboring trees."
 ];
 
+    // =========================================================================================
+    // =================== [ 🌐 國際地球村 · 全站多國語言統一聯動核心引擎 (Global I18N) ] ===================
+    // =========================================================================================
+
+    let currentGlobalLang = localStorage.getItem('kids_global_lang') || 'zh-TW';
+
+    const GLOBAL_I18N = {
+        'zh-TW': {
+            name: '繁體中文',
+            flag: '🇹🇼',
+            sub: 'Traditional',
+            speechLang: 'zh-TW',
+            dir: 'ltr',
+            petButtons: {
+                feed:      '肚子餓<span class="btn-sub">hungry</span>',
+                water:     '喝水水<span class="btn-sub">thirsty</span>',
+                pet:       '摸摸<span class="btn-sub">pet me</span>',
+                bath:      '洗澡澡<span class="btn-sub">shower</span>',
+                clean_poo: '清理便便<span class="btn-sub">poop</span>',
+                heal:      '看醫生<span class="btn-sub">sick</span>',
+                out:       '出去玩<span class="btn-sub">go out</span>',
+                watch:     '看監視器<span class="btn-sub">check camera</span>',
+                dress:     '換裝扮<span class="btn-sub">styles</span>'
+            },
+            storyHeader: '閱讀小故事',
+            nextStoryBtn: '✨ 換下一則故事 ➡️',
+            vocabLangName: '繁體中文',
+            vocabTranslateMap: {
+                '太陽': 'Sun', '衣服': 'Clothes', '外套': 'Coat', '蘋果': 'Apple', '小狗': 'Puppy',
+                '小貓': 'Kitten', '月亮': 'Moon', '星星': 'Star', '雨傘': 'Umbrella', '水果': 'Fruit',
+                '樹木': 'Tree', '花朵': 'Flower', '小鳥': 'Bird', '兔子': 'Rabbit', '蝴蝶': 'Butterfly',
+                '大象': 'Elephant', '獅子': 'Lion', '長頸鹿': 'Giraffe', '熊貓': 'Panda', '猴子': 'Monkey',
+                '書本': 'Book', '鉛筆': 'Pencil', '彩虹': 'Rainbow', '汽車': 'Car', '飛機': 'Airplane',
+                '紅色': 'Red', '黃色': 'Yellow', '藍色': 'Blue', '綠色': 'Green', '香蕉': 'Banana'
+            }
+        },
+        'zh-CN': {
+            name: '简体中文',
+            flag: '🇨🇳',
+            sub: 'Simplified',
+            speechLang: 'zh-CN',
+            dir: 'ltr',
+            petButtons: {
+                feed:      '肚子饿<span class="btn-sub">hungry</span>',
+                water:     '喝水水<span class="btn-sub">thirsty</span>',
+                pet:       '摸摸头<span class="btn-sub">pet me</span>',
+                bath:      '洗香香<span class="btn-sub">shower</span>',
+                clean_poo: '清理便便<span class="btn-sub">poop</span>',
+                heal:      '看医生<span class="btn-sub">sick</span>',
+                out:       '出去玩<span class="btn-sub">go out</span>',
+                watch:     '看监控<span class="btn-sub">check camera</span>',
+                dress:     '换装扮<span class="btn-sub">styles</span>'
+            },
+            storyHeader: '阅读小故事',
+            nextStoryBtn: '✨ 换下一则故事 ➡️',
+            vocabLangName: '简体中文',
+            vocabTranslateMap: {
+                '太陽': '太阳', '衣服': '衣服', '外套': '外套', '蘋果': '苹果', '小狗': '小狗',
+                '小貓': '小猫', '月亮': '月亮', '星星': '星星', '雨傘': '雨伞', '水果': '水果',
+                '樹木': '树木', '花朵': '花朵', '小鳥': '小鸟', '兔子': '兔子', '蝴蝶': '蝴蝶',
+                '大象': '大象', '獅子': '狮子', '長頸鹿': '长颈鹿', '熊貓': '熊猫', '猴子': '猴子',
+                '書本': '书本', '鉛筆': '铅笔', '彩虹': '彩虹', '汽車': '汽车', '飛機': '飞机',
+                '紅色': '红色', '黃色': '黄色', '藍色': '蓝色', '綠色': '绿色', '香蕉': '香蕉'
+            }
+        },
+        'en': {
+            name: 'English',
+            flag: '🇺🇸',
+            sub: '英語',
+            speechLang: 'en-US',
+            dir: 'ltr',
+            petButtons: {
+                feed:      '肚子餓<span class="btn-sub">Hungry</span>',
+                water:     '喝水水<span class="btn-sub">Thirsty</span>',
+                pet:       '摸摸<span class="btn-sub">Pet Me</span>',
+                bath:      '洗澡澡<span class="btn-sub">Shower</span>',
+                clean_poo: '清理便便<span class="btn-sub">Poop</span>',
+                heal:      '看醫生<span class="btn-sub">See Doctor</span>',
+                out:       '出去玩<span class="btn-sub">Go Outside</span>',
+                watch:     '看監視器<span class="btn-sub">Check Camera</span>',
+                dress:     '換裝扮<span class="btn-sub">Dress Up</span>'
+            },
+            storyHeader: 'Warm Stories',
+            nextStoryBtn: '✨ Next Story ➡️',
+            vocabLangName: 'English',
+            vocabTranslateMap: {
+                '太陽': 'Sun', '衣服': 'Clothes', '外套': 'Coat', '蘋果': 'Apple', '小狗': 'Puppy',
+                '小貓': 'Kitten', '月亮': 'Moon', '星星': 'Star', '雨傘': 'Umbrella', '水果': 'Fruit',
+                '樹木': 'Tree', '花朵': 'Flower', '小鳥': 'Bird', '兔子': 'Rabbit', '蝴蝶': 'Butterfly',
+                '大象': 'Elephant', '獅子': 'Lion', '長頸鹿': 'Giraffe', '熊貓': 'Panda', '猴子': 'Monkey',
+                '書本': 'Book', '鉛筆': 'Pencil', '彩虹': 'Rainbow', '汽車': 'Car', '飛機': 'Airplane',
+                '紅色': 'Red', '黃色': 'Yellow', '藍色': 'Blue', '綠色': 'Green', '香蕉': 'Banana'
+            }
+        },
+        'ja': {
+            name: '日本語',
+            flag: '🇯🇵',
+            sub: 'にほんご',
+            speechLang: 'ja-JP',
+            dir: 'ltr',
+            petButtons: {
+                feed:      '肚子餓<span class="btn-sub">お腹すいた</span>',
+                water:     '喝水水<span class="btn-sub">お水飲む</span>',
+                pet:       '摸摸<span class="btn-sub">なでなで</span>',
+                bath:      '洗澡澡<span class="btn-sub">お風呂</span>',
+                clean_poo: '清理便便<span class="btn-sub">うんち掃除</span>',
+                heal:      '看醫生<span class="btn-sub">お医者さん</span>',
+                out:       '出去玩<span class="btn-sub">お散歩行く</span>',
+                watch:     '看監視器<span class="btn-sub">カメラ見る</span>',
+                dress:     '換裝扮<span class="btn-sub">お着替え</span>'
+            },
+            storyHeader: 'お話の時間',
+            nextStoryBtn: '✨ 次のお話へ ➡️',
+            vocabLangName: '日本語',
+            vocabTranslateMap: {
+                '太陽': 'たいよう (Sun)', '衣服': 'ふく (Clothes)', '外套': 'コート (Coat)', '蘋果': 'りんご (Apple)', '小狗': 'こいぬ (Puppy)',
+                '小貓': 'こねこ (Kitten)', '月亮': 'つき (Moon)', '星星': 'ほし (Star)', '雨傘': 'かさ (Umbrella)', '水果': 'くだもの (Fruit)',
+                '樹木': 'き (Tree)', '花朵': 'はな (Flower)', '小鳥': 'とり (Bird)', '兔子': 'うさぎ (Rabbit)', '蝴蝶': 'ちょうちょ (Butterfly)',
+                '大象': 'ぞう (Elephant)', '獅子': 'ライオン (Lion)', '長頸鹿': 'キリン (Giraffe)', '熊貓': 'パンダ (Panda)', '猴子': 'さる (Monkey)',
+                '書本': 'ほん (Book)', '鉛筆': 'えんぴつ (Pencil)', '彩虹': 'にじ (Rainbow)', '汽車': 'くるま (Car)', '飛機': 'ひこうき (Airplane)',
+                '紅色': 'あか (Red)', '黃色': 'きいろ (Yellow)', '藍色': 'あお (Blue)', '綠色': 'みどり (Green)', '香蕉': 'バナナ (Banana)'
+            },
+            stories: [
+                "音は空気がダンスしているんだよ！静かに耳をすますと、風や葉っぱ、心臓のドキドキが歌っているのが聞こえるね。",
+                "太陽は毎朝早起きして、あたたかい光と元気を届けてくれます。早寝早起きが一番健康のひけつ！",
+                "水は高いところから低いところへすべり台のように流れていきます。蛇口はしっかりしめようね！",
+                "虹はお日様の光が雨のしずくで７色に光る魔法です。見つけたら色をかぞえてみよう！",
+                "木は根っこをストローのようにして水を飲み、新鮮な空気をくれます。木は地球の緑の肺なんだよ。",
+                "友達とおもちゃを仲良く分かち合うと、楽しさは２倍になって素敵な思い出になるよ。",
+                "「手伝うよ」のやさしい言葉はみんなの心をつなぐメロディ。思いやりを世界中に広げよう！",
+                "ホタルはあたたかい夜空で光りながら、やさしい光でお友達とお話ししているんだよ。",
+                "どんな時でも笑顔でいると、明日にはもっとたくさんの嬉しいことが咲きほこるよ。",
+                "「ゆっくりで大丈夫だよ」の言葉は、心をホッと落ち着かせてくれる魔法のハグです。"
+            ]
+        },
+        'ko': {
+            name: '한국어',
+            flag: '🇰🇷',
+            sub: '韓語',
+            speechLang: 'ko-KR',
+            dir: 'ltr',
+            petButtons: {
+                feed:      '肚子餓<span class="btn-sub">배고파요</span>',
+                water:     '喝水水<span class="btn-sub">물 마셔요</span>',
+                pet:       '摸摸<span class="btn-sub">쓰다듬기</span>',
+                bath:      '洗澡澡<span class="btn-sub">목욕하자</span>',
+                clean_poo: '清理便便<span class="btn-sub">똥 치우기</span>',
+                heal:      '看醫生<span class="btn-sub">병원 가요</span>',
+                out:       '出去玩<span class="btn-sub">놀러 가기</span>',
+                watch:     '看監視器<span class="btn-sub">CCTV 보기</span>',
+                dress:     '換裝扮<span class="btn-sub">옷 입히기</span>'
+            },
+            storyHeader: '따뜻한 이야기',
+            nextStoryBtn: '✨ 다음 이야기 ➡️',
+            vocabLangName: '한국어',
+            vocabTranslateMap: {
+                '太陽': '태양 (Sun)', '衣服': '옷 (Clothes)', '外套': '외투 (Coat)', '蘋果': '사과 (Apple)', '小狗': '강아지 (Puppy)',
+                '小貓': '고양이 (Kitten)', '月亮': '달 (Moon)', '星星': '별 (Star)', '雨傘': '우산 (Umbrella)', '水果': '과일 (Fruit)',
+                '樹木': '나무 (Tree)', '花朵': '꽃 (Flower)', '小鳥': '새 (Bird)', '兔子': '토끼 (Rabbit)', '蝴蝶': '나비 (Butterfly)',
+                '大象': '코끼리 (Elephant)', '獅子': '사자 (Lion)', '長頸鹿': '기린 (Giraffe)', '熊貓': '판다 (Panda)', '猴子': '원숭이 (Monkey)',
+                '書本': '책 (Book)', '鉛筆': '연필 (Pencil)', '彩虹': '무지개 (Rainbow)', '汽車': '자동차 (Car)', '飛機': '비행기 (Airplane)',
+                '紅色': '빨간색 (Red)', '黃色': '노란색 (Yellow)', '藍色': '파란색 (Blue)', '綠色': '초록색 (Green)', '香蕉': '바나나 (Banana)'
+            },
+            stories: [
+                "소리는 공기가 춤을 추는 거예요! 가만히 귀 기울이면 바람, 나뭇잎, 그리고 콩닥콩닥 심장 소리가 노래하는 게 들려요.",
+                "태양은 매일 아침 일찍 일어나 따뜻한 빛과 에너지를 선물해요. 일찍 자고 일찍 일어나는 어린이가 건강해요!",
+                "물은 높은 곳에서 낮은 곳으로 미끄럼틀처럼 흘러가요. 수도꼭지는 꼭 잠그기로 약속해요!",
+                "무지개는 햇빛이 빗방울을 만나 일곱 가지 예쁜 색으로 변하는 자연의 마술이에요.",
+                "나무는 빨대 같은 뿌리로 물을 마시고 우리에게 맑은 공기를 선물해 줘요.",
+                "친구와 장난감을 나누어 쓰면 웃음도 기쁨도 두 배가 돼요.",
+                "'내가 도와줄게'라는 다정한 한마디는 모두의 마음을 따뜻하게 이어주는 마법이에요.",
+                "반딧불이는 따뜻한 밤하늘에서 반짝이며 사랑스러운 빛으로 친구들과 이야기해요.",
+                "오늘 지은 밝은 미소는 내일 더 큰 행복과 기쁨의 꽃으로 피어난답니다.",
+                "'천천히 해도 괜찮아'라는 말은 마음을 편안하게 안아주는 따스한 위로예요."
+            ]
+        },
+        'fr': {
+            name: 'Français',
+            flag: '🇫🇷',
+            sub: '法語',
+            speechLang: 'fr-FR',
+            dir: 'ltr',
+            petButtons: {
+                feed:      '肚子餓<span class="btn-sub">J\'ai faim</span>',
+                water:     '喝水水<span class="btn-sub">Boire l\'eau</span>',
+                pet:       '摸摸<span class="btn-sub">Faire câlin</span>',
+                bath:      '洗澡澡<span class="btn-sub">Prendre bain</span>',
+                clean_poo: '清理便便<span class="btn-sub">Nettoyer</span>',
+                heal:      '看醫生<span class="btn-sub">Chez docteur</span>',
+                out:       '出去玩<span class="btn-sub">Se promener</span>',
+                watch:     '看監視器<span class="btn-sub">Voir caméra</span>',
+                dress:     '換裝扮<span class="btn-sub">Habiller</span>'
+            },
+            storyHeader: 'Petite Histoire',
+            nextStoryBtn: '✨ Histoire suivante ➡️',
+            vocabLangName: 'Français',
+            vocabTranslateMap: {
+                '太陽': 'Soleil (Sun)', '衣服': 'Vêtements', '外套': 'Manteau', '蘋果': 'Pomme', '小狗': 'Chiot',
+                '小貓': 'Chaton', '月亮': 'Lune', '星星': 'Étoile', '雨傘': 'Parapluie', '水果': 'Fruit',
+                '樹木': 'Arbre', '花朵': 'Fleur', '小鳥': 'Oiseau', '兔子': 'Lapin', '蝴蝶': 'Papillon',
+                '大象': 'Éléphant', '獅子': 'Lion', '長頸鹿': 'Girafe', '熊貓': 'Panda', '猴子': 'Singe',
+                '書本': 'Livre', '鉛筆': 'Crayon', '彩虹': 'Arc-en-ciel', '汽車': 'Voiture', '飛機': 'Avion',
+                '紅色': 'Rouge', '黃色': 'Jaune', '藍色': 'Bleu', '綠色': 'Vert', '香蕉': 'Banane'
+            },
+            stories: [
+                "Le son, c'est l'air qui danse ! En écoutant doucement, tu peux entendre le vent, les feuilles et ton cœur chanter.",
+                "Le soleil se lève tôt chaque matin pour nous offrir sa douce lumière et sa chaleur bienfaisante.",
+                "L'eau coule du haut vers le bas comme un toboggan magique. N'oublie pas de bien fermer le robinet !",
+                "L'arc-en-ciel est un magnifique spectacle où la lumière du soleil danse à travers les gouttes de pluie.",
+                "Les arbres boivent de l'eau avec leurs racines et nous offrent de l'air pur pour respirer.",
+                "Partager un jouet avec un ami double instantanément les rires et la joie de grandir.",
+                "Dire 'je peux t'aider' est une jolie mélodie qui sème de la douceur partout autour de nous.",
+                "Les lucioles brillent dans la nuit tiède pour communiquer et veiller sur la nature avec tendresse.",
+                "Chaque sourire sincère aujourd'hui est une graine de bonheur qui fleurira demain.",
+                "'Prends ton temps, tout va bien' est un doux câlin pour apaiser ton cœur et retrouver le calme."
+            ]
+        },
+        'es': {
+            name: 'Español',
+            flag: '🇪🇸',
+            sub: '西語',
+            speechLang: 'es-ES',
+            dir: 'ltr',
+            petButtons: {
+                feed:      '肚子餓<span class="btn-sub">Tengo hambre</span>',
+                water:     '喝水水<span class="btn-sub">Beber agua</span>',
+                pet:       '摸摸<span class="btn-sub">Acaríciame</span>',
+                bath:      '洗澡澡<span class="btn-sub">Bañar</span>',
+                clean_poo: '清理便便<span class="btn-sub">Limpiar</span>',
+                heal:      '看醫生<span class="btn-sub">Ir al médico</span>',
+                out:       '出去玩<span class="btn-sub">Ir al parque</span>',
+                watch:     '看監視器<span class="btn-sub">Ver cámara</span>',
+                dress:     '換裝扮<span class="btn-sub">Disfrazar</span>'
+            },
+            storyHeader: 'Cuentos Lindos',
+            nextStoryBtn: '✨ Siguiente historia ➡️',
+            vocabLangName: 'Español',
+            vocabTranslateMap: {
+                '太陽': 'Sol (Sun)', '衣服': 'Ropa', '外套': 'Abrigo', '蘋果': 'Manzana', '小狗': 'Perrito',
+                '小貓': 'Gatito', '月亮': 'Luna', '星星': 'Estrella', '雨傘': 'Paraguas', '水果': 'Fruta',
+                '樹木': 'Árbol', '花朵': 'Flor', '小鳥': 'Pájaro', '兔子': 'Conejo', '蝴蝶': 'Mariposa',
+                '大象': 'Elefante', '獅子': 'León', '長頸鹿': 'Jirafa', '熊貓': 'Panda', '猴子': 'Mono',
+                '書本': 'Libro', '鉛筆': 'Lápiz', '彩虹': 'Arcoíris', '汽車': 'Coche', '飛機': 'Avión',
+                '紅色': 'Rojo', '黃色': 'Amarillo', '藍色': 'Azul', '綠色': 'Verde', '香蕉': 'Plátano'
+            },
+            stories: [
+                "¡El sonido es el aire bailando! Si te quedas en silencio, escucharás al viento, a las hojas y a tu corazón cantar.",
+                "El sol se despierta puntual cada mañana para regalarnos su luz y su calor. ¡Dormir temprano nos hace fuertes y felices!",
+                "El agua fluye hacia abajo como en un toboggan divertido. ¡Recuerda siempre cerrar bien el grifo!",
+                "El arcoíris es la luz del sol jugando con las gotas de lluvia para pintar siete hermosos colores.",
+                "Los árboles beben agua con sus raíces y nos regalan aire limpio y puro para respirar.",
+                "Compartir los juguetes con un amigo duplica las risas y crea momentos inolvidables.",
+                "'Te ayudo con gusto' es una frase mágica que llena de alegría y cariño el corazón de todos.",
+                "Las luciérnagas brillan en la noche cálida para acompañarse con su luz suave y bondadosa.",
+                "Una sonrisa sincera sembrada hoy florece mañana en un mundo lleno de alegría y amistad.",
+                "'Tómate tu tiempo, no pasa nada' es un abrazo suave que devuelve la paz y la confianza."
+            ]
+        },
+        'de': {
+            name: 'Deutsch',
+            flag: '🇩🇪',
+            sub: '德語',
+            speechLang: 'de-DE',
+            dir: 'ltr',
+            petButtons: {
+                feed:      '肚子餓<span class="btn-sub">Hab Hunger</span>',
+                water:     '喝水水<span class="btn-sub">Wasser trinken</span>',
+                pet:       '摸摸<span class="btn-sub">Streicheln</span>',
+                bath:      '洗澡澡<span class="btn-sub">Baden</span>',
+                clean_poo: '清理便便<span class="btn-sub">Saubermachen</span>',
+                heal:      '看醫生<span class="btn-sub">Zum Tierarzt</span>',
+                out:       '出去玩<span class="btn-sub">Gassi gehen</span>',
+                watch:     '看監視器<span class="btn-sub">Kamera an</span>',
+                dress:     '換裝扮<span class="btn-sub">Ankleiden</span>'
+            },
+            storyHeader: 'Kleine Geschichte',
+            nextStoryBtn: '✨ Nächste Geschichte ➡️',
+            vocabLangName: 'Deutsch',
+            vocabTranslateMap: {
+                '太陽': 'Sonne (Sun)', '衣服': 'Kleidung', '外套': 'Mantel', '蘋果': 'Apfel', '小狗': 'Welpe',
+                '小貓': 'Kätzchen', '月亮': 'Mond', '星星': 'Stern', '雨傘': 'Regenschirm', '水果': 'Obst',
+                '樹木': 'Baum', '花朵': 'Blume', '小鳥': 'Vogel', '兔子': 'Hase', '蝴蝶': 'Schmetterling',
+                '大象': 'Elefant', '獅子': 'Löwe', '長頸鹿': 'Giraffe', '熊貓': 'Panda', '猴子': 'Affe',
+                '書本': 'Buch', '鉛筆': 'Bleistift', '彩虹': 'Regenbogen', '汽車': 'Auto', '飛機': 'Flugzeug',
+                '紅色': 'Rot', '黃色': 'Gelb', '藍色': 'Blau', '綠色': 'Grün', '香蕉': 'Banane'
+            },
+            stories: [
+                "Geräusche sind tanzende Luft! Wenn du ganz still bist, hörst du den Wind, die Blätter und dein Herz singen.",
+                "Die Sonne steht jeden Morgen pünktlich auf, um uns Wärme und Licht zu schenken. Früh schlafen macht gesund und munter!",
+                "Wasser fließt von oben nach unten wie auf einer Rutschbahn. Dreh den Wasserhahn immer gut zu!",
+                "Der Regenbogen entsteht, wenn Sonnenstrahlen durch Regentropfen in sieben wunderschönen Farben leuchten.",
+                "Bäume trinken Wasser wie mit Strohhalmen und schenken uns frische Luft. Sie sind die grüne Lunge der Erde.",
+                "Spielzeug mit Freunden zu teilen verdoppelt das Lachen und bringt pure Freude ins Kinderzimmer.",
+                "'Ich helfe dir gerne' ist ein Zauberwort, das Freundschaft und Geborgenheit überallhin bringt.",
+                "Glühwürmchen leuchten in der warmen Sommernacht, um einander liebevoll den Weg zu weisen.",
+                "Ein herzliches Lächeln heute ist wie ein kleiner Sonnenstrahl, der morgen noch heller strahlt.",
+                "'Lass dir Zeit, alles ist gut' ist wie eine sanfte Umarmung, die Ruhe und Mut schenkt."
+            ]
+        },
+        'ar': {
+            name: 'العربية',
+            flag: '🇸🇦',
+            sub: '阿拉伯語',
+            speechLang: 'ar-SA',
+            dir: 'rtl',
+            petButtons: {
+                feed:      '肚子餓<span class="btn-sub">أنا جائع</span>',
+                water:     '喝水水<span class="btn-sub">أشرب ماء</span>',
+                pet:       '摸摸<span class="btn-sub">امسح عليّ</span>',
+                bath:      '洗澡澡<span class="btn-sub">استحمام</span>',
+                clean_poo: '清理便便<span class="btn-sub">تنظيف</span>',
+                heal:      '看醫生<span class="btn-sub">زيارة الطبيب</span>',
+                out:       '出去玩<span class="btn-sub">نخرج نلعب</span>',
+                watch:     '看監視器<span class="btn-sub">مراقبة</span>',
+                dress:     '換裝扮<span class="btn-sub">تغيير الزي</span>'
+            },
+            storyHeader: 'قصص دافئة',
+            nextStoryBtn: '✨ القصة التالية ➡️',
+            vocabLangName: 'العربية',
+            vocabTranslateMap: {
+                '太陽': 'شمس (Sun)', '衣服': 'ملابس', '外套': 'معطف', '蘋果': 'تفاح', '小狗': 'جرو',
+                '小貓': 'قطة صغيرة', '月亮': 'قمر', '星星': 'نجمة', '雨傘': 'مظلة', '水果': 'فاكهة',
+                '樹木': 'شجرة', '花朵': 'زهرة', '小鳥': 'طائر', '兔子': 'أرنب', '蝴蝶': 'فراشة',
+                '大象': 'فيل', '獅子': 'أسد', '長頸鹿': 'زرافة', '熊貓': 'باندا', '猴子': 'قرد',
+                '書本': 'كتاب', '鉛筆': 'قلم رصاص', '彩虹': 'قوس قزح', '汽車': 'سيارة', '飛機': 'طائرة',
+                '紅色': 'أحمر', '黃色': 'أصفر', '藍色': 'أزرق', '綠色': 'أخضر', '香蕉': 'موز'
+            },
+            stories: [
+                "الصوت هو الهواء وهو يرقص بنعومة! حين تهدأ، ستسمع الرياح وأوراق الشجر ودقات قلبك تغني معاً.",
+                "الشمس تستيقظ كل صباح بحب لتمنحنا الدفء والنور الجميل. النوم المبكر سر النشاط والصحة!",
+                "الماء ينساب برقة من الأعلى إلى الأسفل كأنه زحليقة مرحة. لا تنسَ إغلاق صنبور الماء جيداً!",
+                "قوس قزح هو انعكاس أشعة الشمس في قطرات المطر ليرسم سبعة ألوان بديعة في السماء.",
+                "الأشجار تشرب الماء بجذورها القوية وتهدينا الهواء النقي العليل لننمو بصحة وسلام.",
+                "مشاركة الألعاب مع الأصدقاء تضاعف الضحكات وتصنع ذكريات طفولة جميلة لا تُنسى.",
+                "'دعني أساعدك' كلمة طيبة كالموسيقى تزرع اللطف والبهجة في قلوب الجميع.",
+                "تضيء حبات اليراعات في المساء الدافئ لتنشر النور والحب برفق بين الأزهار.",
+                "كل ابتسامة صادقة تهديها اليوم ستزهر فرحاً وسروراً أكبر في الغد.",
+                "'خذ وقتك على مهل، كل شيء على ما يرام' لمسة حنان تهدئ البال وتملأ القلب بالطمأنينة."
+            ]
+        }
+    };
+
+    window.toggleLangDrawer = function() {
+        const wrapper = document.getElementById('global-lang-drawer-wrapper');
+        const arrow = document.getElementById('lang-toggle-arrow');
+        const toggleBtn = document.getElementById('lang-drawer-toggle-btn');
+        if (!wrapper) return;
+        const isOpen = wrapper.classList.toggle('open');
+        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        if (arrow) arrow.textContent = isOpen ? '▲ 收合選單' : '▼ 選擇國家';
+    };
+
+    window.setGlobalLanguage = function(langKey) {
+        if (!GLOBAL_I18N[langKey]) langKey = 'zh-TW';
+        currentGlobalLang = langKey;
+        try {
+            localStorage.setItem('kids_global_lang', langKey);
+        } catch(e) {}
+
+        const langData = GLOBAL_I18N[langKey];
+
+        // 1. 更新抽屜標頭 Badge
+        const badge = document.getElementById('lang-current-badge');
+        if (badge && langData) {
+            badge.innerHTML = `<span>${langData.flag}</span> <span>${langData.name}</span>`;
+        }
+
+        // 2. 更新抽屜按鈕高亮
+        document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.getElementById('lbtn-' + langKey);
+        if (activeBtn) activeBtn.classList.add('active');
+
+        // 3. 聯動：閱讀小故事
+        const storyHeader = document.querySelector('.reading-title span');
+        const nextStoryBtn = document.getElementById('story-next-btn');
+        if (storyHeader && langData.storyHeader) storyHeader.textContent = langData.storyHeader;
+        if (nextStoryBtn && langData.nextStoryBtn) nextStoryBtn.textContent = langData.nextStoryBtn;
+        showStory();
+
+        // 4. 聯動：狗狗寵物區 9 顆互動按鈕
+        if (typeof createButtons === 'function') {
+            createButtons();
+        }
+
+        // 5. 聯動：字詞卡
+        if (typeof renderSingleVocabCard === 'function') {
+            renderSingleVocabCard();
+        }
+
+        // 6. 音效提示 (切換成功的可愛音效)
+        if (typeof playCuteSound === 'function') {
+            playCuteSound(783.99, 0.15); // G5 音階
+        }
+
+        // 7. 自動收合抽屜 (延遲 0.28 秒讓使用者看到點擊反饋)
+        setTimeout(() => {
+            const wrapper = document.getElementById('global-lang-drawer-wrapper');
+            const arrow = document.getElementById('lang-toggle-arrow');
+            const toggleBtn = document.getElementById('lang-drawer-toggle-btn');
+            if (wrapper && wrapper.classList.contains('open')) {
+                wrapper.classList.remove('open');
+                if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+                if (arrow) arrow.textContent = '▼ 選擇國家';
+            }
+        }, 280);
+    };
+
     // ==================== 200篇幼兒園～六年級專用溫暖小故事邏輯 ====================
     let currentStoryIndex = 0;
-    let isStoryEnglish = false;
 
     function showStory() {
         const storyEl = document.getElementById('daily-story');
-        if (storyEl) {
-            if (isStoryEnglish) {
-                storyEl.textContent = storiesEn[currentStoryIndex] || stories[currentStoryIndex];
-                storyEl.style.fontSize = '20px';
-                storyEl.style.lineHeight = '1.75';
-            } else {
-                storyEl.textContent = stories[currentStoryIndex];
-                storyEl.style.fontSize = '23px';
-                storyEl.style.lineHeight = '1.95';
-            }
+        if (!storyEl) return;
+        const langData = (typeof GLOBAL_I18N !== 'undefined' && GLOBAL_I18N[currentGlobalLang]) ? GLOBAL_I18N[currentGlobalLang] : null;
+
+        let text = '';
+        if (currentGlobalLang === 'zh-TW') {
+            text = stories[currentStoryIndex] || stories[0];
+        } else if (currentGlobalLang === 'en') {
+            text = storiesEn[currentStoryIndex] || stories[currentStoryIndex] || stories[0];
+        } else if (langData && langData.stories && langData.stories.length > 0) {
+            text = langData.stories[currentStoryIndex % langData.stories.length];
+        } else {
+            text = storiesEn[currentStoryIndex] || stories[currentStoryIndex] || stories[0];
         }
+
+        storyEl.textContent = text;
+        if (langData && langData.dir === 'rtl') {
+            storyEl.style.direction = 'rtl';
+            storyEl.style.textAlign = 'right';
+            storyEl.style.fontSize = '21px';
+        } else {
+            storyEl.style.direction = 'ltr';
+            storyEl.style.textAlign = 'left';
+            storyEl.style.fontSize = (currentGlobalLang === 'zh-TW' || currentGlobalLang === 'zh-CN' || currentGlobalLang === 'ja') ? '23px' : '20px';
+        }
+        storyEl.style.lineHeight = '1.85';
     }
 
     function nextStory() {
@@ -4497,18 +5129,7 @@
     }
 
     function toggleStoryLang() {
-        isStoryEnglish = !isStoryEnglish;
-        const btn = document.getElementById('story-lang-btn');
-        const title = document.getElementById('story-module-title');
-        const sub = document.getElementById('story-module-sub');
-        const nextBtn = document.getElementById('story-next-btn');
-
-        if (btn) btn.textContent = isStoryEnglish ? '中文' : 'ENG';
-        if (title) title.textContent = isStoryEnglish ? '📖 Warm Reading · Daily Story 🌟' : '📖 溫暖閱讀 · 每日小故事 🌟';
-        if (sub) sub.textContent = isStoryEnglish ? 'Inspiring Young Minds · Daily Story' : 'Daily Warm Story · 溫暖心靈啟發想像';
-        if (nextBtn) nextBtn.textContent = isStoryEnglish ? '✨ Next Story ➡️' : '✨ 換下一則故事 ➡️';
-
-        showStory();
+        toggleLangDrawer();
     }
 
 // SleepingUgly 美景輪播 2025 終極穩定版 ❤️
@@ -6915,9 +7536,10 @@ window.addEventListener('load', () => {
         panel.innerHTML = '';
 
         const actions = ['feed', 'water', 'pet', 'bath', 'clean_poo', 'heal', 'out', 'watch', 'dress'];
+        const langData = (typeof GLOBAL_I18N !== 'undefined' && GLOBAL_I18N[currentGlobalLang]) ? GLOBAL_I18N[currentGlobalLang] : null;
         actions.forEach(action => {
             const btn = document.createElement('button');
-            btn.innerHTML = buttonLabels[action];
+            btn.innerHTML = (langData && langData.petButtons && langData.petButtons[action]) ? langData.petButtons[action] : buttonLabels[action];
             btn.onclick = (e) => doAction(action, e);
             panel.appendChild(btn);
         });
@@ -7230,12 +7852,21 @@ function renderSingleVocabCard() {
     let mainText = item.zh;
     let subText = item.en;
 
+    const langData = (typeof GLOBAL_I18N !== 'undefined' && GLOBAL_I18N[currentGlobalLang]) ? GLOBAL_I18N[currentGlobalLang] : null;
+    if (langData && langData.vocabTranslateMap && langData.vocabTranslateMap[item.zh]) {
+        subText = langData.vocabTranslateMap[item.zh];
+    }
+    if (currentGlobalLang === 'zh-CN') {
+        mainText = (langData && langData.vocabTranslateMap && langData.vocabTranslateMap[item.zh]) ? langData.vocabTranslateMap[item.zh] : item.zh;
+        subText = item.en;
+    }
+
     if (currentVocabLang === 'en') {
-        mainText = item.en;
+        mainText = subText;
         subText = item.zh;
     } else if (currentVocabLang === 'both') {
-        mainText = item.zh;
-        subText = item.en;
+        mainText = (currentGlobalLang === 'zh-CN') ? subText : item.zh;
+        subText = (currentGlobalLang === 'zh-CN') ? item.en : subText;
     }
 
     container.innerHTML = `
@@ -7270,26 +7901,32 @@ function speakCurrentVocab() {
 
     window.speechSynthesis.cancel();
 
+    const langData = (typeof GLOBAL_I18N !== 'undefined' && GLOBAL_I18N[currentGlobalLang]) ? GLOBAL_I18N[currentGlobalLang] : null;
+    const targetSpeechLang = (langData && langData.speechLang) ? langData.speechLang : 'en-US';
+    let targetWord = (langData && langData.vocabTranslateMap && langData.vocabTranslateMap[item.zh]) ? langData.vocabTranslateMap[item.zh] : item.en;
+    // 移除羅馬拼音括號以確保乾淨發音 e.g. "たいよう (Sun)" -> "たいよう"
+    const cleanSpeechWord = targetWord.replace(/\s*\(.*?\)\s*/g, '').trim() || item.en;
+
     if (currentVocabLang === 'en') {
-        const utterEn = new SpeechSynthesisUtterance(item.en);
-        utterEn.lang = 'en-US';
-        utterEn.rate = 0.85;
-        window.speechSynthesis.speak(utterEn);
+        const utterSub = new SpeechSynthesisUtterance(cleanSpeechWord);
+        utterSub.lang = targetSpeechLang;
+        utterSub.rate = 0.85;
+        window.speechSynthesis.speak(utterSub);
     } else if (currentVocabLang === 'zh') {
         const utterZh = new SpeechSynthesisUtterance(item.zh);
         utterZh.lang = 'zh-TW';
         utterZh.rate = 0.85;
         window.speechSynthesis.speak(utterZh);
     } else {
-        // 雙語：先念中文，再念英文
+        // 雙語：先念中文，再念各國目標語言
         const utterZh = new SpeechSynthesisUtterance(item.zh);
         utterZh.lang = 'zh-TW';
         utterZh.rate = 0.85;
         utterZh.onend = () => {
-            const utterEn = new SpeechSynthesisUtterance(item.en);
-            utterEn.lang = 'en-US';
-            utterEn.rate = 0.85;
-            window.speechSynthesis.speak(utterEn);
+            const utterSub = new SpeechSynthesisUtterance(cleanSpeechWord);
+            utterSub.lang = targetSpeechLang;
+            utterSub.rate = 0.85;
+            window.speechSynthesis.speak(utterSub);
         };
         window.speechSynthesis.speak(utterZh);
     }
@@ -7885,6 +8522,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initBilingualQuiz();
     initMusicPlayer();
     centerPageHorizontal();
+    if (typeof setGlobalLanguage === 'function') {
+        setGlobalLanguage(currentGlobalLang || 'zh-TW');
+    }
 });
 
 window.addEventListener('load', () => {
