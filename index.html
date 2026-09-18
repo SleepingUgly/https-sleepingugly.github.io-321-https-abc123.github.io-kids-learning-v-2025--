@@ -2623,19 +2623,21 @@
     
 
 <div id="maze-app" style="text-align:center;">
-    <h1>❄️ ❄️ ❄️ 迷宮區 ❄️ ❄️ ❄️</h1>
+    <h1>❄️ ❄️  迷宮區  ❄️ ❄️</h1>
     <p>請鍵盤按ctrl + 把迷宮區變大</p>
     <p>滑鼠拖曳就能畫出線條</p>
 
-    <div style="margin-bottom:12px; margin-top:15px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: nowrap; white-space: nowrap; width: 100%;">
-            <button onclick="prevMaze()" class="nav-btn" id="prev-btn">上一張</button>
-            <span id="maze-status" style="font-size: 18px; font-weight: 900; color: #ff8c00; white-space: nowrap;">關卡 1/100</span>
-            <button onclick="nextMaze()" class="nav-btn" id="next-btn">下一張</button>
-        </div>
-        <button onclick="clearPath()" class="clear-btn" style="margin: 2px auto 0;">清除畫線</button>
+    <!-- 🌟 第一行：上一張 + 關卡 + 下一張（強制永遠同排、不換行） -->
+    <div style="margin: 15px auto 8px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; white-space: nowrap;">
+        <button onclick="prevMaze()" class="nav-btn" id="prev-btn" style="white-space: nowrap; flex-shrink: 0;">上一張</button>
+        <span id="maze-status" style="font-size: 17px; font-weight: 900; color: #ff8c00; white-space: nowrap; min-width: 90px; text-align: center;">關卡 1/100</span>
+        <button onclick="nextMaze()" class="nav-btn" id="next-btn" style="white-space: nowrap; flex-shrink: 0;">下一張</button>
     </div>
 
+    <!-- 🌟 第二行：清除畫線（獨立居中放在下方） -->
+    <div style="margin-bottom: 12px;">
+        <button onclick="clearPath()" class="clear-btn" style="margin: 0 auto;">清除畫線</button>
+    </div>
     <div id="maze-container" style="position:relative;display:inline-block;box-shadow:0 0 15px rgba(238, 125, 125, 0.856);border-radius:12px;overflow:hidden;">
         <img id="maze-img" src="maze1.jpg" style="display:block;max-width:100%;height:auto;">
         <canvas id="draw-canvas"></canvas>
