@@ -5974,6 +5974,7 @@ window.addEventListener('load', () => {
     }
 
     // 安全播放函式
+       // 安全播放函式
     function safePlay(v) {
         v.muted = true;
         v.playsInline = true;
@@ -5994,10 +5995,9 @@ window.addEventListener('load', () => {
             return;
         }
 
-        // 清除舊事件，避免堆積
+        // 清除舊事件，避免堆積（不要清 onended）
         video.oncanplay = null;
         video.onerror = null;
-        video.onended = null;
 
         video.loop = false;
         video.muted = true;
@@ -6058,6 +6058,11 @@ window.addEventListener('load', () => {
         } else if (video.paused) {
             safePlay(video);
         }
+
+        // 重新確保播完會回待機
+        video.onended = () => {
+            resetToStandby();
+        };
 
         isActionBusy = false;
     }
