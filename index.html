@@ -6905,9 +6905,8 @@ window.addEventListener('load', () => {
             video.muted = isPetMuted;
             video.volume = isPetMuted ? 0 : 1.0;
             const targetSrc = getRandomVideo(action);
-            if (video.src.indexOf(targetSrc) === -1) {
-                video.src = targetSrc;
-            }
+            video.src = targetSrc;
+            video.currentTime = 0;
             video.play().catch(e => console.log('播放被阻擋:', e));
         }
     }
@@ -6930,6 +6929,10 @@ window.addEventListener('load', () => {
         video.loop = false;
         video.onended = () => {
             // 影片播完一次立刻停止，切換回 JPG 靜態圖待機！
+            try {
+                video.pause();
+                video.currentTime = 0;
+            } catch (e) {}
             const standbyImg = document.getElementById('pet-standby-image');
             video.style.display = 'none';
             if (standbyImg) standbyImg.style.display = 'block';
