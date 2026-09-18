@@ -1590,53 +1590,51 @@
     }
     .interaction-panel {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px 10px;
-        justify-items: center;
-        align-items: center;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        width: 100%;
         margin-top: 8px;
         padding: 2px;
+        box-sizing: border-box;
     }
     .interaction-panel button {
         width: 100%;
-        max-width: 126px;
-        height: 38px;
+        height: 52px;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 2px;
-        padding: 0 6px;
-        font-size: 13px;
-        font-weight: 800;
-        border-radius: 10px;
-        border: 1.5px solid #dab514;
-        background: #ffffff;
-        color: #333333;
+        border-radius: 12px;
+        border: 1px solid rgba(190, 130, 220, 0.4);
+        background: #7c2096;
+        color: #ffffff;
         cursor: pointer;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-        transition: all 0.15s;
-        transform: none !important;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        transition: all 0.15s ease;
         box-sizing: border-box;
-        white-space: nowrap;
-    }
-    .interaction-panel button:nth-child(9) {
-        grid-column: 1 / -1;
-        width: 126px;
+        user-select: none;
+        padding: 2px;
     }
     .interaction-panel button:hover {
-        background: #fae5b8;
-        transform: none !important;
+        background: #8e25ab;
     }
     .interaction-panel button:active {
-        background-color: #eeb677;
-        transform: none !important;
+        transform: scale(0.95);
+        background: #6a1b82;
+    }
+    .interaction-panel button:nth-child(9) {
+        grid-column: auto;
+        width: 100%;
     }
     .interaction-panel .btn-sub {
-        font-size: 11px;
-        font-weight: 700;
-        color: #555555;
-        margin-left: 2px;
+        display: block;
+        font-size: 9.5px;
+        font-weight: 500;
+        color: #e9d5ff;
+        margin-top: 2px;
+        font-family: monospace, sans-serif;
     }
+
 
     /* 裝扮區 */
     .wardrobe-panel {
@@ -5882,229 +5880,133 @@ window.addEventListener('load', () => {
     const thoughtBubble = document.getElementById('pet-speech-bubble');
     const mood = document.getElementById('mood-text');
 
-    // 所有動作對應的影片
+    // 所有動作對應的影片檔名清單
     const videos = {
-        feed:      ['dogeat.mp4', 'eatwell.mp4'],
-        water:     ['dogdrink.mp4'],
-        pet:       ['haha2.mp4', 'dogpethead.mp4', 'dogpettummy.mp4'],
-        bath:      ['dogshower1.mp4', 'dogshower2.mp4'],
-        clean_poo: ['dpgpoo.mp4'],
-        heal:      ['dogdoctor.mp4'],
-        out:       ['haha2.mp4','T1.mp4','haha1.mp4','spaceelon.mp4','bigtree.mp4','doglongwall.mp4','dogwalk.mp4','dogdisney.mp4','dog101.mp4','dogjapan.mp4','dogitaly.mp4','dogswims.mp4','gotospace.mp4','dogplay1.mp4','dogplay.mp4'],
-        watch:     ['T1.mp4','dogcook.mp4','dogsleep.mp4','dogbreak.mp4','dpgplaycups.mp4','dogitsback.mp4','dogwithorangecat.mp4','dogwithtwocats.mp4','dogmouse1.mp4','dogsmart1.mp4'],
-        dress:     ['dogcollar.mp4','newdress1.mp4','newdress.mp4'],
-        default:   ['dogbreak.mp4']
+        feed:      ['dogeat.mp4', 'eatwell.mp4', 'peteat1.mp4'],
+        water:     ['dogdrink.mp4', 'petwater.mp4'],
+        pet:       ['dogpethead.mp4', 'dogpettummy.mp4', 'petinthelivingroom1b.mp4', 'petinthelivingroom.mp4', 'dogitsback.mp4'],
+        bath:      ['dogshower1.mp4', 'dogshower2.mp4', 'pettakeshower.mp4', 'dogstyle1.mp4'],
+        clean_poo: ['dpgpoo.mp4', 'dogpoo.mp4'],
+        heal:      ['dogdoctor.mp4', 'petdoctor.mp4'],
+        out:       ['bigtree.mp4', 'doglongwall.mp4', 'dogwalk.mp4', 'dogdisney.mp4', 'dog101.mp4', 'dogjapan.mp4', 'dogitaly.mp4', 'dogswims.mp4', 'gotospace.mp4', 'spaceelon.mp4', 'dogplay1.mp4', 'dogplay.mp4', 'petpark.mp4'],
+        watch:     ['dogcook.mp4', 'dogsleep.mp4', 'dogbreak.mp4', 'dpgplaycups.mp4', 'dogitsback.mp4', 'dogwithorangecat.mp4', 'dogwithtwocats.mp4', 'dogmouse1.mp4', 'dogsmart1.mp4', 'petinthelivingroom.mp4'],
+        dress:     ['dogcollar.mp4', 'newdress1.mp4', 'newdress.mp4', 'petcloth.mp4', 'petcloth1.mp4', 'petclothneck.mp4', 'dogstyle1.mp4'],
+        default:   ['dogsleep.mp4', 'dogbreak.mp4', 'dpgplaycups.mp4', 'dogplaycups.mp4', 'newdress1.mp4', 'newdress.mp4', 'petinthelivingroom.mp4', 'dogitsback.mp4']
     };
 
+    // 9 顆雙語按鈕標籤
     const buttonLabels = {
-        feed:      '🍖 餵食<span class="btn-sub">Feed</span>',
-        water:     '💧 喝水<span class="btn-sub">Water</span>',
-        pet:       '💕 摸摸<span class="btn-sub">Pet</span>',
-        bath:      '🧼 洗澡<span class="btn-sub">Bath</span>',
-        clean_poo: '💩 清便<span class="btn-sub">Clean</span>',
-        heal:      '💊 看病<span class="btn-sub">Heal</span>',
-        out:       '🌳 散步<span class="btn-sub">Walk</span>',
-        watch:     '📷 偷看<span class="btn-sub">Watch</span>',
-        dress:     '🎀 裝扮<span class="btn-sub">Dress</span>'
+        feed:      '肚子餓<span class="btn-sub">hungry</span>',
+        water:     '喝水水<span class="btn-sub">thirsty</span>',
+        pet:       '摸摸<span class="btn-sub">pet me</span>',
+        bath:      '洗澡澡<span class="btn-sub">shower</span>',
+        clean_poo: '清理便便<span class="btn-sub">poop</span>',
+        heal:      '看醫生<span class="btn-sub">sick</span>',
+        out:       '出去玩<span class="btn-sub">go out</span>',
+        watch:     '看監視器<span class="btn-sub">check camera</span>',
+        dress:     '換裝扮<span class="btn-sub">styles</span>'
     };
 
+    // 對應動作文字回饋
     const thoughtMessages = {
-        feed:      '🍖 狗狗正在大口吃飼料！肚子飽飽好滿足，謝謝主人！汪汪！',
-        water:     '💧 咕嚕咕嚕喝水水～解渴真舒服！',
-        pet:       '🥰 摸摸頭最舒服了～我最喜歡主人了！汪汪！',
-        bath:      '🚿 洗泡泡浴香噴噴～我是最乾淨帥氣的小狗！',
-        clean_poo: '✨ 便便清理乾淨了～環境好乾淨好舒服喔！',
-        heal:      '🩺 醫生叔叔檢查完畢～身體健康滿分！',
-        out:       '🏃 耶！出去大草皮跑步玩耍，世界好大好好玩！',
-        watch:     '👀 監視器裡我都在乖乖看家喔，我很乖吧！',
-        dress:     '🎀 換上漂亮新裝扮囉！看看我是不是超級可愛帥氣！',
-        default:   '🐶 汪汪！我是你的專屬邊境牧羊犬，點擊下方按鈕和我互動喔！🐾'
+        feed:      '🍖 好吃好吃！狗狗吃得津津有味，飽足感大提升！',
+        water:     '💧 咕嚕咕嚕！狗狗補充了乾淨的水分，精神飽滿！',
+        pet:       '💖 摸摸頭好幸福～狗狗舒服地搖尾巴撒嬌中！',
+        bath:      '🛁 洗香香泡泡浴！毛髮變得乾淨蓬鬆又亮麗！',
+        clean_poo: '🧹 清理得乾乾淨淨！環境好衛生好舒服～',
+        heal:      '🩺 獸醫細心檢查後，狗狗身體充滿活力，健康百分百！',
+        out:       '🎾 到公園大草地奔跑玩球，狗狗超級興奮好快樂！',
+        watch:     '📹 透過寵物監視器看狗狗的可愛小動作與睡姿～',
+        dress:     '🎀 換上全新時尚裝扮，帥氣值與可愛度破表！',
+        default:   '🐾 汪汪！我是你的專屬邊境牧羊犬，今天想和我做什麼呢！'
     };
 
-    let currentAction = 'default';
-    let isActionBusy = false;
-    let safetyTimeout = null;
-    let actionIndices = {};
-
-    try {
-        actionIndices = JSON.parse(localStorage.getItem('pet_action_indices') || '{}');
-    } catch (e) {}
-
-    // 輪播選片
-    function getNextVideo(action) {
-        const list = videos[action] || videos.default;
-        if (actionIndices[action] === undefined || actionIndices[action] >= list.length) {
-            actionIndices[action] = 0;
-        }
-        const curIdx = actionIndices[action];
-        const selected = list[curIdx];
-        actionIndices[action] = (curIdx + 1) % list.length;
-
-        try {
-            localStorage.setItem('pet_action_indices', JSON.stringify(actionIndices));
-        } catch (e) {}
-
-        return selected;
+    function getRandomVideo(action) {
+        const list = videos[action] || videos['default'];
+        return list[Math.floor(Math.random() * list.length)];
     }
 
-    // 更新狀態數值
     function updateStatus() {
-        if (!document.getElementById('health-value')) return;
+        const setBar = (id, val, textId) => {
+            const el = document.getElementById(id);
+            const txt = document.getElementById(textId);
+            if (el) {
+                if (el.tagName.toLowerCase() === 'progress') {
+                    el.value = val;
+                } else {
+                    el.style.width = val + '%';
+                }
+            }
+            if (txt) txt.innerText = val;
+        };
 
-        document.getElementById('health-value').textContent = pet.health;
-        document.getElementById('food-value').textContent = pet.food;
-        document.getElementById('water-value').textContent = pet.water;
-        document.getElementById('clean-value').textContent = pet.clean;
-        document.getElementById('love-value').textContent = pet.love;
-
-        document.getElementById('health-bar').value = pet.health;
-        document.getElementById('food-bar').value = pet.food;
-        document.getElementById('water-bar').value = pet.water;
-        document.getElementById('clean-bar').value = pet.clean;
-        document.getElementById('love-bar').value = pet.love;
+        setBar('health-bar', pet.health, 'health-value');
+        setBar('food-bar', pet.food, 'food-value');
+        setBar('water-bar', pet.water, 'water-value');
+        setBar('clean-bar', pet.clean, 'clean-value');
+        setBar('love-bar', pet.love, 'love-value');
 
         const avg = (pet.health + pet.food + pet.water + pet.clean + pet.love) / 5;
         if (mood) {
-            if (avg >= 80) mood.textContent = '💖 超開心';
-            else if (avg >= 60) mood.textContent = '😊 開心';
-            else if (avg >= 40) mood.textContent = '😐 普通';
-            else if (avg >= 20) mood.textContent = '⚡ 不開心';
-            else mood.textContent = '😭 哭哭';
+            if (avg >= 80) mood.innerText = '超開心 🥰';
+            else if (avg >= 60) mood.innerText = '開心 🐶';
+            else if (avg >= 40) mood.innerText = '普通 😐';
+            else if (avg >= 20) mood.innerText = '不開心 🥺';
+            else mood.innerText = '哭哭 😭';
         }
     }
 
-    // 安全播放
-    function safePlay(v) {
-        if (!v) return;
-        v.muted = true;
-        v.playsInline = true;
-        const p = v.play();
-        if (p !== undefined) {
-            p.catch(err => {
-                console.warn('Play error:', err);
-                v.muted = true;
-                v.play().catch(() => {});
-            });
-        }
-    }
-
-    // 播放動作影片
-    function playActionVideo(src) {
-        if (!src || !video) {
-            resetToStandby();
-            return;
-        }
-
-        video.oncanplay = null;
-        video.onerror = null;
-
-        video.loop = false;
-        video.muted = true;
-        video.playsInline = true;
-        video.preload = 'auto';
-
-        const onCanPlay = () => {
-            video.removeEventListener('canplay', onCanPlay);
-            safePlay(video);
-        };
-
-        const onError = () => {
-            console.warn('影片載入失敗：', src);
-            video.removeEventListener('error', onError);
-            resetToStandby();
-        };
-
-        video.addEventListener('canplay', onCanPlay, { once: true });
-        video.addEventListener('error', onError, { once: true });
-
-        video.src = src;
-
-        if (video.readyState >= 2) {
-            safePlay(video);
-        }
-    }
-
-    // 回到待機
-    function resetToStandby() {
-        if (safetyTimeout) {
-            clearTimeout(safetyTimeout);
-            safetyTimeout = null;
-        }
-
-        currentAction = 'default';
-        if (thoughtBubble) thoughtBubble.textContent = thoughtMessages.default;
-
-        if (!video) {
-            isActionBusy = false;
-            return;
-        }
-
-        video.oncanplay = null;
-        video.onerror = null;
-
-        video.loop = true;
-        video.muted = true;
-        video.playsInline = true;
-        video.preload = 'auto';
-
-        const standbySrc = 'dogbreak.mp4';
-        const currentSrc = video.currentSrc || video.src || '';
-
-        if (!currentSrc.includes('dogbreak.mp4')) {
-            video.src = standbySrc;
-            video.addEventListener('canplay', () => {
-                safePlay(video);
-            }, { once: true });
-        } else if (video.paused) {
-            safePlay(video);
-        }
-
-        // 重新綁定播完回待機
-        video.onended = () => {
-            resetToStandby();
-        };
-
-        isActionBusy = false;
-    }
-
-    // 主要動作
     function doAction(action) {
-        if (isActionBusy) return;
-        isActionBusy = true;
+        switch (action) {
+            case 'feed':
+                pet.food = Math.min(100, pet.food + 25);
+                pet.love = Math.min(100, pet.love + 5);
+                break;
+            case 'water':
+                pet.water = Math.min(100, pet.water + 25);
+                pet.health = Math.min(100, pet.health + 5);
+                break;
+            case 'pet':
+                pet.love = Math.min(100, pet.love + 20);
+                pet.health = Math.min(100, pet.health + 5);
+                break;
+            case 'bath':
+                pet.clean = 100;
+                pet.isDirty = false;
+                pet.love = Math.min(100, pet.love + 10);
+                break;
+            case 'clean_poo':
+                pet.clean = Math.min(100, pet.clean + 40);
+                pet.health = Math.min(100, pet.health + 10);
+                break;
+            case 'heal':
+                pet.health = 100;
+                pet.isSick = false;
+                pet.love = Math.min(100, pet.love + 10);
+                break;
+            case 'out':
+                pet.love = Math.min(100, pet.love + 25);
+                pet.clean = Math.max(0, pet.clean - 10);
+                pet.food = Math.max(0, pet.food - 10);
+                break;
+            case 'dress':
+                pet.love = Math.min(100, pet.love + 15);
+                break;
+        }
 
-        currentAction = action;
-
-        if (action === 'feed')       pet.food  = Math.min(100, pet.food + 25);
-        if (action === 'water')      pet.water = Math.min(100, pet.water + 25);
-        if (action === 'pet')        pet.love  = Math.min(100, pet.love + 15);
-        if (action === 'bath')       pet.clean = 100;
-        if (action === 'clean_poo')  pet.clean = Math.min(100, pet.clean + 40);
-        if (action === 'heal')       { pet.health = 100; pet.isSick = false; }
-        if (action === 'dress')      pet.accessory = (pet.accessory === 'none' ? 'hat' : 'none');
+        if (thoughtBubble) {
+            thoughtBubble.innerText = thoughtMessages[action] || thoughtMessages.default;
+        }
 
         updateStatus();
 
-        const selectedVideo = getNextVideo(action);
-
-        if (thoughtBubble) {
-            thoughtBubble.textContent = thoughtMessages[action] || thoughtMessages.default;
+        if (video) {
+            video.src = getRandomVideo(action);
+            video.currentTime = 0;
+            video.play().catch(e => console.log('播放受阻:', e));
         }
-
-        playActionVideo(selectedVideo);
-
-        setTimeout(() => {
-            isActionBusy = false;
-        }, 400);
-
-        if (safetyTimeout) clearTimeout(safetyTimeout);
-        safetyTimeout = setTimeout(() => {
-            if (currentAction !== 'default') {
-                resetToStandby();
-            }
-        }, 35000);
     }
 
-    // 產生按鈕
     function createButtons() {
         const panel = document.getElementById('interaction-panel');
         if (!panel) return;
@@ -6119,44 +6021,26 @@ window.addEventListener('load', () => {
         });
     }
 
-    // 初始化
-    function initPetModule() {
+    if (video) {
+        video.onended = () => {
+            video.src = getRandomVideo('default');
+            video.play().catch(e => console.log('循環播放受阻:', e));
+        };
+    }
+
+    function initPet() {
         createButtons();
         updateStatus();
-
-        if (!video) {
-            console.error('找不到 pet-video-player 元素');
-            return;
+        if (video) {
+            video.src = getRandomVideo('default');
+            video.play().catch(e => console.log('自動播放受阻:', e));
         }
-
-        video.loop = true;
-        video.muted = true;
-        video.playsInline = true;
-        video.preload = 'auto';
-
-        const currentSrc = video.currentSrc || video.src || '';
-        if (!currentSrc.includes('dogbreak.mp4')) {
-            video.src = 'dogbreak.mp4';
-        }
-        if (video.paused) {
-            safePlay(video);
-        }
-
-        video.onended = () => {
-            resetToStandby();
-        };
-
-        document.addEventListener('pointerdown', () => {
-            if (video && video.paused && currentAction === 'default') {
-                safePlay(video);
-            }
-        }, { once: true });
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initPetModule);
+        document.addEventListener('DOMContentLoaded', initPet);
     } else {
-        initPetModule();
+        initPet();
     }
 </script>
 <script>
