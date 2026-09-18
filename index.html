@@ -1506,15 +1506,28 @@
         box-sizing: border-box !important;
         margin-bottom: 8px !important;
     }
-    #pet-video-player {
+    #pet-video-player, #pet-video-player-next {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
         width: 100% !important;
         max-width: 100% !important;
         height: 100% !important;
         object-fit: cover !important;
         display: block !important;
         border-radius: 8px !important;
-        transform: translateZ(0); /* 啟用硬體 GPU 加速，徹底解決卡頓 */
-        will-change: transform;
+        transform: translateZ(0);
+        will-change: opacity, transform;
+        transition: opacity 0.25s ease-in-out;
+    }
+    #pet-video-player {
+        z-index: 2;
+        opacity: 1;
+    }
+    #pet-video-player-next {
+        z-index: 3;
+        opacity: 0;
+        pointer-events: none;
     }
     .pet-speech-bubble {
         width: 100%;
@@ -3001,6 +3014,7 @@
 
             <div id="video-overlay" class="video-overlay">
                 <video id="pet-video-player" src="dogbreak.mp4" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>
+                <video id="pet-video-player-next" muted playsinline webkit-playsinline preload="auto"></video>
                 <div id="accessory-display" class="accessory"></div>
             </div>
 
@@ -5851,8 +5865,9 @@ window.addEventListener('load', () => {
         isSick: false, isDirty: false, accessory: 'none'
     };
 
-    // DOM 元素
-    const video = document.getElementById('pet-video-player');
+    // DOM 元素 (雙緩衝播放器，無縫切換不閃爍不黑屏)
+    let video = document.getElementById('pet-video-player');
+    let videoNext = document.getElementById('pet-video-player-next');
     const thoughtBubble = document.getElementById('pet-speech-bubble');
     const mood = document.getElementById('mood-text');
 
@@ -5962,7 +5977,9 @@ window.addEventListener('load', () => {
         }
     }
 
-    // 切換動作影片（直接指派 src 秒播）
+    let transitionToken = 0;
+
+    // 切換動作影片（雙緩衝無縫交叉淡入，絕不黑屏、絕不漏出背景圖）
     function playActionVideo(src) {
         if (!src) return;
 
@@ -5971,11 +5988,48 @@ window.addEventListener('load', () => {
             return;
         }
 
-        video.loop = false;
-        video.muted = true;
-        video.playsInline = true;
-        video.src = src;
-        safePlay(video);
+        const myToken = ++transitionToken;
+
+        // 設置後台預備播放器
+        videoNext.loop = false;
+        videoNext.muted = true;
+        videoNext.playsInline = true;
+        videoNext.src = src;
+
+        const p = videoNext.play();
+        if (p !== undefined) {
+            p.catch(() => {
+                videoNext.muted = true;
+                videoNext.play().catch(() => {});
+            });
+        }
+
+        // 當新影片真正輸出畫面時（playing），平滑淡入切換到前台
+        const onPlaying = () => {
+            if (myToken !== transitionToken) return;
+            videoNext.removeEventListener('playing', onPlaying);
+
+            // 淡入新影片，淡出舊影片
+            videoNext.style.zIndex = '3';
+            videoNext.style.opacity = '1';
+            video.style.zIndex = '2';
+            video.style.opacity = '0';
+
+            setTimeout(() => {
+                try { video.pause(); } catch(e) {}
+                // 交換主副播放器指針
+                const temp = video;
+                video = videoNext;
+                videoNext = temp;
+
+                // 綁定動作播完自動回待機
+                video.onended = () => {
+                    resetToStandby();
+                };
+            }, 250);
+        };
+
+        videoNext.addEventListener('playing', onPlaying, { once: true });
     }
 
     // 回到待機狀態
@@ -5988,15 +6042,12 @@ window.addEventListener('load', () => {
         currentAction = 'default';
         if (thoughtBubble) thoughtBubble.textContent = thoughtMessages.default;
 
-        video.loop = true;
-        video.muted = true;
-
         const currentSrc = video.currentSrc || video.src || '';
         if (!currentSrc.includes('dogbreak.mp4')) {
-            video.src = 'dogbreak.mp4';
-            safePlay(video);
+            playActionVideo('dogbreak.mp4');
+            videoNext.loop = true;
         } else if (video.paused) {
-            safePlay(video);
+            video.play().catch(() => {});
         }
 
         isActionBusy = false;
@@ -6032,13 +6083,13 @@ window.addEventListener('load', () => {
             isActionBusy = false;
         }, 250);
 
-        // 安全計時器（5 秒後若未正常結束自動回待機）
+        // 安全計時器：25 秒（給遠端 CDN 充分下載時間，絕不強行掐斷）
         if (safetyTimeout) clearTimeout(safetyTimeout);
         safetyTimeout = setTimeout(() => {
             if (currentAction !== 'default') {
                 resetToStandby();
             }
-        }, 5000);
+        }, 25000);
     }
 
     // 動態產生按鈕
@@ -6065,7 +6116,6 @@ window.addEventListener('load', () => {
         video.muted = true;
         video.playsInline = true;
 
-        // 如果影片尚未起播才觸發 safePlay，不打斷現有串流
         const currentSrc = video.currentSrc || video.src || '';
         if (!currentSrc.includes('dogbreak.mp4')) {
             video.src = 'dogbreak.mp4';
@@ -6074,23 +6124,28 @@ window.addEventListener('load', () => {
             safePlay(video);
         }
 
-        // 播完自動回待機
-        video.addEventListener('ended', () => {
+        video.onended = () => {
             resetToStandby();
-        });
+        };
 
-        // 發生錯誤時回待機
-        video.addEventListener('error', () => {
-            console.warn('影片播放中斷，自動回到待機狀態');
-            resetToStandby();
-        });
-
-        // 首次觸碰/點擊任意處喚醒（針對極端瀏覽器背景自動播放攔截）
+        // 首次觸碰/點擊任意處喚醒
         document.addEventListener('pointerdown', () => {
             if (video && video.paused && currentAction === 'default') {
                 video.play().catch(() => {});
             }
         }, { once: true });
+
+        // 🌟 核心提速秘訣：背景靜默預載常用影片至瀏覽器磁碟快取，點擊時 0 秒秒開！
+        const prefetchList = ['dogeat.mp4', 'dogdrink.mp4', 'haha2.mp4', 'dogshower1.mp4', 'dpgpoo.mp4', 'dogdoctor.mp4', 'haha1.mp4', 'T1.mp4'];
+        setTimeout(() => {
+            prefetchList.forEach(file => {
+                const link = document.createElement('link');
+                link.rel = 'prefetch';
+                link.as = 'video';
+                link.href = file;
+                document.head.appendChild(link);
+            });
+        }, 1500);
     }
 
     if (document.readyState === 'loading') {
