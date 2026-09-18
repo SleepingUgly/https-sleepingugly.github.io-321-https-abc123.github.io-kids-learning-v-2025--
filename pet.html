@@ -168,45 +168,45 @@
         }
 
         .pet-sound-toggle-btn {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            z-index: 30;
-            background: rgba(20, 20, 20, 0.78);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            color: #ffffff;
-            border: 2px solid rgba(255, 255, 255, 0.85);
-            border-radius: 25px;
-            padding: 7px 16px;
-            font-size: 14px;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto;
+            padding: 10px 22px;
+            font-size: 15px;
             font-weight: 900;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            gap: 8px;
+            border-radius: 30px;
+            border: 2.5px solid #2ed573;
+            background: linear-gradient(135deg, #2ed573 0%, #10ac84 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(16, 172, 132, 0.35);
             transition: all 0.2s ease;
             outline: none;
             user-select: none;
-            line-height: 1;
+            line-height: 1.2;
+            letter-spacing: 0.5px;
         }
         .pet-sound-toggle-btn:hover {
-            background: rgba(0, 0, 0, 0.92);
-            border-color: #ffffff;
-            transform: scale(1.05);
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(135deg, #10ac84 0%, #0ca37f 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(16, 172, 132, 0.45);
         }
         .pet-sound-toggle-btn:active {
-            transform: scale(0.96);
+            transform: translateY(1px);
+            box-shadow: 0 2px 6px rgba(16, 172, 132, 0.3);
         }
         .pet-sound-toggle-btn.muted {
-            background: rgba(214, 48, 49, 0.9);
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
             border-color: #ff7675;
+            box-shadow: 0 4px 14px rgba(231, 76, 60, 0.4);
         }
         .pet-sound-toggle-btn.muted:hover {
-            background: rgba(192, 57, 43, 0.98);
-            border-color: #ffffff;
+            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+            box-shadow: 0 6px 18px rgba(231, 76, 60, 0.5);
         }
 
         /* 右側：狀態儀表板 + 放大的 9 顆互動按鈕 */
@@ -407,10 +407,6 @@
 
             <!-- 大型視訊播放器 (加高至 560px) -->
             <div class="pet-video-box">
-                <button id="pet-sound-toggle-btn" class="pet-sound-toggle-btn" type="button" onclick="togglePetSound()" title="點擊切換音效開關 · Click to Mute / Unmute">
-                    <span id="pet-sound-icon">🔊</span>
-                    <span id="pet-sound-text">音效開啟 · Sound ON</span>
-                </button>
                 <video id="pet-video-player" src="dogbreak.mp4" autoplay muted loop playsinline preload="auto"></video>
             </div>
         </div>
@@ -480,6 +476,14 @@
             <div>
                 <div class="pet-actions-title">🎮 點擊下方按鈕與狗狗互動</div>
                 <div class="pet-interaction-grid" id="interaction-panel"></div>
+
+                <!-- 🔊/🔇 狗狗音效開關切換按鈕 (置於 9 顆紫色互動按鈕正下方) -->
+                <div style="text-align: center; margin-top: 14px; margin-bottom: 6px;">
+                    <button id="pet-sound-toggle-btn" class="pet-sound-toggle-btn" type="button" onclick="togglePetSound()" title="點擊切換音效開關 · Click to Mute / Unmute">
+                        <span id="pet-sound-icon">🔊</span>
+                        <span id="pet-sound-text">音效開啟 · Sound ON</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
