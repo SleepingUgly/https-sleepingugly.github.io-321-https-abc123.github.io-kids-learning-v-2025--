@@ -2265,8 +2265,10 @@
 #maze-app h1 {
     color: #ff6b00;
     font-size: 26px;
-    margin: 10px 0 6px 0;
+    margin: 10px auto 6px auto;
     letter-spacing: 1px;
+    text-align: center;
+    white-space: nowrap;
 }
 #maze-app p:nth-of-type(1) {
     color: #dc3545;
@@ -5654,6 +5656,19 @@ function initCanvas() {
     ctx.lineJoin = 'round';
 }
 
+// 預先載入鄰近關卡的圖片（常駐快取，讓按下一張時瞬間顯示，不延遲）
+const mazeCache = {};
+function preloadNearbyMazes(num) {
+    const targets = [num + 1, num + 2, num + 3, num - 1];
+    targets.forEach(n => {
+        if (n >= 1 && n <= MAX_MAZE && !mazeCache[n]) {
+            const cacheImg = new Image();
+            cacheImg.src = `maze${n}.jpg`;
+            mazeCache[n] = cacheImg;
+        }
+    });
+}
+
 // 載入迷宮圖片並更新狀態
 function loadMaze(num) {
     if (num < 1 || num > MAX_MAZE) return; // 防止越界
@@ -5664,26 +5679,39 @@ function loadMaze(num) {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
 
-    // 1. 更新圖片來源
-    img.src = `maze${num}.jpg`; 
-
-    // 2. 更新關卡顯示文字
+    // 1. 立即更新關卡顯示文字與按鈕狀態（即時回饋）
     status.textContent = `關卡 ${num}/${MAX_MAZE}`;
-
-    // 3. 調整按鈕狀態 (禁用/啟用)
     prevBtn.disabled = (num === 1);
     nextBtn.disabled = (num === MAX_MAZE);
-    
-    // 4. 圖片載入完成後重新初始化畫布
-    img.onload = () => {
+
+    // 2. 清除當前畫線
+    clearPath();
+
+    const targetSrc = `maze${num}.jpg`;
+
+    // 3. 設定圖片載入完成後的回呼函式
+    const onImageReady = () => {
+        img.style.opacity = '1';
         initCanvas();
-        clearPath(); // 換圖時自動清掉舊的線
+        clearPath();
+        preloadNearbyMazes(num);
     };
-    
-    // 如果圖片已經載入過，也要確保畫布被初始化
-    if (img.complete) {
-        initCanvas();
-        clearPath(); 
+
+    // 若已經載入完成，直接初始化
+    if (img.src.endsWith(targetSrc) && img.complete && img.naturalWidth > 0) {
+        onImageReady();
+        return;
+    }
+
+    img.style.transition = 'opacity 0.15s ease';
+    img.style.opacity = '0.7';
+
+    img.onload = onImageReady;
+    img.src = targetSrc;
+
+    // 如果快取已有且立即完成
+    if (img.complete && img.naturalWidth > 0) {
+        onImageReady();
     }
 }
 
