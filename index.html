@@ -5926,6 +5926,35 @@ window.addEventListener('load', () => {
         return list[Math.floor(Math.random() * list.length)];
     }
 
+    // 心情判斷
+    function getMoodText() {
+        const avg = (pet.health + pet.food + pet.water + pet.clean + pet.love) / 5;
+        if (avg >= 80) return '❤️❤️❤️❤️❤️❤️超開心';
+        if (avg >= 60) return '❤️❤️❤️❤️開心';
+        if (avg >= 40) return '❤️❤️❤️普通';
+        if (avg >= 20) return '⚡⚡不開心';
+        return '⚡⚡⚡⚡⚡哭哭';
+    }
+
+    // 可愛音效合成
+    function playCuteSound(freq = 587.33, dur = 0.15) {
+        try {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) return;
+            const ctx = new AudioContextClass();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+            gain.gain.setValueAtTime(0.18, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + dur);
+        } catch (e) {}
+    }
+
     function updateStatus() {
         const setBar = (id, val, textId) => {
             const el = document.getElementById(id);
@@ -5946,17 +5975,14 @@ window.addEventListener('load', () => {
         setBar('clean-bar', pet.clean, 'clean-value');
         setBar('love-bar', pet.love, 'love-value');
 
-        const avg = (pet.health + pet.food + pet.water + pet.clean + pet.love) / 5;
         if (mood) {
-            if (avg >= 80) mood.innerText = '超開心 🥰';
-            else if (avg >= 60) mood.innerText = '開心 🐶';
-            else if (avg >= 40) mood.innerText = '普通 😐';
-            else if (avg >= 20) mood.innerText = '不開心 🥺';
-            else mood.innerText = '哭哭 😭';
+            mood.innerText = getMoodText();
         }
     }
 
-    function doAction(action) {
+    function doAction(action, evt) {
+        playCuteSound(659.25, 0.18);
+
         switch (action) {
             case 'feed':
                 pet.food = Math.min(100, pet.food + 25);
@@ -5989,7 +6015,10 @@ window.addEventListener('load', () => {
                 pet.clean = Math.max(0, pet.clean - 10);
                 pet.food = Math.max(0, pet.food - 10);
                 break;
+            case 'watch':
+                break;
             case 'dress':
+                pet.accessory = pet.accessory === 'none' ? 'bowtie' : pet.accessory === 'bowtie' ? 'vest' : 'none';
                 pet.love = Math.min(100, pet.love + 15);
                 break;
         }
@@ -6016,7 +6045,7 @@ window.addEventListener('load', () => {
         actions.forEach(action => {
             const btn = document.createElement('button');
             btn.innerHTML = buttonLabels[action];
-            btn.onclick = () => doAction(action);
+            btn.onclick = (e) => doAction(action, e);
             panel.appendChild(btn);
         });
     }
