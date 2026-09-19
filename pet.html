@@ -405,7 +405,7 @@
 
             <!-- 大型視訊/待機容器 (加高至 560px) -->
             <div class="pet-video-box">
-                <video id="pet-video-player" src="dogbreak.mp4" poster="petinthelivingroom1b.jpg" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>
+                <video id="pet-video-player" src="dogbreak.mp4" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>
             </div>
         </div>
 
@@ -686,25 +686,11 @@
         updateStatus();
 
         if (video) {
-            if (petVideoWatchdogTimer) {
-                clearTimeout(petVideoWatchdogTimer);
-                petVideoWatchdogTimer = null;
-            }
-
-            const targetSrc = getRandomVideo(action);
-            video.style.display = 'block';
-            video.loop = true;
             video.muted = isPetMuted;
             video.volume = isPetMuted ? 0 : 1.0;
+            const targetSrc = getRandomVideo(action);
             video.src = targetSrc;
-            const playPromise = video.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(err => {
-                    console.log('播放被瀏覽器阻擋，降級以靜音播放:', err);
-                    video.muted = true;
-                    video.play().catch(e => console.log('靜音播放失敗:', e));
-                });
-            }
+            video.play().catch(e => console.log('播放被阻擋:', e));
         }
     }
 
@@ -724,16 +710,24 @@
         });
     }
 
+    if (video) {
+        video.onended = () => {
+            video.src = getRandomVideo('default');
+            video.play().catch(e => console.log('循環播放失敗:', e));
+        };
+    }
+
+    // 真正能秒進瀏覽器記憶體的預載快取器
+    const preloadedVideoElements = {};
+
     function initPetPage() {
         createButtons();
         updateStatus();
         updatePetSoundUI();
 
         if (video) {
-            video.style.display = 'block';
-            video.loop = true;
-            video.muted = isPetMuted;
-            video.volume = isPetMuted ? 0 : 1.0;
+            video.src = getRandomVideo('default');
+            video.play().catch(e => console.log('自動播放阻擋:', e));
         }
 
         // 背景快取常用影片

@@ -3616,7 +3616,7 @@
             </div>
 
             <div id="video-overlay" class="video-overlay">
-                <video id="pet-video-player" src="dogbreak.mp4" poster="petinthelivingroom1b.jpg" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>
+                <video id="pet-video-player" src="dogbreak.mp4" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>
                 <div id="accessory-display" class="accessory"></div>
             </div>
 
@@ -7959,25 +7959,11 @@ window.addEventListener('load', () => {
         updateStatus();
 
         if (video) {
-            if (petVideoWatchdogTimer) {
-                clearTimeout(petVideoWatchdogTimer);
-                petVideoWatchdogTimer = null;
-            }
-
-            const targetSrc = getRandomVideo(action);
-            video.style.display = 'block';
-            video.loop = true;
             video.muted = isPetMuted;
             video.volume = isPetMuted ? 0 : 1.0;
+            const targetSrc = getRandomVideo(action);
             video.src = targetSrc;
-            const playPromise = video.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(err => {
-                    console.log('播放被瀏覽器阻擋，降級以靜音播放:', err);
-                    video.muted = true;
-                    video.play().catch(e => console.log('靜音播放失敗:', e));
-                });
-            }
+            video.play().catch(e => console.log('播放被阻擋:', e));
         }
     }
 
@@ -7996,17 +7982,36 @@ window.addEventListener('load', () => {
         });
     }
 
+    if (video) {
+        video.onended = () => {
+            video.src = getRandomVideo('default');
+            video.play().catch(e => console.log('循環播放失敗:', e));
+        };
+    }
+
+    // 真正能秒進瀏覽器記憶體的預載快取器
+    const preloadedVideoElements = {};
+
     function initPet() {
         createButtons();
         updateStatus();
         updatePetSoundUI();
-
         if (video) {
-            video.style.display = 'block';
-            video.loop = true;
-            video.muted = isPetMuted;
-            video.volume = isPetMuted ? 0 : 1.0;
+            video.src = getRandomVideo('default');
+            video.play().catch(e => console.log('自動播放阻擋:', e));
         }
+
+        // 頁面載入 1 秒後，用虛擬 Video 元素在記憶體中快速快取第一波核心動作影片
+        setTimeout(() => {
+            const quickList = ['dogeat.mp4', 'dogdrink.mp4', 'dogpethead.mp4', 'dogshower1.mp4', 'dpgpoo.mp4', 'dogdoctor.mp4', 'dogwalk.mp4', 'dogcook.mp4', 'dogcollar.mp4'];
+            quickList.forEach(src => {
+                const v = document.createElement('video');
+                v.preload = 'auto';
+                v.muted = true;
+                v.src = src;
+                preloadedVideoElements[src] = v;
+            });
+        }, 1000);
     }
 
     if (document.readyState === 'loading') {
