@@ -148,42 +148,21 @@
             background: #fae5b8 url('petinthelivingroom1b.jpg') center/cover no-repeat;
             border-radius: 22px;
             border: 4px solid #e8b4d8;
-            overflow: hidden;
-            box-shadow: 0 8px 24px rgba(142, 68, 173, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             min-height: 540px;
             height: 560px;
             position: relative;
         }
 
-        #pet-standby-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            max-height: 560px;
-            object-fit: cover;
-            display: block !important;
-            z-index: 1;
-        }
-
         #pet-video-player {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
             max-height: 560px;
-            object-fit: cover;
+            object-fit: contain;
             display: block !important;
-            z-index: 2;
-            opacity: 0;
-            transition: opacity 0.22s ease-in-out;
-            pointer-events: none;
-        }
-
-        #pet-video-player.playing {
-            opacity: 1 !important;
+            background: transparent;
         }
 
         .pet-sound-toggle-btn {
@@ -426,8 +405,7 @@
 
             <!-- 大型視訊/待機容器 (加高至 560px) -->
             <div class="pet-video-box">
-                <img id="pet-standby-image" src="petinthelivingroom1b.jpg" alt="狗狗客廳待機中">
-                <video id="pet-video-player" playsinline preload="auto"></video>
+                <video id="pet-video-player" src="dogbreak.mp4" poster="petinthelivingroom1b.jpg" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>
             </div>
         </div>
 
@@ -571,7 +549,13 @@
 
     function getRandomVideo(action) {
         const list = videos[action] || videos['default'];
-        return list[Math.floor(Math.random() * list.length)];
+        if (!list || list.length === 0) return 'dogbreak.mp4';
+        if (list.length === 1) return list[0];
+        // 排除當前正在播的影片，確保「按一次就直接切到新的影片」！
+        const currentSrc = video ? (video.currentSrc || video.src || '') : '';
+        const candidates = list.filter(v => !currentSrc.endsWith(v));
+        const pool = (candidates.length > 0) ? candidates : list;
+        return pool[Math.floor(Math.random() * pool.length)];
     }
 
     // 音效開關狀態 (預設開啟，可點擊隨時切換開關)
@@ -708,37 +692,17 @@
             }
 
             const targetSrc = getRandomVideo(action);
-
-            try {
-                video.pause();
-            } catch (e) {}
-            video.classList.remove('playing');
-
-            video.loop = false;
+            video.style.display = 'block';
+            video.loop = true;
             video.muted = isPetMuted;
             video.volume = isPetMuted ? 0 : 1.0;
             video.src = targetSrc;
-            video.load();
-
-            // 超時安全保險絲：12 秒自動回復待機圖，徹底杜絕任何卡住死機
-            petVideoWatchdogTimer = setTimeout(() => {
-                console.log('狗狗影片超時保險絲觸發，平滑切回待機圖');
-                finishPetVideo();
-            }, 12000);
-
             const playPromise = video.play();
             if (playPromise !== undefined) {
                 playPromise.catch(err => {
-                    console.log('播放被瀏覽器阻擋，嘗試靜音降級播放:', err);
-                    if (!isPetMuted) {
-                        video.muted = true;
-                        video.play().catch(e => {
-                            console.log('靜音播放仍失敗，切回待機圖:', e);
-                            finishPetVideo();
-                        });
-                    } else {
-                        finishPetVideo();
-                    }
+                    console.log('播放被瀏覽器阻擋，降級以靜音播放:', err);
+                    video.muted = true;
+                    video.play().catch(e => console.log('靜音播放失敗:', e));
                 });
             }
         }
@@ -760,71 +724,16 @@
         });
     }
 
-    let petVideoWatchdogTimer = null;
-
-    function finishPetVideo() {
-        if (petVideoWatchdogTimer) {
-            clearTimeout(petVideoWatchdogTimer);
-            petVideoWatchdogTimer = null;
-        }
-        if (video) {
-            try {
-                video.pause();
-                video.currentTime = 0;
-            } catch (e) {}
-            video.classList.remove('playing');
-        }
-        const standbyImg = document.getElementById('pet-standby-image');
-        if (standbyImg) {
-            standbyImg.style.display = 'block';
-        }
-        if (thoughtBubble) {
-            thoughtBubble.textContent = '🐾 汪汪！我在客廳等你喔，快點右側按鈕和我玩！🐾';
-        }
-    }
-
-    if (video) {
-        video.loop = false;
-
-        // 1. 畫面真正繪製渲染開始時淡入，徹底杜絕黑屏/空白卡住！
-        video.onplaying = () => {
-            video.classList.add('playing');
-        };
-
-        // 2. 正常播放結束
-        video.onended = () => {
-            finishPetVideo();
-        };
-
-        // 3. 結尾進度保險（距結尾 0.25 秒內即主動平滑過渡，防無音軌或 B 幀造成卡住）
-        video.ontimeupdate = () => {
-            if (video.duration && isFinite(video.duration) && video.duration > 0.5) {
-                if (video.currentTime >= (video.duration - 0.25)) {
-                    finishPetVideo();
-                }
-            }
-        };
-
-        // 4. 異常與載入失敗防護
-        video.onerror = (e) => {
-            console.log('狗狗影片載入異常，切回待機圖:', e);
-            finishPetVideo();
-        };
-    }
-
-    const preloadedVideoElements = {};
-
     function initPetPage() {
         createButtons();
         updateStatus();
         updatePetSoundUI();
 
-        // 初始狀態：顯示溫馨客廳 JPG，不循環播放影片
-        const standbyImg = document.getElementById('pet-standby-image');
-        if (standbyImg) standbyImg.style.display = 'block';
         if (video) {
-            video.classList.remove('playing');
-            video.loop = false;
+            video.style.display = 'block';
+            video.loop = true;
+            video.muted = isPetMuted;
+            video.volume = isPetMuted ? 0 : 1.0;
         }
 
         // 背景快取常用影片

@@ -1650,34 +1650,14 @@
         box-sizing: border-box !important;
         margin-bottom: 8px !important;
     }
-    #pet-standby-image {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: cover !important;
-        border-radius: 8px !important;
-        z-index: 1 !important;
-        display: block !important;
-    }
     #pet-video-player {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
         width: 100% !important;
+        max-width: 100% !important;
         height: 100% !important;
         object-fit: cover !important;
         border-radius: 8px !important;
-        z-index: 2 !important;
         display: block !important;
-        opacity: 0;
-        transition: opacity 0.22s ease-in-out;
         transform: translateZ(0);
-        pointer-events: none;
-    }
-    #pet-video-player.playing {
-        opacity: 1 !important;
     }
     .pet-sound-toggle-btn {
         width: 100% !important;
@@ -3636,8 +3616,7 @@
             </div>
 
             <div id="video-overlay" class="video-overlay">
-                <img id="pet-standby-image" src="petinthelivingroom1b.jpg" alt="狗狗客廳待機中">
-                <video id="pet-video-player" playsinline webkit-playsinline preload="auto"></video>
+                <video id="pet-video-player" src="dogbreak.mp4" poster="petinthelivingroom1b.jpg" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>
                 <div id="accessory-display" class="accessory"></div>
             </div>
 
@@ -7833,7 +7812,13 @@ window.addEventListener('load', () => {
 
     function getRandomVideo(action) {
         const list = videos[action] || videos['default'];
-        return list[Math.floor(Math.random() * list.length)];
+        if (!list || list.length === 0) return 'dogbreak.mp4';
+        if (list.length === 1) return list[0];
+        // 排除當前正在播的影片，確保「按一次就直接切換到新的影片」！
+        const currentSrc = video ? (video.currentSrc || video.src || '') : '';
+        const candidates = list.filter(v => !currentSrc.endsWith(v));
+        const pool = (candidates.length > 0) ? candidates : list;
+        return pool[Math.floor(Math.random() * pool.length)];
     }
 
     // 心情判斷
@@ -7980,37 +7965,17 @@ window.addEventListener('load', () => {
             }
 
             const targetSrc = getRandomVideo(action);
-
-            try {
-                video.pause();
-            } catch (e) {}
-            video.classList.remove('playing');
-
-            video.loop = false;
+            video.style.display = 'block';
+            video.loop = true;
             video.muted = isPetMuted;
             video.volume = isPetMuted ? 0 : 1.0;
             video.src = targetSrc;
-            video.load();
-
-            // 超時安全保險絲：12 秒自動回復待機圖，徹底杜絕任何卡住死機
-            petVideoWatchdogTimer = setTimeout(() => {
-                console.log('狗狗影片超時保險絲觸發，平滑切回待機圖');
-                finishPetVideo();
-            }, 12000);
-
             const playPromise = video.play();
             if (playPromise !== undefined) {
                 playPromise.catch(err => {
-                    console.log('播放被瀏覽器阻擋，嘗試靜音降級播放:', err);
-                    if (!isPetMuted) {
-                        video.muted = true;
-                        video.play().catch(e => {
-                            console.log('靜音播放仍失敗，切回待機圖:', e);
-                            finishPetVideo();
-                        });
-                    } else {
-                        finishPetVideo();
-                    }
+                    console.log('播放被瀏覽器阻擋，降級以靜音播放:', err);
+                    video.muted = true;
+                    video.play().catch(e => console.log('靜音播放失敗:', e));
                 });
             }
         }
@@ -8031,85 +7996,17 @@ window.addEventListener('load', () => {
         });
     }
 
-    let petVideoWatchdogTimer = null;
-
-    function finishPetVideo() {
-        if (petVideoWatchdogTimer) {
-            clearTimeout(petVideoWatchdogTimer);
-            petVideoWatchdogTimer = null;
-        }
-        if (video) {
-            try {
-                video.pause();
-                video.currentTime = 0;
-            } catch (e) {}
-            video.classList.remove('playing');
-        }
-        const standbyImg = document.getElementById('pet-standby-image');
-        if (standbyImg) {
-            standbyImg.style.display = 'block';
-        }
-        if (thoughtBubble) {
-            thoughtBubble.innerText = '🐾 汪汪！我在客廳等你喔，快點下方按鈕和我玩！🐾';
-        }
-    }
-
-    if (video) {
-        video.loop = false;
-
-        // 1. 畫面真正繪製渲染開始時淡入，徹底杜絕黑屏/空白卡住！
-        video.onplaying = () => {
-            video.classList.add('playing');
-        };
-
-        // 2. 正常播放結束
-        video.onended = () => {
-            finishPetVideo();
-        };
-
-        // 3. 結尾進度保險（距結尾 0.25 秒內即主動平滑過渡，防無音軌或 B 幀造成卡住）
-        video.ontimeupdate = () => {
-            if (video.duration && isFinite(video.duration) && video.duration > 0.5) {
-                if (video.currentTime >= (video.duration - 0.25)) {
-                    finishPetVideo();
-                }
-            }
-        };
-
-        // 4. 異常與載入失敗防護
-        video.onerror = (e) => {
-            console.log('狗狗影片載入異常，切回待機圖:', e);
-            finishPetVideo();
-        };
-    }
-
-    // 真正能秒進瀏覽器記憶體的預載快取器
-    const preloadedVideoElements = {};
-
     function initPet() {
         createButtons();
         updateStatus();
         updatePetSoundUI();
 
-        // 初始狀態：顯示溫馨客廳 JPG，不循環播放影片
-        const standbyImg = document.getElementById('pet-standby-image');
-        if (standbyImg) standbyImg.style.display = 'block';
         if (video) {
-            video.classList.remove('playing');
-            video.loop = false;
+            video.style.display = 'block';
+            video.loop = true;
+            video.muted = isPetMuted;
+            video.volume = isPetMuted ? 0 : 1.0;
         }
-
-        // 頁面載入 1 秒後，用虛擬 Video 元素在記憶體中快速快取第一波核心動作影片
-        setTimeout(() => {
-            const quickList = ['dogeat.mp4', 'dogdrink.mp4', 'dogpethead.mp4', 'dogshower1.mp4', 'dpgpoo.mp4', 'dogdoctor.mp4', 'dogwalk.mp4', 'dogcook.mp4', 'dogcollar.mp4'];
-            quickList.forEach(src => {
-                const v = document.createElement('video');
-                v.preload = 'auto';
-                v.muted = true;
-                v.src = src;
-                preloadedVideoElements[src] = v;
-            });
-        }, 1000);
     }
 
     if (document.readyState === 'loading') {
